@@ -1,5 +1,2 @@
-# IFDIFF
 
-## A Matlab Toolkit for ODEs with State-Dependent Switches 
-
-This project is going to be published soon.
+This project is planned to be published soon in 2023.
