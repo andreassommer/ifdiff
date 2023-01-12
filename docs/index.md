@@ -107,8 +107,8 @@ are exact up to integration tolerance. Using, e.g., absolute and relative tolean
 first switching times is computed an error less than $10^{-14}$, and the second with an error less than $10^{-11}$.
 
 Note that the `sol` structure returned by `solveODE` is an augmented version of the solution structures returned
-by  Matlab's very own integrators (see https://de.mathworks.com/help/matlab/ref/deval.html#bu7iw_j-sol), 
-and can thus be evaluated evalated using `deval`. That means, IFDIFF can be used transparently within existing code!
+by  Matlab's very own integrators (see [Matlab documentation](https://de.mathworks.com/help/matlab/ref/deval.html#bu7iw_j-sol)), 
+and can thus be evaluated  using `deval`. That means, IFDIFF can be used transparently within existing code!
 
 <br/>
 
