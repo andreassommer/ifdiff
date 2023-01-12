@@ -149,7 +149,7 @@ $G_{y,ij}$ denotes the sensitivity of the $i$-th solution component w.r.t. the $
 While IFDIFF produces correct and accurate sensitivities, the sensitivities using the naive approach, again without any warning or hint,
 are not only inaccurate (notice the scales!), but plain wrong. 
 
-Details of how to compute sensitivities with IFDIFF are given in the [README.md](../README.md).
+Details of how to compute sensitivities with IFDIFF are given in the project's [README.md](https://github.com/andreassommer/ifdiff/blob/public/README.md).
 
 <br/>
 <br/>
