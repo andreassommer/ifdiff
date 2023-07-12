@@ -215,13 +215,13 @@ function copyAndPatchMTREEPLUS(fid_src, fid_dest)
    elseif verLessThan('MATLAB', '9.11'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.10 --> 2021a
    elseif verLessThan('MATLAB', '9.12'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.11 --> 2021b
    else
-      copyAndPatch__unknown(fid_src, fid_dest);
+      copyAndPatch__unknown(fid_src, fid_dest, UNTESTED);
    end
 end
 
 % ========================================================================================
 
-function copyAndPatch__unknown(fid_src, fid_dest)
+function copyAndPatch__unknown(fid_src, fid_dest, UNTESTED)
    disp('Unknown MATLAB version >9.9, trying generic method.')
    copyAndPatch__generic(fid_src, fid_dest, UNTESTED);
 end
