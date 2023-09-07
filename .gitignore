@@ -1,5 +1,7 @@
-# mtreeplus directory
+# mtreeplus directory and preprocessed functions
 @mtreeplus/
+PreprocessedFunctions/
+tmp/
 
 # Windows default autosave extension
 *.asv
@@ -32,3 +34,12 @@ codegen/
 
 # Octave session info
 octave-workspace
+
+# MacOS and Windows related annoyances
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
