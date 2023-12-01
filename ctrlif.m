@@ -8,10 +8,9 @@ function y = ctrlif(condition, truepart, falsepart, ctrlif_index, function_index
    %
    % by the ctrilf one gets the condition, ctrlif_index, function_index
    % those vectors are preallocated using .ctrlifCounter
-   
+
    data = datahandle.getData();
-   
-   
+
    switch data.caseCtrlif
       case 0 % default
          if condition
@@ -22,7 +21,7 @@ function y = ctrlif(condition, truepart, falsepart, ctrlif_index, function_index
          
       case 1 % forcedBranching
          % active_SWP_detection: during integration used in extendODE, solveODE
-         % forced branching method
+         % forced branching method: always return the initial true/false value
          
          data.forcedBranching.ctrlifCounter = data.forcedBranching.ctrlifCounter + 1;
          
@@ -63,28 +62,13 @@ function y = ctrlif(condition, truepart, falsepart, ctrlif_index, function_index
             data.forcedBranching.ctrlifCounter = 0;
          end
          
-      case 3 % ctrlif_getSignature
-         
+       case 3 % ctrlif_getSignature
          data.getSignature.ctrlifCounter = data.getSignature.ctrlifCounter + 1;
-         
-         data.getSignature.switch_cond = ctrlif_getSignaturePreallocation(...
-            condition,...
-            data.getSignature.switch_cond, ...
-            data.getSignature.ctrlifCounter, ...
-            1);
-         
-         data.getSignature.ctrlif_index = ctrlif_getSignaturePreallocation(...
-            ctrlif_index, ...
-            data.getSignature.ctrlif_index, ...
-            data.getSignature.ctrlifCounter, ...
-            1);
-         
-         data.getSignature.function_index = ctrlif_getSignaturePreallocation(...
-            function_index, ...
-            data.getSignature.function_index, ...
-            data.getSignature.ctrlifCounter, ...
-            2);
-         
+
+         data.getSignature.switch_cond    = ctrlif_getSignaturePreallocation(condition,      data.getSignature.switch_cond,    data.getSignature.ctrlifCounter, 1);
+         data.getSignature.ctrlif_index   = ctrlif_getSignaturePreallocation(ctrlif_index,   data.getSignature.ctrlif_index,   data.getSignature.ctrlifCounter, 1);
+         data.getSignature.function_index = ctrlif_getSignaturePreallocation(function_index, data.getSignature.function_index, data.getSignature.ctrlifCounter, 2);
+
          if condition
             y = truepart;
          else
@@ -113,9 +97,6 @@ function y = ctrlif(condition, truepart, falsepart, ctrlif_index, function_index
          end
          
    end
-   
-   
-   
    
    datahandle.setData(data);
 end
