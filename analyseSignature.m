@@ -1,4 +1,4 @@
-function status = analyseSignature(~, ~, flag, datahandle)
+function status = analyseSignature(t, x, flag, datahandle)
 % output function for the integration of the ODE; returns status = 1 to
 % stop the integration; compares the current signature (signature of the
 % last function evaluation of the RHS) with the last signature in
@@ -24,7 +24,6 @@ function status = analyseSignature(~, ~, flag, datahandle)
 %  status = 1: stop/halt integration
 data = datahandle.getData();
 
-
 switch flag
     % initialization, before integrating
     case 'init'
@@ -33,6 +32,17 @@ switch flag
         
         status = 0;
         
+        % compute RHS one last time to make sure the most recent evaluation is actually at t+h.
+        % data.forcedBranching.switch_cond is determined by the most recent execution of the RHS.
+        % ode78 and ode89 do not evaluate intermediate time points in increasing order as they compute continuous
+        % extensions. This can lead to switching points being detected but then "forgotten".
+        if (length(t) == 1)
+            data.integratorSettings.preprocessed_rhs(datahandle, t, x, data.SWP_detection.parameters);
+        else
+            data.integratorSettings.preprocessed_rhs(datahandle, t(end), x(:,end), data.SWP_detection.parameters);
+        end
+        data = datahandle.getData();
+
         cond = analyseSignature_checkForSwitch(...
             data.forcedBranching.switch_cond_forcedBranching, ...
             data.forcedBranching.switch_cond);
@@ -46,7 +56,7 @@ switch flag
         else
             % t_i becomes t_i+1 however, since no switch occured, remains
             % the same as before.
-            data.forcedBranching.switch_cond     = zeros(1,length(data.forcedBranching.switch_cond_forcedBranching));
+            data.forcedBranching.switch_cond    = zeros(1,length(data.forcedBranching.switch_cond_forcedBranching));
             data.forcedBranching.ctrlif_index   = zeros(1,length(data.forcedBranching.ctrlif_index_forcedBranching));
             data.forcedBranching.function_index = cell(length(data.forcedBranching.function_index_forcedBranching),1);
         end
