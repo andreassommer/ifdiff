@@ -30,11 +30,11 @@ preprocessed.rhs{2,1} = [config.preprocess.rhs_name_prefix, filename];
 
 % check mtree for comments to ignore mtree and store tree, flag, and
 % possibly stings of mtree
-[tree, flag, varargout] = check_mtree(filename);
+[tree, flag, index] = check_mtree(filename);
 preprocessed.rhs{3,1} = tree;
 preprocessed.rhs{4,1} = flag;
 if flag
-    preprocessed.rhs{end+1,1} = varargout;
+    preprocessed.rhs{end+1,1} = index;
 end
 
 % get all paths that are required to execute filename.m (we want to

@@ -1,4 +1,4 @@
-function [m, flag, varargout] = check_mtree(filename)
+function [m, flag, index_if_tobeignored] = check_mtree(filename)
     %
     %
     %
@@ -14,10 +14,11 @@ function [m, flag, varargout] = check_mtree(filename)
     if any(strcmp(tree_strings, '% IFDIFF:ignore')) % Kommentar muss exakt diese Form haben mit Leerzeichen
         flag = 1;
         m = tree_object;
-        varargout = tree_strings; % Varargout kann auch andere Struktur sein, am besten postition bzw If node analysieren
+        index_if_tobeignored = [];
     else
         flag = 0;
         m = mtreeplus(filename_complete, '-file');
+        index_if_tobeignored = [];
     end
 
 
