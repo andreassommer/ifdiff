@@ -17,8 +17,10 @@ config = makeConfig();
 % 3: mtreee object 
 % later in switching point generation there will be 4-7 with additional information
 
- % preallocate 
-preprocessed.rhs = cell(3,1);
+
+
+% preallocate 
+preprocessed.rhs = cell(4,1);
 
 % original filename
 preprocessed.rhs{1,1} = filename; 
@@ -26,9 +28,14 @@ preprocessed.rhs{1,1} = filename;
 % new name of rhs
 preprocessed.rhs{2,1} = [config.preprocess.rhs_name_prefix, filename]; 
 
-% store mtree
-preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file');
-
+% check mtree for comments to ignore mtree and store tree, flag, and
+% possibly stings of mtree
+[tree, flag, varargout] = check_mtree(filename);
+preprocessed.rhs{3,1} = tree;
+preprocessed.rhs{4,1} = flag;
+if flag
+    preprocessed.rhs{end+1,1} = varargout;
+end
 
 % get all paths that are required to execute filename.m (we want to
 % identify all functions that are being called within the rhs) 
