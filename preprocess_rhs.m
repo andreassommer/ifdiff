@@ -11,6 +11,8 @@ function preprocessed = preprocess_rhs(preprocessed)
 % (we want to modify these functions and there need to copy them so that we dont might change the original function)
 
 % transform functions max, min, abs, sign into ctrlifs and equip if-clauses with a ctrlif
+
+% Hier das Controllif anpassen
 [preprocessed.rhs{3,1}, preprocessed.ctrlif_index] = preprocess_addCtrlif(preprocessed.rhs{3,1}, 1);
 
 % set function_index into code for each function call
