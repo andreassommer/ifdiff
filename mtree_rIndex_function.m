@@ -18,7 +18,9 @@ index = index_input;
 
 % search for (fname)
 z_subtree = mtreeobj.mtfind('String', fname);
-z = z_subtree.indices; 
+
+z = z_subtree.indices;
+
 if ~isempty(z)
     index.(fname) = z; 
     
