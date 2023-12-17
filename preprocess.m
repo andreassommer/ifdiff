@@ -20,7 +20,7 @@ config = makeConfig();
 
 
 % preallocate 
-preprocessed.rhs = cell(4,1);
+preprocessed.rhs = cell(3,1);
 
 % original filename
 preprocessed.rhs{1,1} = filename; 
@@ -30,12 +30,9 @@ preprocessed.rhs{2,1} = [config.preprocess.rhs_name_prefix, filename];
 
 % check mtree for comments to ignore mtree and store tree, flag, and
 % possibly stings of mtree
-[tree, flag, index] = check_mtree(filename);
-preprocessed.rhs{3,1} = tree;
-preprocessed.rhs{4,1} = flag;
-if flag
-    preprocessed.rhs{end+1,1} = index;
-end
+
+preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file', '-comments');
+
 
 % get all paths that are required to execute filename.m (we want to
 % identify all functions that are being called within the rhs) 

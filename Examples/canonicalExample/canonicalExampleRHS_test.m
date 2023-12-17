@@ -91,9 +91,9 @@ Xdiff2 = Y_matlabsolver - Y_ifdiff;
 % plot solutions
 figure(545); clf;
 axes = [0 20 0 30]; 
-ax2 = subplot(3,1,1); plot(T, Y_ifdiff,'linewidth',1.5); legend('x_1','x_2','Location','West'); title(sprintf('%s with Switching Point Detection', func2str(odesolver))); axis(axes); xline(sol_rhs_test.switches(1), '--'); xline(sol_rhs_test.switches(2), '--');
-ax3 = subplot(3,1,2); plot(T,   Xdiff1,'linewidth',1.5); legend('x_1','x_2','Location','West'); title(sprintf('Difference between AccurateEuler and %s with Switching Point Detection', func2str(odesolver)));
-ax4 = subplot(3,1,3); plot(T,   Xdiff2,'linewidth',1.5); legend('x_1','x_2','Location','West'); title(sprintf('Difference between %s and %s with Switching Point Detection', func2str(odesolver), func2str(odesolver)));
+ax2 = subplot(3,1,1); plot(T, Y_ifdiff,'linewidth',1.5); legend('x_1','x_2','Location','West'); title(sprintf('%s with Switching Point Detection', func2str(integrator))); axis(axes); xline(sol_rhs_test.switches(1), '--'); xline(sol_rhs_test.switches(2), '--');
+ax3 = subplot(3,1,2); plot(T,   Xdiff1,'linewidth',1.5); legend('x_1','x_2','Location','West'); title(sprintf('Difference between AccurateEuler and %s with Switching Point Detection', func2str(integrator)));
+ax4 = subplot(3,1,3); plot(T,   Xdiff2,'linewidth',1.5); legend('x_1','x_2','Location','West'); title(sprintf('Difference between %s and %s with Switching Point Detection', func2str(integrator), func2str(integrator)));
 sgtitle('Canonical Example');
 linkaxes([ax2 ax3 ax4], 'x');
 
