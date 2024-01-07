@@ -6,13 +6,12 @@ c = strings(m);
 a = m.mtfind('String', '% IFDIFF:ignore');
 b = Parent(a);
 index = b.indices();
-z = m.mtfind('String', 'if');
+z = mtree_findNode(m, 'Kind', 'comment');
 
-% Das funktioniert bei unterschiedlicher Kommentrastruktur nicht
-% konsistent!!!
-h = [10 20 32 30];
-y = find(ismember(h, index));
-h(y) = [];
+m.strings()
+
+
+
 
 
 
@@ -27,7 +26,7 @@ p            = 5.437;
 
 fprintf('Preprocessing...\n  ');
 odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12);
-filename = 'rhs_test';
+filename = 'canonicalExampleRHS';
 tic
 hdlrhs_test = prepareDatahandleForIntegration(filename, 'solver', func2str(integrator), 'options', odeoptions);
 toc
