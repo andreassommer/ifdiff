@@ -1,0 +1,61 @@
+classdef HelpCommand < UserCommand
+    methods
+        function this = HelpCommand()
+        end
+
+        function name = getName(~)
+            name = "help";
+        end
+
+        function msg = shortHelp(~)
+            msg = "speedtracker(""help"", [<command>])";
+        end
+
+        function msg = longHelp(~)
+            msg = strjoin([
+                "speedtracker(""help"", [<command>])",
+                "    describe a command's function and usage, or show general help if <command> is not provided"
+            ], SystemUtil.lineSep());
+        end
+
+        % Process arguments, producing a struct of the form:
+        % {
+        %   [About: command]    % simpleString that is one of the available commands.
+        % }
+        % where simpleString means either a 1x1 string array or a 1xN character array.
+        function commandConfig = handleArgs(~, argCell)
+            commandConfig = struct();
+            if (length(argCell) > 1)
+                if ~UserCommand.isSimpleString(argCell{2})
+                    throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
+                        "expected the name of a command, but got [" + UserCommand.toStr(argCell{2}) + "]"));
+                end
+                commandConfig.About = argCell{2};
+            end
+        end
+
+        function message = execute(this, speedtrackerConfig, ~, commandConfig)
+            if (isfield(commandConfig, "About"))
+                command = UserCommand.getCommand(speedtrackerConfig.userCommands, commandConfig.About);
+                if isempty(command)
+                    throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, "unknown command: " + commandConfig.About));
+                end
+                message = command.longHelp();
+            else
+                message = generalHelp(this, speedtrackerConfig);
+            end
+        end
+
+        % Create a general help message listing the commands and describing how to get more info about each.
+        function message = generalHelp(~, speedtrackerConfig)
+            commands = speedtrackerConfig.userCommands;
+            messageLines = ["Usage:", " "];
+            for i = 1:length(commands)
+                messageLines = [messageLines, commands{i}.shortHelp()];
+            end
+            messageLines = [messageLines, " ", ...
+                "run speedtracker(""help"", <command>) for more info about individual commands"];
+            message = strjoin(messageLines, SystemUtil.lineSep());
+        end
+    end
+end
