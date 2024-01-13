@@ -105,8 +105,9 @@ classdef RunCommand < UserCommand
                 end
                 message = "";
                 for i=1:length(snapshots)
+                    message = message + "loading snapshot " + snapshots(i) + SystemUtil.lineSep();
                     snapshotManager.loadSnapshot(snapshots(i));
-                    message = message + SystemUtil.lineSep() + runner.runBenchmarks();
+                    message = message + runner.runBenchmarks() + SystemUtil.lineSep();
                 end
             catch error
                 logger.error("error while running benchmarks, restoring project state");
