@@ -1,8 +1,17 @@
 classdef GitSnapshotManager < SnapshotLoader
-    % Snapshot manager that uses Git refs to store snapshots
-    % Given an ID and commit, a snapshot is a ref to that commit. The ref's name contains the commit's
-    % user date (in UTC) followed by the ID. This way, sorting snapshots by date committed - which is the obvious order
-    % in which to run them - can be implemented by simply sorting lexicographically.
+    % Snapshot manager that stores snapshots based on Git commits
+    % Functions:
+    % 1. create, read, update, and delete snapshots (stored in a file that can be committed)
+    %    Committing the snapshots file is a bit awkward, since these snapshots are supposed to describe commits.
+    %    But since we already need the latest revision to use Speedtracker itself, it does not really cause any
+    %    extra damage. The ideal solution would have been using Git refs or Git tagged blobs, but pushing and pulling
+    %    these has been challenging. And replacing Git commands with simple file operations is simpler and more robust.
+    % 2. Save project state and check out snapshots for performance regression testing (implementing the SnapshotLoader
+    %    interface)
+    % WARNING: do not mix these two functionalities. In a single run of Speedtracker, you may EITHER create, read,
+    % update, and delete snapshots (as many as you like), OR load snapshots (as many as you like) - if you modify
+    % the existing snapshots, the copy of the snapshot file in the temp dir will not be updated to reflect the
+    % changes until a new run of Speedtracker.
 
 
     properties (Constant)
@@ -19,19 +28,16 @@ classdef GitSnapshotManager < SnapshotLoader
         ERROR_ILLEGAL_STATE = "GitSnapshotManager:illegalState";
         ERROR_METADATA_ALREADY_PRESENT = "GitSnapshotManager:metadataAlreadyPresent";
         ERROR_NO_METADATA_PRESENT = "GitSnapshotManager:noMetadataPresent";
+        ERROR_SNAPSHOTS_FILE_ACCESS = "GitSnapshotManager:snapshotsFileAccess";
+        ERROR_BAD_SNAPSHOTS_FILE = "GitSnapshotManager:badSnapshotsFile";
     end
 
     properties(Constant, Access=private)
-        SNAPSHOT_TAG_PREFIX = "refs/speedtracker/snapshots";
-        SNAPSHOT_TAG_REGEX = "^" + GitSnapshotManager.SNAPSHOT_TAG_PREFIX + ...
-            "/" + "\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}--[a-zA-Z][a-zA-Z0-9-_]*$";
-        SNAPSHOT_TAG_GLOB_PREFIX = GitSnapshotManager.SNAPSHOT_TAG_PREFIX + ...
-            "/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-";
-        SNAPSHOT_TAG_EXAMPLE_PREFIX = GitSnapshotManager.SNAPSHOT_TAG_PREFIX + "/YYYY-MM-DD-hh-mm-ss-";
         % Git ref name under which metadata about the saved state can be found. Due to the contract of
         % restoreProjectState, this must always be a class constant.
         METADATA_REF_NAME = "refs/speedtracker/snapshot-manager"
         METADATA_TEMP_FILE_NAME = "speedtracker-git-snapshot-manager-temp";
+        SNAPSHOTS_FILE_NAME = "snapshots.txt";
     end
 
     properties (Access=public)
@@ -45,6 +51,7 @@ classdef GitSnapshotManager < SnapshotLoader
             instance.logger = logger;
         end
 
+        %% SnapshotLoader interface
         % Save the current state of the working directory. If there are any changes
         % in the index, throw an exception, because saving state without destroying the index is too difficult.
         % If there are changes in the working tree, commit them to a temporary commit and store information for
@@ -118,15 +125,17 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
-            tagName = this.getSnapshotTagName(id);
-            if strcmp(tagName, "")
+            snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
+            indices = snapshots.id == id;
+            if isempty(indices(indices))
                 throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, "no snapshot with ID " + id));
             end
+            sha = snapshots.sha(indices);
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     "cannot load snapshot without first saving project state"));
             end
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git checkout %s", tagName));
+            [status, cmdout] = SystemUtil.safeSystem(sprintf("git checkout %s", sha));
             if status ~= 0
                 throw(this.genericGitError(cmdout));
             end
@@ -178,19 +187,9 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Create a snapshot with a provided ID. If options.Commit is present, create the snapshot
+        %% Snapshot editing (CRUD)
+        % Create a snapshot with a provided ID. If the argument commit is passed, create the snapshot
         % from the commit it points to. Otherwise, use the commit pointed to by HEAD.
-        % id: 1xN char or 1x1 string
-        % options: struct with fields
-        %   [CommitSha]
-        %
-        % The tag name is the provided ID prefixed with the commit's author date: For instance, a commit created
-        % on 2023-12-05T18:30:22+01:00 and saved under the ID "mysnapshot" would be saved as a tag named
-        % 2023-12-05-18-30-22-01-00-mysnapshot
-        % Git for-each-ref only allows sorting by tag name or version, so 
-        % To be able to search for these tags using only the name, we can use `git for-each-ref <...> <prefix>/*-mysnapshot"`.
-        % Throw ERROR_BAD_SNAPSHOT_ID if the ID is not valid (syntactically), ERROR_BAD_COMMIT if the provided
-        % SHA does not refer to a commit, and ERROR_NAME_TAKEN if the snapshot ID is already in use.
         function [id, commit] = createSnapshot(this, id, commitSha)
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
@@ -204,48 +203,48 @@ classdef GitSnapshotManager < SnapshotLoader
             else
                 commit = this.getCurrentCommitSha();
             end
-            existingTag = this.getSnapshotTagName(id);
-            if strlength(existingTag) ~= 0
+            snapshots = this.loadSnapshots(this.getSnapshotsFileName());
+            snapshotsWithSameId = snapshots.id(snapshots.id == id);
+            if ~isempty(snapshotsWithSameId)
                 throw(MException(GitSnapshotManager.ERROR_NAME_TAKEN, "snapshot with ID already exists: " + id));
             end
-            preexistingSnapshots = this.getSnapshotsOfCommit(commit);
-            if ~isempty(preexistingSnapshots)
-                this.logger.warn(sprintf("commit is already tagged in the snapshots: %s", strjoin(preexistingSnapshots, ", ")));
+            snapshotsWithSameSha = snapshots.id(snapshots.sha == commit);
+            if ~isempty(snapshotsWithSameSha)
+                this.logger.warn(sprintf("commit is already tagged in the snapshots: %s", strjoin(snapshotsWithSameSha, ", ")));
             end
-            ref = this.makeSnapshotTagName(id, commit);
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git update-ref %s %s", ref, commit));
-            if status ~= 0
-                throw(this.genericGitError(cmdout));
-            end
+            infoDict = this.getCommitInfo(commit);
+            timestamp = str2double(infoDict("authorDate"));
+            newSnapshots = this.appendSnapshots(snapshots, this.makeSnapshotList(id, commit, timestamp));
+            this.saveSnapshots(newSnapshots, this.getSnapshotsFileName());
         end
 
-        % Delete a snapshot given its string ID as returned by createSnapshot.
+        % Delete a snapshot given its string ID.
         % Throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID if the ID is invalid or no such snapshot exists
         function [id, sha] = deleteSnapshot(this, id)
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
-            ref = this.getSnapshotTagName(id);
-            if (strlength(ref) == 0)
+            snapshots = this.loadSnapshots(this.getSnapshotsFileName());
+            indices = snapshots.id == id;
+            if isempty(indices(indices))
                 throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, "no such snapshot: " + id));
             end
-            sha = this.getShaOfRef(ref);
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git update-ref -d %s", ref));
-            if status ~= 0
-                throw(this.genericGitError(cmdout));
-            end
+            snapshotToGo = this.idxSnapshots(snapshots, indices);
+            sha = snapshotToGo.sha;
+            remainingSnapshots = this.idxSnapshots(snapshots, ~indices);
+            this.saveSnapshots(remainingSnapshots, this.getSnapshotsFileName());
         end
 
-        % list all snapshots matching a glob pattern and return a row vector of their IDs
+        % return all snapshots' IDs sorted ascendingly by their commit's author date, i.e. when the commit was created.
         function snapshots = listSnapshots(this)
-            tagNames = getAllSnapshotsTags(this);
-            snapshots = arrayfun(@(tag) this.convertTagToSnapshotId(tag), tagNames');
+            snapshotList = this.loadSnapshots(this.getSnapshotsFileName());
+            [~, indices] = sort(snapshotList.timestamp);
+            snapshots = snapshotList.id(indices);
         end
 
         % Get information about a snapshot, returning a dict with the properties:
-        %   tagName: the snapshot's tag name
         %   commitSha: the snapshot's commit SHA
-        %   author: the commit's author (Firstname Lastname <e@mail.address>)
+        %   author: the commit's author (Name <e@mail.address>)
         %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
         %   authorTimeZone: time zone of the author date, in the format +0100
         %   commitDate: commit date in Unix time (string)
@@ -256,26 +255,22 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
-            tagName = this.getSnapshotTagName(id);
-            if strcmp(tagName, "")
+            snapshots = this.loadSnapshots(this.getSnapshotsFileName());
+            indices = snapshots.id == id;
+            if isempty(indices(indices))
                 throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, "no snapshot with ID " + id));
             end
-            sha = this.getShaOfRef(tagName);
+            sha = snapshots.sha(indices);
 
             % Get description
             commitDict = this.getCommitInfo(sha);
-            commitDict("tagName") = tagName;
             commitDict("commitSha") = sha;
             info = commitDict;
-        end
-
-        % Check whether a snapshot exists. Since 
-        function exists = snapshotExists(this, id)
-            exists = this.isValidSnapshotID(id) && (strlength(this.getSnapshotTagName(id)) ~= 0);
         end
     end
 
     methods (Access=private)
+        %% Metadata Storage for Project State Saving
         % Find out if metadata have been stored. Do this by simply checking for the tag that is mapped
         % to the metadata blob.
         function isPresent = isMetadataPresent(this)
@@ -379,7 +374,38 @@ classdef GitSnapshotManager < SnapshotLoader
             message = "speedtracker current state temp commit";
         end
 
+        %% Snapshot ID wrangling
+        % Given a 1xN char or a 1x1 string, determine if it is a valid snapshot name: it must start with
+        % a letter and consist of only letters, digits, dashes, and underscores.
+        function isValid = isValidSnapshotID(~, id)
+            if regexp(id, GitSnapshotManager.SNAPSHOT_ID_REGEX)
+                isValid = 1;
+            else
+                isValid = 0;
+            end
+        end
+
+        function exception = invalidSnapshotIDException(~, id)
+            idPattern = GitSnapshotManager.SNAPSHOT_ID_REGEX;
+            exception = MException( ...
+                SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, ...
+                sprintf("input ""%s"" does not match the pattern for snapshot IDs: %s", id, idPattern) ...
+            );
+        end
+
         %% Primitive or nearly-primitive Git functions
+        % Get the SHA of the object that a given ref is pointing to. If there is none, return the empty string.
+        function commitSha = getShaOfRef(this, ref)
+            [status, cmdout] = SystemUtil.safeSystem(sprintf("git show-ref --hash %s", ref));
+            if (status ~= 0 && strlength(cmdout) == 0)
+                commitSha = "";
+            elseif (status ~= 0)
+                throw(this.genericGitError(cmdout));
+            else
+                commitSha = cmdout;
+            end
+        end
+
         % Get the name of the current branch. If the repo is in detached HEAD mode, return the empty string.
         function branch = getCurrentBranch(this)
             [status, cmdout] = SystemUtil.safeSystem("git rev-parse --abbrev-ref HEAD");
@@ -446,119 +472,12 @@ classdef GitSnapshotManager < SnapshotLoader
             sha = cmdout;
         end
 
-        % Get the SHA of the commit that a given ref is pointing to. If there is none, return the empty string.
-        function commitSha = getShaOfRef(this, ref)
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git show-ref --hash %s", ref));
-            if (status ~= 0 && strlength(cmdout) == 0)
-                commitSha = "";
-            elseif (status ~= 0)
-                throw(this.genericGitError(cmdout));
-            else
-                commitSha = cmdout;
-            end
-        end
-
         % Return a generic exception for when a Git command went wrong in an unexpected way. This should never be used
         % for actual, expected error conditions. Only in cases where it should be impossible for anything to go wrong
         % (but you know how it is, we make mistakes, we don't know when exactly a Git command may return an error...),
         % include a check for error conditions and throw one of these so the error doesn't disappear silently.
         function err = genericGitError(~, cmdout)
             err = MException(GitSnapshotManager.ERROR_GIT_GENERIC, "error in Git command: " + cmdout);
-        end
-
-        %% Snapshot ID/tag ref wrangling
-        % Given a 1xN char or a 1x1 string, determine if it is a valid snapshot name: it must start with
-        % a letter and consist of only letters, digits, dashes, and underscores.
-        function isValid = isValidSnapshotID(~, id)
-            if regexp(id, GitSnapshotManager.SNAPSHOT_ID_REGEX)
-                isValid = 1;
-            else
-                isValid = 0;
-            end
-        end
-
-        function exception = invalidSnapshotIDException(~, id)
-            idPattern = GitSnapshotManager.SNAPSHOT_ID_REGEX;
-            exception = MException( ...
-                SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, ...
-                sprintf("input ""%s"" does not match the pattern for snapshot IDs: %s", id, idPattern) ...
-            );
-        end
-
-        % Given a prospective snapshot ID and a commit SHA/ref it should point to, construct the ref for the tag that
-        % will store it. To do this, the commit's author date is obtained in UTC:
-        % 2023-12-05T18:30:22
-        % then all non-numeric characters are replaced with dashes:
-        % 2023-12-05-18-30-22
-        % the ID is appended to this:
-        % 2023-12-05-18-30-22-mysnapshot
-        % and finally, the snapshot prefix:
-        % refs/<prefix>/2023-12-05-18-30-22-mysnapshot
-        % 
-        % WARNING:
-        % An ID will therefore not produce a unique tag name, so you must manually use getSnapshotTagName first to
-        % check if an ID is already taken!
-        % Does not check if the name is valid or if the commit exists.
-        function ref = makeSnapshotTagName(this, id, commit)
-            % get the author date of the commit:
-            infoDict = this.getCommitInfo(commit);
-            posixTime = infoDict("authorDate");
-            date = datetime(str2double(posixTime), "ConvertFrom", "posixtime", "Format", "yyyy-MM-dd-HH-mm-ss");
-            rawRef = strjoin([string(date), "-", id], "");
-            ref = strjoin([GitSnapshotManager.SNAPSHOT_TAG_PREFIX, rawRef], "/");
-        end
-
-        % Given the ID of a snapshot, return the Git ref that points to the snapshot's commit. If it does not
-        % exist, return the empty string. 
-        function tagName = getSnapshotTagName(this, id)
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git for-each-ref --format=%%""(refname)"" %s%s", ...
-                GitSnapshotManager.SNAPSHOT_TAG_GLOB_PREFIX, id));
-            if (status == 1)
-                throw(this.genericGitError(cmdout));
-            end
-            if contains(cmdout, SystemUtil.gitOutputLineSep())
-                throw(MException(GitSnapshotManager.ERROR_ILLEGAL_STATE, sprintf("multiple tags for snapshot ID %s", id)));
-            end
-            tagName = cmdout;
-        end
-
-        % Get all snapshots' tag names
-        function tags = getAllSnapshotsTags(this)
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git for-each-ref --format=%%""(refname)"" %s%s", ...
-                GitSnapshotManager.SNAPSHOT_TAG_GLOB_PREFIX, "*"));
-            if (status == 1)
-                throw(this.genericGitError(cmdout));
-            end
-            tags = splitlines(cmdout);
-            if strcmp(tags, "")
-                tags = [];
-            end
-        end
-
-        % extract the pure ID from a tag generated by makeSnapshotTagName. If the string passed in is not a valid
-        % tag ref, return -1.
-        function id = convertTagToSnapshotId(~, tagName)
-            if ~regexp(tagName, GitSnapshotManager.SNAPSHOT_TAG_REGEX)
-                id = -1;
-                return;
-            end
-            prefixLength = strlength(GitSnapshotManager.SNAPSHOT_TAG_EXAMPLE_PREFIX);
-            id = extractAfter(tagName, prefixLength);
-        end
-
-        % Get the IDs of all snapshots pointing at a commit in a column vector.
-        function ids = getSnapshotsOfCommit(this, sha)
-            [status, cmdout] = SystemUtil.safeSystem(sprintf("git for-each-ref --format=%%""(refname)"" --points-at %s %s/*", ...
-                sha, GitSnapshotManager.SNAPSHOT_TAG_PREFIX));
-            if (status == 1)
-                throw(this.genericGitError(cmdout));
-            end
-            if (strlength(cmdout) == 0)
-                ids = [];
-                return;
-            end
-            tags = splitlines(cmdout);
-            ids = arrayfun(@(tag) this.convertTagToSnapshotId(tag), tags);
         end
 
         % Get info about a commit, returning a dictionary containing:
@@ -592,6 +511,111 @@ classdef GitSnapshotManager < SnapshotLoader
             subject = extractAfter(cmdout, subjectStart);
             dict = dictionary(["author", "authorDate", "authorTimeZone", "commitDate", "commitTimeZone", "subject"], ...
                 [author, authorDate, authorTimeZone, commitDate, commitTimeZone, subject]);
+        end
+
+        %% Snapshot Storage
+        % Each snapshot is a struct consisting of ID (name given by user), commit SHA, and timestamp, with the keys
+        % `id`, `sha`, and `timestamp`, respectively. The latter
+        % property is to facilitate sorting them by date, allowing them to be tested in the order their commits were
+        % created, which is the obvious order when we want to see whether IFDIFF's performance has degraded over
+        % time. A set of snapshots is passed around not as an array of structs, but as a struct of arrays
+        % (row vectors), called a _snapshot list_.
+        % For storage, we simply write each snapshot on a line with id, sha, and timestamp separated by spaces.
+
+        % Get the filename for the snapshot file. Note: this is the file in the original
+        % speedtracker directory, not the temp dir! Do not mix snapshot CRUD and snapshot loading.
+        function filename = getSnapshotsFileName(this)
+            filename = fullfile(this.speedtrackerConfig.speedtrackerDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
+        end
+
+        % Get the filename for the temp copy of the snapshot file. Needed when loading snapshots, because the
+        % original will be overwritten by loading snapshots.
+        function filename = getSnapshotsTempFileName(this)
+            filename = fullfile(this.speedtrackerConfig.tempDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
+        end
+
+        % Read a snapshot file and return a snapshot list. If it does not exist, return an empty snapshot list.
+        % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the file cannot be opened/written
+        %   and GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE if the file cannot be parsed.
+        function snapshots = loadSnapshots(this, file)
+            if ~isfile(file)
+                snapshots = this.makeSnapshotList(strings(0), strings(0), zeros(0));
+                return;
+            end
+            try
+                text = fileread(file, "Encoding", "UTF-8");
+            catch fileError
+                error = MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, ...
+                    "error opening or reading snapshot file: " + fileError.message);
+                throw(error.addCause(fileError));
+            end
+            lines = splitlines(string(text));
+            lines = lines(~startsWith(lines, "#"));
+            lines = lines(strlength(lines) > 0);
+            snapshotArray = strings(length(lines), 3);
+            for i=1:length(lines)
+                words = strsplit(lines(i));
+                if length(words) ~= 3
+                    throw(MException(GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE, ...
+                        sprintf("snapshot #%d in %s is malformed %s", i, file, lines(i))));
+                end
+                snapshotArray(i, :) = words;
+            end
+            try
+                timestamps = str2double(snapshotArray(:, 3));
+            catch doubleParseError
+                error = MException(GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE, ...
+                    "could not parse time stamp: " + doubleParseError.message);
+                throw(error.addCause(doubleParseError));
+            end
+            snapshots = this.makeSnapshotList(snapshotArray(:, 1)', snapshotArray(:, 2)', timestamps');
+        end
+
+        % Save snapshots given as a snapshot list to a snapshot file. If there are 0 snapshots, delete the file.
+        % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the snapshot file cannot be accessed
+        function saveSnapshots(~, snapshots, file)
+            if (isempty(snapshots.id))
+                try
+                    delete(file);
+                    return;
+                catch fileError
+                    error = MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, ...
+                        "error accessing snapshot file: " + fileError.message);
+                    throw(error.addCause(fileError));
+                end
+            end
+            snapshotArray = strings(length(snapshots.id), 3);
+            snapshotArray(:, 1) = snapshots.id';
+            snapshotArray(:, 2) = snapshots.sha';
+            snapshotArray(:, 3) = string(snapshots.timestamp)';
+            lines = strings(1, size(snapshotArray, 1));
+            for i=1:size(snapshotArray, 1)
+                lines(i) = strjoin(snapshotArray(i, :), " ");
+            end
+            output = strjoin(lines, SystemUtil.lineSep());
+            try
+                writelines(output, file, "Encoding", "UTF-8");
+            catch fileError
+                error = MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, ...
+                    "error opening or writing snapshot file: " + fileError.message);
+                throw(error.addCause(fileError));
+            end
+        end
+
+        function list = makeSnapshotList(~, id, sha, timestamp)
+            list = struct("id", id, "sha", sha, "timestamp", timestamp);
+        end
+
+        % Given a snapshot list, get the sublist (or individual snapshot) at the provided indices.
+        function subList = idxSnapshots(~, snapshotList, idx)
+            if length(size(idx)) > 2 || size(idx, 1) > 1 && size(idx, 2) > 1
+                throw(MException("GitSnapshotManager:index", "index array must be a scalar or vector"));
+            end
+            subList = struct("id", snapshotList.id(idx), "sha", snapshotList.sha(idx), "timestamp", snapshotList.timestamp(idx));
+        end
+
+        function s12 = appendSnapshots(this, s1, s2)
+            s12 = this.makeSnapshotList([s1.id s2.id], [s1.sha s2.sha], [s1.timestamp s2.timestamp]);
         end
     end
 end

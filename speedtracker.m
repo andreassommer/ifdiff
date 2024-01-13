@@ -36,6 +36,7 @@ function code = speedtracker(varargin)
 
     config = SpeedtrackerConfig();
     config.baseDir = SRC_BASEDIR;
+    config.speedtrackerDir = fullfile(SRC_BASEDIR, "speedtracker");
     config.tempDir = ST_TEMP_DIR;
     config.userCommands = commands;
 

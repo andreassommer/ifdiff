@@ -40,5 +40,15 @@ classdef (Abstract) SnapshotLoader
         %     ERROR_COULD_NOT_LOAD_STATE if something else went wrong loading the state
         % Implementation-specific errors can be attached as causes.
         restoreProjectState(this)
+        % List all available snapshots in a struct with the following fields:
+        % id: snapshots' unique IDs
+        % time: A representation of the snapshot's time. This does not mean when the snapshot was
+        %    created, but rather when the project state it represents was current. An ascending ordering of
+        %    these timestamps should be equivalent to the temporal order of the snapshots' project states. This aspect
+        %    is the only requirement. Apart from that, it can be anything - Unix timestamps, date strings,
+        %    an ascending counter, whatever.
+        % Note that this is not an array of structs, but a single struct with vectorial fields. It may contain
+        % additional fields.
+        snapshots = listSnapshots(this)
     end
 end
