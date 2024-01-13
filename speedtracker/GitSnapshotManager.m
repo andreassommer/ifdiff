@@ -575,16 +575,18 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(this.genericGitError(cmdout));
             end
             lines = splitlines(cmdout);
+            % should have the structure `"author" <name> <email> <unixtime> <timezone>`
             authorLine = lines(startsWith(lines, "author"));
             authorWords = strsplit(authorLine{1});
+            % should have the structure `"committer" <name> <email> <unixtime> <timezone>`
             committerLine = lines(startsWith(lines, "committer"));
             committerWords = strsplit(committerLine{1});
-            author = strjoin(authorWords(2:4), " ");
-            authorDate = authorWords{5};
-            authorTimeZone = authorWords{6};
-            commitDate = committerWords{5};
-            commitTimeZone = committerWords{6};
-            % the subject line is preceded by an empty line.
+            author = strjoin(authorWords(2:end-2), " ");
+            authorDate = authorWords{end-1};
+            authorTimeZone = authorWords{end};
+            commitDate = committerWords{end-1};
+            commitTimeZone = committerWords{end};
+            % the subject line is preceded by an empty line, that's how we identify it
             emptyLines = regexp(cmdout, strjoin([SystemUtil.gitOutputLineSep(), SystemUtil.gitOutputLineSep()], ""));
             subjectStart = emptyLines(1) + 1;
             subject = extractAfter(cmdout, subjectStart);
