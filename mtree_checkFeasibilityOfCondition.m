@@ -6,7 +6,7 @@ config = makeConfig();
 
 mtreeobj_condition = Full(select(mtreeobj,index)); 
 
-    
+
 active_mtree = mtreeobj_condition.T(mtreeobj.IX, cIndex.kindOfNode);
 if any(active_mtree == mtreeobj.K.EQ) || any(active_mtree == mtreeobj.K.NE)
     cond_feasible = false;
