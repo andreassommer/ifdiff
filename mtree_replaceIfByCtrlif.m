@@ -63,7 +63,7 @@ for i = 1:length(rIndex.BODY.IF)
 
 
 
-    cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond); % reduddanter call, heangt nicht vom loop ab
+    cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond(i)); % reduddanter call, heangt nicht vom loop ab
     if ~cond_feasible
         continue
     end
