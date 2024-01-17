@@ -26,7 +26,7 @@ preprocessed.rhs = cell(3,1);
 preprocessed.rhs{1,1} = filename; 
 
 % new name of rhs
-preprocessed.rhs{2,1} = [config.preprocess.rhs_name_prefix, filename]; 
+preprocessed.rhs{2,1} = strcat(config.preprocess.rhs_name_prefix, filename); 
 
 % check mtree for comments to ignore mtree and store tree, flag, and
 % possibly stings of mtree
