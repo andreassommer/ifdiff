@@ -3,33 +3,32 @@ function datahandle = createDatahandle(preprocessed)
 
 
 config = makeConfig();
-preprocessed.path = cd; 
+preprocessed.path = pwd; 
 
-preprocessed.path = fullfile(preprocessed.path, config.preprocess.folderFileName);
-if ~exist(preprocessed.path, 'dir')
+preprocessed.path = fullfile(preprocessed.path, config.preprocess.folderFileName); % Adds Preprocessed Functions to path
+
+if ~isfolder(preprocessed.path)
     mkdir(preprocessed.rhs_path, config.preprocess.folderFileName)
 end
 
-preprocessed.SwitchingFunctions_path = fullfile(preprocessed.path, config.preprocess.SwitchingFunctionsName);
-if ~exist(preprocessed.SwitchingFunctions_path, 'dir')
+preprocessed.SwitchingFunctions_path = fullfile(preprocessed.path, config.preprocess.SwitchingFunctionsName); % Build path for switching functions
+if ~isfolder(preprocessed.SwitchingFunctions_path)
     mkdir(preprocessed.path, config.preprocess.SwitchingFunctionsName);
 end
 addpath(genpath(preprocessed.path));
 
 % export rhs
-filepath_rhs = fullfile(preprocessed.path, [preprocessed.rhs{2,1}, '.m']);
+filepath_rhs = fullfile(preprocessed.path, strcat(string(preprocessed.rhs{2,1}), '.m'));
 tempFile = fopen(filepath_rhs, 'w');
 fprintf(tempFile, preprocessed.rhs{3,1}.tree2str);
 fclose(tempFile);
-
-
 
 if ~isempty(preprocessed.fcn)
     % export other functions in rhs
     l = size(preprocessed.fcn, 2);
     for i = 1:l
         filename = preprocessed.fcn{2,i}; 
-        filepath = fullfile(preprocessed.path, [filename, '.m']);
+        filepath = fullfile(preprocessed.path, strcat(string(filename), '.m'));
         fcn = preprocessed.fcn{3,i}; 
         tempFile = fopen(filepath, 'w');
         fprintf(tempFile, fcn.tree2str);
