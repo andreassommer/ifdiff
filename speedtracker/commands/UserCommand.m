@@ -9,7 +9,7 @@ classdef (Abstract) UserCommand
 
     methods (Abstract)
         % The name that the command is called by. Used by the user to call the command, and then by the
-        % main function to select the right UserCommand object
+        % main function to select the right UserCommand object.
         name = getName(this);
         % A single line describing how (with what parameters) to run this command. When the user asks for general
         % help, the shortHelp of all commands is printed out.
@@ -44,7 +44,7 @@ classdef (Abstract) UserCommand
     methods (Static)
         % Helper functions for all the commands
 
-        % Return 1 if a value is either a 1x1 string array or a 1xN char array
+        % Return 1 if a value is either a 1x1 string array or a 1xN char array. Useful for checking arguments' formats.
         function isit = isSimpleString(str)
             isit = 0;
             if isstring(str)
@@ -58,6 +58,10 @@ classdef (Abstract) UserCommand
             end
         end
 
+        % Make a recognizable string representation of most scalar and vector values.
+        % For matrix arrays, this produces a row-major concatenation of the rows, so that isn't so useful. But
+        % this is mostly for reporting bad arguments to speedtracker, and those are usually typed out by hand, so it's
+        % unlikely someone will accidentally put in a matrix where a vector of strings was expected.
         function str = toStr(x)
             if (isempty(x))
                 str = "[]";
@@ -71,8 +75,8 @@ classdef (Abstract) UserCommand
             end
         end
 
-        % Given a list of UserCommand objects and a string commandName, return the command whose name matches
-        % commandName.
+        % Given a vector cell array of UserCommand objects and a string commandName, return the command whose
+        % name matches commandName, or the empty array if none is found.
         function command = getCommand(commands, commandName)
             command = [];
             for i = 1:length(commands)
