@@ -44,12 +44,12 @@ for i = 1:length(rIndex.BODY.IF)
     
 
 
-    if j<=length(comment_nodes_ignore)  % "loop" over index for if heads to be ignored
+    if j<=length(comment_nodes_ignore)  % "loop" over "if heads to be ignored"
         if i<length(rIndex.BODY.IF) % handle last if body node seperate
             if and(rIndex.BODY.IF(i)<comment_nodes_ignore(j) , rIndex.BODY.IF(i+1)>comment_nodes_ignore(j)) 
                 % Idea: Should "BODY IF Index(i) < Comment_node ignore < BODY
                 % IF Index (i+1)" be true, the comment which is to be
-                % ignored lies between those point.
+                % ignored lies between those points and hence, the if else part should remain the same.
                 j = j+1;
                     
                 continue
