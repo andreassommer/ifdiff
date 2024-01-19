@@ -7,13 +7,13 @@ classdef CreateSnapshotCommand < UserCommand
             name = "create-snapshot";
         end
 
-        function msg = shortHelp(~)
-            msg = "speedtracker(""create-snapshot"", <id>, [<hash>])";
+        function msg = shortHelp(this)
+            msg = sprintf("speedtracker(""%s"", <id>, [<hash>])", this.getName());
         end
 
-        function msg = longHelp(~)
+        function msg = longHelp(this)
             msg = strjoin([
-                "speedtracker(""create-snapshot"", <id>, [<hash>])", ...
+                sprintf("speedtracker(""%s"", <id>, [<hash>])", this.getName()), ...
                 "    Create a new snapshot with the name <id> from the Git commit indicated by <hash>.", ...
                 "    If no hash is specified, the commit pointed to by HEAD is used."
             ], SystemUtil.lineSep());

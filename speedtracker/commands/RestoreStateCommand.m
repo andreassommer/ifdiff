@@ -7,13 +7,13 @@ classdef RestoreStateCommand < UserCommand
             name = "restore-state";
         end
 
-        function msg = shortHelp(~)
-            msg = "speedtracker(""restore-state"")";
+        function msg = shortHelp(this)
+            msg = sprintf("speedtracker(""%s"")", this.getName());
         end
 
-        function msg = longHelp(~)
+        function msg = longHelp(this)
             msg = strjoin([
-                "speedtracker(""restore-state"")", ...
+                sprintf("speedtracker(""%s"")", this.getName()), ...
                 "    Restore the state of the repository if something went wrong during the run command.", ...
                 "    This should never be necessary in regular use; this command is mostly a utility for development.", ...
             ], SystemUtil.lineSep());

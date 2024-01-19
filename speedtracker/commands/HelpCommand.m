@@ -7,13 +7,13 @@ classdef HelpCommand < UserCommand
             name = "help";
         end
 
-        function msg = shortHelp(~)
-            msg = "speedtracker(""help"", [<command>])";
+        function msg = shortHelp(this)
+            msg = sprintf("speedtracker(""%s"", [<command>])", this.getName());
         end
 
-        function msg = longHelp(~)
+        function msg = longHelp(this)
             msg = strjoin([
-                "speedtracker(""help"", [<command>])",
+                sprintf("speedtracker(""%s"", [<command>])", this.getName()),
                 "    describe a command's function and usage, or show general help if <command> is not provided"
             ], SystemUtil.lineSep());
         end
@@ -47,14 +47,14 @@ classdef HelpCommand < UserCommand
         end
 
         % Create a general help message listing the commands and describing how to get more info about each.
-        function message = generalHelp(~, speedtrackerConfig)
+        function message = generalHelp(this, speedtrackerConfig)
             commands = speedtrackerConfig.userCommands;
             messageLines = ["Usage:", " "];
             for i = 1:length(commands)
                 messageLines = [messageLines, commands{i}.shortHelp()];
             end
             messageLines = [messageLines, " ", ...
-                "run speedtracker(""help"", <command>) for more info about individual commands"];
+                sprintf("run speedtracker(""%s"", <command>) for more info about individual commands", this.getName())];
             message = strjoin(messageLines, SystemUtil.lineSep());
         end
     end

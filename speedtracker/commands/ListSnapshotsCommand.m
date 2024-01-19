@@ -7,13 +7,13 @@ classdef ListSnapshotsCommand < UserCommand
             name = "list-snapshots";
         end
 
-        function msg = shortHelp(~)
-            msg = "speedtracker(""list-snapshots"")";
+        function msg = shortHelp(this)
+            msg = sprintf("speedtracker(""%s"")", this.getName());
         end
 
-        function msg = longHelp(~)
+        function msg = longHelp(this)
             msg = strjoin([
-                "speedtracker(""list-snapshots"")", ...
+                sprintf("speedtracker(""%s"")", this.getName()), ...
                 "    List all available snapshots"
             ], SystemUtil.lineSep());
         end

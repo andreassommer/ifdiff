@@ -47,7 +47,7 @@ function code = speedtracker(varargin)
     SystemUtil.setGetLogger(systemLogger);
 
     try 
-        % Handle args. If there are none, print the output of `speedtracker("help")`
+        % Handle args. If there are none, print the output of the HelpCommand
         if nargin == 0
             varargin = {help.getName()};
         end

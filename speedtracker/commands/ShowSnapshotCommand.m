@@ -7,13 +7,13 @@ classdef ShowSnapshotCommand < UserCommand
             name = "show-snapshot";
         end
 
-        function msg = shortHelp(~)
-            msg = "speedtracker(""show-snapshot"", <id>)";
+        function msg = shortHelp(this)
+            msg = sprintf("speedtracker(""%s"", <id>)", this.getName());
         end
 
-        function msg = longHelp(~)
+        function msg = longHelp(this)
             msg = strjoin([
-                "speedtracker(""show-snapshot"", <id>)", ...
+                sprintf("speedtracker(""%s"", <id>)", this.getName()), ...
                 "    Describe the snapshot indicated by the name <id>, if it exists."
             ], SystemUtil.lineSep());
         end

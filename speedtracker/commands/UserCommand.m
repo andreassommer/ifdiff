@@ -1,6 +1,6 @@
 classdef (Abstract) UserCommand
-    %UserCommand one of the commands ("create-snapshot", "delete-snapshot", etc.) that a user can call.
-    %   bundles argument handling, help messages, and execution in one class.
+    %UserCommand one of the commands that a user can pass to the top-level speedtracker() function to run
+    %   different functions of the program. Bundles argument handling, help messages, and execution in one class.
 
     properties (Constant)
         ERROR_BAD_ARGUMENT = "UserCommand:badArgument";
