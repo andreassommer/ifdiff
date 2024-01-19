@@ -1,4 +1,4 @@
-function out = checkComment(cell_array)
+function out = checkString(cell_array)
     % SYNTAX: out = checkComment(str)
     %
     % Checks for Ifdiff comments to handly nodes differently
@@ -11,8 +11,9 @@ function out = checkComment(cell_array)
     len_cell = length(cell_array);
     out = zeros(1, len_cell);
     for i = 1:len_cell
-        str = cell_array{i};
-        if contains(str, '% IFDIFF:') 
+        str = strrep(cell_array{i}, ' ', '');
+        
+        if contains(str, '%IFDIFF:') 
             if contains(str, 'ignore')
                 out(i) = 1;
             elseif contains(str, 'equals')
@@ -20,11 +21,11 @@ function out = checkComment(cell_array)
             elseif contains(str, 'filippov')
                 out(i) = 3;
             else
-                out(i) = -2;
+                out(i) = -2; % Contains IFDIFF, but no  valid "command"
                 return
             end
         else
-            out(i) = -1;
+            out(i) = -1; % str does not contain Ifdiff
         end
     end
 end
