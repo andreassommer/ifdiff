@@ -35,7 +35,7 @@ end
 mtree_strings = mtreeobj.strings();
 commentnodes = mtree_mtfind(mtreeobj, 'Kind', mtreeobj.K.COMMENT);
 comments = mtree_strings(commentnodes);
-comments_ignore_index = checkComment(comments) == 1; % Keine Ahnung ob das eine gute Syntax ist
+comments_ignore_index = checkString(comments) == 1; % Keine Ahnung ob das eine gute Syntax ist
 comment_nodes_ignore = commentnodes(comments_ignore_index);
 
 j = 1;
@@ -44,14 +44,17 @@ for i = 1:length(rIndex.BODY.IF)
     
 
 
-    if j<=length(comment_nodes_ignore)
-        if i<length(rIndex.BODY.IF)
-            if and(rIndex.BODY.IF(i)<comment_nodes_ignore(j) , rIndex.BODY.IF(i+1)>comment_nodes_ignore(j))
+    if j<=length(comment_nodes_ignore)  % "loop" over index for if heads to be ignored
+        if i<length(rIndex.BODY.IF) % handle last if body node seperate
+            if and(rIndex.BODY.IF(i)<comment_nodes_ignore(j) , rIndex.BODY.IF(i+1)>comment_nodes_ignore(j)) 
+                % Idea: Should "BODY IF Index(i) < Comment_node ignore < BODY
+                % IF Index (i+1)" be true, the comment which is to be
+                % ignored lies between those point.
                 j = j+1;
                     
                 continue
             end
-        else
+        else % Last if body node
             if rIndex.BODY.IF(i)<comment_nodes_ignore(j)
                 j = j+1;
                 
