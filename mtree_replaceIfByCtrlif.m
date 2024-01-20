@@ -35,7 +35,7 @@ end
 mtree_strings = mtreeobj.strings();
 commentnodes = mtree_mtfind(mtreeobj, 'Kind', mtreeobj.K.COMMENT);
 comments = mtree_strings(commentnodes);
-comments_ignore_index = checkString(comments) == 1; % Keine Ahnung ob das eine gute Syntax ist
+comments_ignore_index = checkString(comments) == 1;
 comment_nodes_ignore = commentnodes(comments_ignore_index);
 
 j = 1;
@@ -129,6 +129,21 @@ for i = 1:length(rIndex.BODY.IF)
         rIndex.BODY.IFHEAD(i), ...                            % from
         cIndex.indexLeftchild, ...                            % from_type
         {mtreeobj.K.ID, config.ctrlif.Out});                  % kind of new node
+    
+    %%%%% Ueberlegung
+    % Add ID (ifdiff condition value)
+    % Add Equals
+    % Add Condition
+    % 
+    % Add ID condition_logical Valie
+    % Add Equal Node
+    % Add Expression evaluation (possible multiple Nodes)
+    %
+    %
+    %
+    %
+    %
+    %
     
 end
 
