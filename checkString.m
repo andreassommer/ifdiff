@@ -1,5 +1,5 @@
 function out = checkString(cell_array)
-    % SYNTAX: out = checkComment(str)
+    % SYNTAX: out = checkString(cell_array)
     %
     % Checks for Ifdiff comments to handly nodes differently
     % Supposed Input: String (string from Commentnode of mtreeobj)
