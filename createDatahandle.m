@@ -21,7 +21,7 @@ addpath(genpath(preprocessed.path));
 % export rhs
 filepath_rhs = fullfile(preprocessed.path, strcat(string(preprocessed.rhs{2,1}), '.m'));
 %tempFile = fopen(filepath_rhs, 'w');
-%fprintf(tempFile, preprocessed.rhs{3,1}.tree2str('-comments'));% funktioniert nicht
+%fprintf(tempFile, preprocessed.rhs{3,1}.tree2str);% funktioniert nicht
 writelines(preprocessed.rhs{3,1}.tree2str, filepath_rhs)
 %fclose(tempFile);
 
