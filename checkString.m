@@ -2,11 +2,12 @@ function out = checkString(cell_array)
     % SYNTAX: out = checkComment(str)
     %
     % Checks for Ifdiff comments to handly nodes differently
-    % Input: String (comment from node)
-    % Input: Cell Array of form 1x variable length
-    % Output: True / false
+    % Supposed Input: String (string from Commentnode of mtreeobj)
     %
-    % Anmerkung: Ist sehr langsam, geht nicht wenn IFDIFF : oder aehnlich
+    % Input: Cell Array of form 1x variable length containing strings
+    % Output: Doubles (1 = ignore, 2 = equals, 3 = filipopov, -1 = no Ifdiff prefix, -2 = Contains Ifdiff but no valid command)
+    %
+    %
     %
     len_cell = length(cell_array);
     out = zeros(1, len_cell);
@@ -14,6 +15,7 @@ function out = checkString(cell_array)
         str = strrep(cell_array{i}, ' ', '');
         
         if contains(str, '%IFDIFF:') 
+            str = strrep(str, '%IFDIFF', '');
             if contains(str, 'ignore')
                 out(i) = 1;
             elseif contains(str, 'equals')
