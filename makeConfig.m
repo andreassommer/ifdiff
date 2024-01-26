@@ -82,6 +82,13 @@ config.mtree_rIndex_function.Suffix_out    = '_Out';
 config.mtree_rIndex_function.Suffix_fname  = '_Fname';
 % ==================================================================================
 
+% filippov-switching / sliding-mode recognition parameters
+config.swfreqtol= 100;              % local switching frequency accepted
+config.swfreqtol_checklast = 10;    % compute local switching frequency based on this many of the last switches
+config.swmax    = 10000;            % total amount of switches accepeted during integration
+config.swfreq_haltOnWarning = false;
+
+
 
 config_out = config;
 end
