@@ -65,11 +65,15 @@ while switch_detected
     solveODE_computeSwitchingPoint(datahandle);
     
     extendODEuntilSwitch(datahandle);
+
     
     % extend solution object from t2 ongoing until the next switch occurs
     % signature saved in .SWP_detection
     extendODE_t2_to_tend_with_SWP_detection(datahandle);
-        
+    
+    solveODE_recognizeFilippovSwitching(datahandle);
+    %fprintf("Possible Filippov switching detected. Integration stopped.\n");
+    
     switch_detected = checkForSwitchingIndices(datahandle);
 end
 
