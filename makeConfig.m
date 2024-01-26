@@ -44,6 +44,12 @@ config.ctrlif.Arg4   = 'index';
 config.ctrlif.Arg5   = 'function_index';
 config.ctrlif.Arg6   = 'datahandle';
 
+config.ctrlif.value = 'ifdiff_condition_value';
+config.ctrlif.branch = 'ifdiff_condition_branch';
+config.ctrlif.logical = 'ifdiff_condition_logical';
+
+
+
 config.sign.temp_sign_value       = 'sign_value';
 config.sign.PrefixNewlineVariable = 'sign_arg';
 config.sign.PrefixNewlineFcn      = 'sign_';
