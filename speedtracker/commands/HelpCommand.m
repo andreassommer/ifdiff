@@ -34,7 +34,8 @@ classdef HelpCommand < UserCommand
             end
         end
 
-        function message = execute(this, speedtrackerConfig, ~, commandConfig)
+        function message = execute(this, ~, commandConfig)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             if (isfield(commandConfig, "About"))
                 command = UserCommand.getCommand(speedtrackerConfig.userCommands, commandConfig.About);
                 if isempty(command)
@@ -42,12 +43,13 @@ classdef HelpCommand < UserCommand
                 end
                 message = command.longHelp();
             else
-                message = generalHelp(this, speedtrackerConfig);
+                message = generalHelp(this);
             end
         end
 
         % Create a general help message listing the commands and describing how to get more info about each.
-        function message = generalHelp(this, speedtrackerConfig)
+        function message = generalHelp(this)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             commands = speedtrackerConfig.userCommands;
             messageLines = ["Usage:", " "];
             for i = 1:length(commands)

@@ -46,7 +46,8 @@ classdef CreateSnapshotCommand < UserCommand
             end
         end
 
-        function message = execute(~, speedtrackerConfig, logger, commandConfig)
+        function message = execute(~, logger, commandConfig)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             snapshotID = commandConfig.ID;
             try

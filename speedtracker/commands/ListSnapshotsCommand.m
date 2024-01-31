@@ -24,7 +24,8 @@ classdef ListSnapshotsCommand < UserCommand
             commandConfig = struct();
         end
 
-        function message = execute(~, speedtrackerConfig, logger, ~)
+        function message = execute(~, logger, ~)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             snapshots = snapshotManager.listSnapshots();
             if isempty(snapshots)

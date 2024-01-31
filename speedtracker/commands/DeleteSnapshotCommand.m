@@ -36,7 +36,8 @@ classdef DeleteSnapshotCommand < UserCommand
             commandConfig.ID = snapshotID;
         end
 
-        function message = execute(~, speedtrackerConfig, logger, commandConfig)
+        function message = execute(~, logger, commandConfig)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             snapshotID = commandConfig.ID;
             try

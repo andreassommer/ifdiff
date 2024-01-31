@@ -72,7 +72,8 @@ classdef RunCommand < UserCommand
             end
         end
 
-        function message = execute(~, speedtrackerConfig, logger, commandConfig)
+        function message = execute(~, logger, commandConfig)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             runner = BenchmarkRunner();
             try

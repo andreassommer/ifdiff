@@ -39,7 +39,9 @@ function code = speedtracker(varargin)
     config.speedtrackerDir = fullfile(SRC_BASEDIR, "speedtracker");
     config.tempDir = ST_TEMP_DIR;
     config.userCommands = commands;
+    ConfigProvider.setSpeedtrackerConfig(config);
 
+    % An extra logger to log system commands in debug mode
     systemLogger = makeSystemLogger();
     if (DEBUG)
         systemLogger.level = Logger.LEVEL_DEBUG;
@@ -55,7 +57,7 @@ function code = speedtracker(varargin)
         commandConfig = command.handleArgs(varargin);
     catch argError % can be either an unknown command or bad arguments to that command
         disp(" ");
-        disp(help.generalHelp(config));
+        disp(help.generalHelp());
         disp(" ");
         disp("ERROR: " + argError.message);
         code = 1;
@@ -70,7 +72,7 @@ function code = speedtracker(varargin)
         if (DEBUG)
             commandLogger.level = Logger.LEVEL_DEBUG;
         end
-        message = command.execute(config, commandLogger, commandConfig);
+        message = command.execute(commandLogger, commandConfig);
         disp(" ");
         disp(message);
         code = 0;

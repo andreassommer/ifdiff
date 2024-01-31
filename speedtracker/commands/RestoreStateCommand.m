@@ -24,7 +24,8 @@ classdef RestoreStateCommand < UserCommand
             commandConfig = struct();
         end
 
-        function message = execute(~, speedtrackerConfig, logger, ~)
+        function message = execute(~, logger, ~)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotLoader = GitSnapshotManager(speedtrackerConfig, logger);
             try
                 snapshotLoader.restoreProjectState();

@@ -38,7 +38,7 @@ classdef (Abstract) UserCommand
         %   means that it can be deduced from the specification document, e.g. if the user tries to run
         %   a benchmark with a valid name, but which does not exist. Exceptions due to a bug in the
         %   code or due to unforeseeable circumstances can be thrown as-is and will be logged fully for debug purposes.
-        message = execute(this, speedtrackerConfig, logger, commandConfig);
+        message = execute(this, logger, commandConfig);
     end
 
     methods (Static)
