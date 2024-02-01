@@ -3,6 +3,8 @@ classdef RestoreStateCommand < UserCommand
         function this = RestoreStateCommand()
         end
 
+        % Note: RunCommand has this name hard-coded in it a few times. If you change it, make sure to change it
+        % in RunCommand as well.
         function name = getName(~)
             name = "restore-state";
         end
