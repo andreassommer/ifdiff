@@ -32,18 +32,14 @@ if ~isfield(rIndex.BODY, 'IF')
     % nothing to do
     return
 end
-mtree_strings = mtreeobj.strings();
-commentnodes = mtree_mtfind(mtreeobj, 'Kind', mtreeobj.K.COMMENT);
-comments = mtree_strings(commentnodes);
-comments_ignore_index = checkString(comments) == 1;
-comment_nodes_ignore = commentnodes(comments_ignore_index);
 
+
+
+% handle each if node seperately
+comment_nodes_ignore = getIfNodesToBeIgnored(mtreeobj);
 j = 1;
 % handle each if node seperately
 for i = 1:length(rIndex.BODY.IF)
-    
-
-
     if j<=length(comment_nodes_ignore)  % "loop" over "if heads to be ignored"
         if i<length(rIndex.BODY.IF) % handle last if body node seperate
             if and(rIndex.BODY.IF(i)<comment_nodes_ignore(j) , rIndex.BODY.IF(i+1)>comment_nodes_ignore(j)) 
@@ -63,13 +59,11 @@ for i = 1:length(rIndex.BODY.IF)
         end
     end
 
-
-
-
     cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond(i));
     if ~cond_feasible
         continue
     end
+
     % add ctrlif before the if
     
     
@@ -129,21 +123,6 @@ for i = 1:length(rIndex.BODY.IF)
         rIndex.BODY.IFHEAD(i), ...                            % from
         cIndex.indexLeftchild, ...                            % from_type
         {mtreeobj.K.ID, config.ctrlif.Out});                  % kind of new node
-    
-    %%%%% Ueberlegung
-    % Add ID (ifdiff condition value)
-    % Add Equals
-    % Add Condition
-    % 
-    % Add ID condition_logical Valie
-    % Add Equal Node
-    % Add Expression evaluation (possible multiple Nodes)
-    %
-    %
-    %
-    %
-    %
-    %
     
 end
 
