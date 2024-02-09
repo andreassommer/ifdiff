@@ -2,6 +2,10 @@ classdef BenchmarkResult
     %BENCHMARKRESULT Result of running a benchmark on a number of snapshots, accumulating a list of
     % results. This class follows the "struct-of-arrays over array-of-structs" convention, so all fields
     % except the benchmark itself are vectors, representing the results of multiple benchmarking runs.
+    % A failed benchmarking run can also be represented with this class. In case of an
+    % error, the field xEnd should be set to NaN in the correct dimensions (which can be found through the
+    % Benchmark object's initial values field), switchingPoints should be empty, and
+    % snapshotID and time should be set correctly. If nothing went wrong, error should be [].
 
     properties (GetAccess=public, SetAccess=private)
         % The ID of the benchmark being run. Unlike all the other properties, this one is scalar, since we want to
@@ -17,10 +21,12 @@ classdef BenchmarkResult
         switchingPoints;
         % real time (using tic and toc) taken for the integration (including prepareDataHandleForIntegration)
         time;
+        % Exception that caused the benchmark run to fail, or [] if everything went well.
+        error;
     end
 
     methods
-        function this = BenchmarkResult(benchmarkID, snapshotID, xEnd, switchingPoints, time)
+        function this = BenchmarkResult(benchmarkID, snapshotID, xEnd, switchingPoints, time, error)
             % You can also call this with no results to initialize an empty list.
             if (nargin == 1)
                 assert(isa(benchmarkID, "string"), "BenchmarkResult member benchmark is of type string");
@@ -29,6 +35,7 @@ classdef BenchmarkResult
                 this.xEnd = double([]);
                 this.switchingPoints = cell([]);
                 this.time = double([]);
+                this.error = [];
                 return;
             end
             assert(isa(benchmarkID, "string"),   "BenchmarkResult member benchmark is of type string");
@@ -41,6 +48,7 @@ classdef BenchmarkResult
             this.xEnd = xEnd;
             this.switchingPoints = switchingPoints;
             this.time = time;
+            this.error = error;
         end
 
         % Add the result of one or more testing runs to this list by merging the member arrays.
@@ -50,6 +58,7 @@ classdef BenchmarkResult
             this.xEnd = [this.xEnd other.xEnd];
             this.switchingPoints = [this.switchingPoints other.switchingPoints];
             this.time = [this.time other.time];
+            this.error = [this.error other.error];
         end
     end
 end

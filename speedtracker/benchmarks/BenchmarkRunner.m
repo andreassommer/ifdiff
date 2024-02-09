@@ -14,7 +14,7 @@ classdef BenchmarkRunner
         function this = BenchmarkRunner(benchmarks)
             this.benchmarks = benchmarks;
             this.results = cell(length(benchmarks));
-            for i=1:size(benchmarks)
+            for i=1:length(benchmarks)
                 this.results{i} = BenchmarkResult(benchmarks{i}.id);
             end
         end
@@ -31,18 +31,26 @@ classdef BenchmarkRunner
     methods (Access=private)
 
         % Run a single benchmark and return a BenchmarkResult containing only its results, which can then be
-        % added to the results from the other snapshots for that particular benchmark
+        % added to the results from the other snapshots for that particular benchmark.
+        % If an exception occurs during the solving of the ODE, return a failed
         function benchmarkResult = runBenchmark(this, benchmark, snapshotID)
             tic;
-            datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
-                                                         'solver', benchmark.solver, ...
-                                                         'options', benchmark.odeOptions);
+            try
+                datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
+                                                             'solver', benchmark.solver, ...
+                                                             'options', benchmark.odeOptions);
+                sol = solveODE(datahandle, benchmark.tSpan, benchmark.initVals, benchmark.p);
+            catch error
+                time = toc;
+                benchmarkResult = BenchmarkResult( ...
+                    benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {}, time, error);
+                return;
+            end
 
-            sol = solveODE(datahandle, benchmark.tSpan, benchmark.initVals, benchmark.p);
             time = toc;
             xEnd = sol.y(:,end);
             switchingPoints = {sol.switches};
-            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time);
+            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time, []);
         end
     end
 
