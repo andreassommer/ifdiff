@@ -15,12 +15,12 @@ classdef BenchmarkRunner
             this.benchmarks = benchmarks;
             this.results = cell(length(benchmarks));
             for i=1:size(benchmarks)
-                this.results{i} = BenchmarkResult(benchmarks{i});
+                this.results{i} = BenchmarkResult(benchmarks{i}.id);
             end
         end
         function this = runBenchmarks(this, snapshotID)
             initPaths();
-            for i=1:size(this.benchmarks)
+            for i=1:length(this.benchmarks)
                 result = this.runBenchmark(this.benchmarks{i}, snapshotID);
                 resultsSoFar = this.results{i};
                 this.results{i} = resultsSoFar.merge(result);
@@ -42,7 +42,7 @@ classdef BenchmarkRunner
             time = toc;
             xEnd = sol.y(:,end);
             switchingPoints = {sol.switches};
-            benchmarkResult = BenchmarkResult(benchmark, snapshotID, xEnd, switchingPoints, time);
+            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time);
         end
     end
 

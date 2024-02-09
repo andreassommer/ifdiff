@@ -4,9 +4,9 @@ classdef BenchmarkResult
     % except the benchmark itself are vectors, representing the results of multiple benchmarking runs.
 
     properties (GetAccess=public, SetAccess=private)
-        % The benchmark being run. Unlike all the other properties, this one is scalar, since we want to
+        % The ID of the benchmark being run. Unlike all the other properties, this one is scalar, since we want to
         % represent running _one_ benchmark on _multiple_ snapshots
-        benchmark;
+        benchmarkID;
         % IDs of the snapshots tested, 1xN string
         snapshotID;
         % value of the solution at the end of the integration horizon, dxN double (d=dimension of xEnd)
@@ -20,22 +20,23 @@ classdef BenchmarkResult
     end
 
     methods
-        function this = BenchmarkResult(benchmark, snapshotID, xEnd, switchingPoints, time)
+        function this = BenchmarkResult(benchmarkID, snapshotID, xEnd, switchingPoints, time)
             % You can also call this with no results to initialize an empty list.
             if (nargin == 1)
-                this.benchmark = benchmark;
+                assert(isa(benchmarkID, "string"), "BenchmarkResult member benchmark is of type string");
+                this.benchmarkID = benchmarkID;
                 this.snapshotID = string([]);
                 this.xEnd = double([]);
                 this.switchingPoints = cell([]);
                 this.time = double([]);
                 return;
             end
-            assert(isa(benchmark, "Benchmark"),  "BenchmarkResult member benchmark is of type Benchmark");
+            assert(isa(benchmarkID, "string"),   "BenchmarkResult member benchmark is of type string");
             assert(isa(snapshotID, "string"),    "BenchmarkResult member snapshotID is of type string");
-            assert(isa(xEnd, "double"),            "BenchmarkResult member xEnd is of type double");
+            assert(isa(xEnd, "double"),          "BenchmarkResult member xEnd is of type double");
             assert(isa(switchingPoints, "cell"), "BenchmarkResult member switchingPoints is of type cell");
             assert(isa(time, "double"),          "BenchmarkResult member time is of type double");
-            this.benchmark = benchmark;
+            this.benchmarkID = benchmarkID;
             this.snapshotID = snapshotID;
             this.xEnd = xEnd;
             this.switchingPoints = switchingPoints;
@@ -44,7 +45,7 @@ classdef BenchmarkResult
 
         % Add the result of one or more testing runs to this list by merging the member arrays.
         function this = merge(this, other)
-            assert(this.benchmark.id == other.benchmark.id, "other BenchmarkResult is from the same benchmark");
+            assert(this.benchmarkID == other.benchmarkID, "other BenchmarkResult is from the same benchmark");
             this.snapshotID = [this.snapshotID other.snapshotID];
             this.xEnd = [this.xEnd other.xEnd];
             this.switchingPoints = [this.switchingPoints other.switchingPoints];
