@@ -2,6 +2,7 @@ classdef BenchmarkRunner
     %UNTITLED Runs benchmarks across various snapshots. 
 
     properties (GetAccess=public, SetAccess=private)
+        logger;
         % Cell array of the benchmarks to run. Since we have to run them all, load a new snapshot, then run them
         % again, they are set in the constructor instead of being passed to runBenchmarks, and each call to
         % runBenchmarks modifies the BenchmarkRunner.
@@ -11,7 +12,8 @@ classdef BenchmarkRunner
     end
 
     methods
-        function this = BenchmarkRunner(benchmarks)
+        function this = BenchmarkRunner(logger, benchmarks)
+            this.logger = logger;
             this.benchmarks = benchmarks;
             this.results = cell(length(benchmarks));
             for i=1:length(benchmarks)
@@ -42,6 +44,7 @@ classdef BenchmarkRunner
                 sol = solveODE(datahandle, benchmark.tSpan, benchmark.initVals, benchmark.p);
             catch error
                 time = toc;
+                this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
                 benchmarkResult = BenchmarkResult( ...
                     benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {}, time, error);
                 return;
