@@ -28,8 +28,8 @@ classdef (Abstract) UserCommand
         %   as a name that is of the correct data type but already taken, should be handled by execute()
         commandConfig = handleArgs(this, argCell);
         % Run the command using the command configuration struct that was produced by handleArgs.
-        % Return a message for the user describing the result of the command
-        % (e.g. "created snapshot foo from commit f74ab738c943e9")
+        % Return an arbitrary result of the command which will be returned
+        % to the user as the result of the top-level speedtracker function.
         % Rule 1: must be syntactically compatible with the output of handleArgs(), that is, it must not
         %   fail because of missing properties or bad data types of properties.
         % Rule 2: expected exceptions must be handled (including cleanup), and the method must then

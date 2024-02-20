@@ -1,4 +1,4 @@
-function code = speedtracker(varargin)
+function [result, status] = speedtracker(varargin)
     % Entry point for speedtracker, which runs performance benchmarks against various previous states of the
     % project, called snapshots.
 
@@ -56,11 +56,8 @@ function code = speedtracker(varargin)
         command = getCommand(commands, varargin);
         commandConfig = command.handleArgs(varargin);
     catch argError % can be either an unknown command or bad arguments to that command
-        disp(" ");
-        disp(help.generalHelp());
-        disp(" ");
-        disp("ERROR: " + argError.message);
-        code = 1;
+        result = sprintf("%s\n\nERROR: %s", help.generalHelp(), argError.message);
+        status = 1;
         rmpath(genpath(ST_TEMP_DIR));
         rmdir(ST_TEMP_DIR, "s");
         return;
@@ -72,19 +69,15 @@ function code = speedtracker(varargin)
         if (DEBUG)
             commandLogger.level = Logger.LEVEL_DEBUG;
         end
-        message = command.execute(commandLogger, commandConfig);
-        disp(" ");
-        disp(message);
-        code = 0;
+        result = command.execute(commandLogger, commandConfig);
+        status = 0;
     catch error
-        code = 1;
-        disp(" ");
         if strcmp(error.identifier, UserCommand.ERROR_EXPECTED_EXCEPTION)
-            disp("ERROR: " + command.getName() + ": " + error.message);
+            result = "ERROR: " + command.getName() + ": " + error.message;
         else
-            disp("unexpected error in " + command.getName());
-            disp(getReport(error));
+            result = sprintf("unexpected error in %s\n\n%s", command.getName(), getReport(error));
         end
+        status = 1;
     end
 
     %% teardown

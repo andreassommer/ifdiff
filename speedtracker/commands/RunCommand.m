@@ -72,7 +72,7 @@ classdef RunCommand < UserCommand
             end
         end
 
-        function message = execute(~, logger, commandConfig)
+        function result = execute(~, logger, commandConfig)
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             defaultBenchmark = Benchmark("defaultBenchmark", ...
@@ -101,6 +101,8 @@ classdef RunCommand < UserCommand
                         rethrow(savingError);
                 end
             end
+            % Put everything in a try block to ensure that we can restore
+            % state if anything goes wrong
             try
                 if isfield(commandConfig, "Snapshots")
                     snapshots = commandConfig.Snapshots;
@@ -109,7 +111,7 @@ classdef RunCommand < UserCommand
                 end
                 logger.info("running benchmarks " + strjoin(cellfun(@(b) b.id, runner.benchmarks), ", "));
                 logger.info("  on snapshots " + strjoin(snapshots, ", "));
-                message = "";
+                result = "";
                 for i=1:length(snapshots)
                     logger.info("loading snapshot " + snapshots(i));
                     snapshotManager.loadSnapshot(snapshots(i));
@@ -118,8 +120,8 @@ classdef RunCommand < UserCommand
                 end
                 for j=1:length(runner.benchmarks)
                     benchmark = runner.benchmarks{j};
-                    message = message + "results of benchmark " + benchmark.id + SystemUtil.lineSep();
-                    message = message + jsonencode(runner.results{j}) + SystemUtil.lineSep();
+                    result = result + "results of benchmark " + benchmark.id + SystemUtil.lineSep();
+                    result = result + jsonencode(runner.results{j}) + SystemUtil.lineSep();
                 end
             catch error
                 logger.error("error while running benchmarks, restoring project state");
