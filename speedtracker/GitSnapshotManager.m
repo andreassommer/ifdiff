@@ -348,13 +348,7 @@ classdef GitSnapshotManager < SnapshotLoader
             end
             prevCommitSha = cmdout;
 
-            [status, cmdout] = SystemUtil.safeSystem("git add *");
-            if (status ~= 0)
-                throw(this.genericGitError(cmdout));
-            end
-
-            % glob patterns ignore dot files in Bash, but this catches them. In CMD, it's a no-op.
-            [status, cmdout] = SystemUtil.safeSystem("git add "".*""");
+            [status, cmdout] = SystemUtil.safeSystem("git add .");
             if (status ~= 0)
                 throw(this.genericGitError(cmdout));
             end
