@@ -46,7 +46,7 @@ classdef BenchmarkRunner
                 time = toc;
                 this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
                 benchmarkResult = BenchmarkResult( ...
-                    benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {}, time, {error});
+                    benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {[]}, time, {error});
                 return;
             end
 
