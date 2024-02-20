@@ -15,7 +15,7 @@ classdef BenchmarkRunner
         function this = BenchmarkRunner(logger, benchmarks)
             this.logger = logger;
             this.benchmarks = benchmarks;
-            this.results = cell(length(benchmarks));
+            this.results = cell(1, length(benchmarks));
             for i=1:length(benchmarks)
                 this.results{i} = BenchmarkResult(benchmarks{i}.id);
             end

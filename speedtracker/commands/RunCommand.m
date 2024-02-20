@@ -77,7 +77,9 @@ classdef RunCommand < UserCommand
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             defaultBenchmark = Benchmark("defaultBenchmark", ...
                     "canonicalExampleRHS", func2str(@ode45), [0 20], [1; 0], 5.437, odeset('AbsTol', 1e-8, 'RelTol', 1e-6));
-            runner = BenchmarkRunner(logger, {defaultBenchmark});
+            expBenchmark = Benchmark("expBenchmark", ...
+                "expRHS", func2str(@ode45), [0 4], exp(2), 0, odeset('AbsTol', 1e-8, 'RelTol', 1e-6));
+            runner = BenchmarkRunner(logger, {defaultBenchmark, expBenchmark});
             try
                 snapshotManager.saveProjectState();
             catch savingError
@@ -111,18 +113,13 @@ classdef RunCommand < UserCommand
                 end
                 logger.info("running benchmarks " + strjoin(cellfun(@(b) b.id, runner.benchmarks), ", "));
                 logger.info("  on snapshots " + strjoin(snapshots, ", "));
-                result = "";
                 for i=1:length(snapshots)
                     logger.info("loading snapshot " + snapshots(i));
                     snapshotManager.loadSnapshot(snapshots(i));
                     runner = runner.runBenchmarks(snapshots(i));
                     logger.info("ran all benchmarks");
                 end
-                for j=1:length(runner.benchmarks)
-                    benchmark = runner.benchmarks{j};
-                    result = result + "results of benchmark " + benchmark.id + SystemUtil.lineSep();
-                    result = result + jsonencode(runner.results{j}) + SystemUtil.lineSep();
-                end
+                result = runner.results;
             catch error
                 logger.error("error while running benchmarks, restoring project state");
                 try

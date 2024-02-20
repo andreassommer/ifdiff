@@ -19,7 +19,8 @@ classdef BenchmarkResult
         % numbers of switching points. Hopefully not, but we cannot exclude it), each cell containing a 1xN 
         % array of the switching points.
         switchingPoints;
-        % real time (using tic and toc) taken for the integration (including prepareDataHandleForIntegration)
+        % real time (using tic and toc) taken for the integration
+        % (including prepareDataHandleForIntegration), 1xN double
         time;
         % Exception that caused the benchmark run to fail, or [] if everything went well.
         error;
