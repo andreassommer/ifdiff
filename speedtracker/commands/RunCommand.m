@@ -46,7 +46,7 @@ classdef RunCommand < UserCommand
             commandConfig = struct();
             if length(argCell) > 2
                 % ignore excess last argument
-                if mod(length(argCell), 2) == 1; endIx = length(argCell)-1; else; endIx = length(argCell)-2; end;
+                if mod(length(argCell), 2) == 1; endIx = length(argCell)-1; else; endIx = length(argCell)-2; end
                 for i=2:2:endIx
                     key = argCell{i};
                     value = argCell{i+1};

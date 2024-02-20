@@ -26,9 +26,9 @@ classdef HelpCommand < UserCommand
         function commandConfig = handleArgs(~, argCell)
             commandConfig = struct();
             if (length(argCell) > 1)
-                if ~UserCommand.isSimpleString(argCell{2})
+                if ~StringUtil.isSimpleString(argCell{2})
                     throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                        "expected the name of a command, but got [" + UserCommand.toStr(argCell{2}) + "]"));
+                        "expected the name of a command, but got [" + StringUtil.toStr(argCell{2}) + "]"));
                 end
                 commandConfig.About = argCell{2};
             end

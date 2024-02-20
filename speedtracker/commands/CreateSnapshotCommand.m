@@ -31,16 +31,16 @@ classdef CreateSnapshotCommand < UserCommand
                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, "no ID for new snapshot provided"));
             end
             snapshotID = argCell{2};
-            if ~UserCommand.isSimpleString(snapshotID)
+            if ~StringUtil.isSimpleString(snapshotID)
                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                    "expected a string or a char vector for snapshot ID, but got " + UserCommand.toStr(snapshotID)));
+                    "expected a string or a char vector for snapshot ID, but got " + StringUtil.toStr(snapshotID)));
             end
             commandConfig.ID = snapshotID;
             if (length(argCell) > 2)
                 commit = argCell{3};
-                if ~UserCommand.isSimpleString(commit)
+                if ~StringUtil.isSimpleString(commit)
                     throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                        "expected a string or a char vector for commit SHA, but got " + UserCommand.toStr(commit)));
+                        "expected a string or a char vector for commit SHA, but got " + StringUtil.toStr(commit)));
                 end
                 commandConfig.Commit = commit;
             end

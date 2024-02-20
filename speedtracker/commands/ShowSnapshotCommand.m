@@ -29,9 +29,9 @@ classdef ShowSnapshotCommand < UserCommand
                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, "no snapshot ID provided"));
             end
             snapshotID = argCell{2};
-            if ~UserCommand.isSimpleString(snapshotID)
+            if ~StringUtil.isSimpleString(snapshotID)
                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                    "expected a string or a char vector for snapshot ID, but got " + UserCommand.toStr(snapshotID)));
+                    "expected a string or a char vector for snapshot ID, but got " + StringUtil.toStr(snapshotID)));
             end
             commandConfig.ID = snapshotID;
         end
