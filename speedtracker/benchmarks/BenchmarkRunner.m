@@ -46,14 +46,14 @@ classdef BenchmarkRunner
                 time = toc;
                 this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
                 benchmarkResult = BenchmarkResult( ...
-                    benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {}, time, error);
+                    benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {}, time, {error});
                 return;
             end
 
             time = toc;
             xEnd = sol.y(:,end);
             switchingPoints = {sol.switches};
-            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time, []);
+            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time, {[]});
         end
     end
 
