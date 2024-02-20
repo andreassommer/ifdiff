@@ -41,12 +41,12 @@ classdef BenchmarkRunner
                 datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
                                                              'solver', benchmark.solver, ...
                                                              'options', benchmark.odeOptions);
-                sol = solveODE(datahandle, benchmark.tSpan, benchmark.initVals, benchmark.p);
+                sol = solveODE(datahandle, benchmark.tSpan, benchmark.x0, benchmark.p);
             catch error
                 time = toc;
                 this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
                 benchmarkResult = BenchmarkResult( ...
-                    benchmark.id, snapshotID, NaN(size(benchmark.initVals), "double"), {[]}, time, {error});
+                    benchmark.id, snapshotID, NaN(size(benchmark.x0), "double"), {[]}, time, {error});
                 return;
             end
 
