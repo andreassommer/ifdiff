@@ -7,7 +7,7 @@ classdef BenchmarkResult
     % Benchmark object's initial values field), switchingPoints should be empty, and
     % snapshotID and time should be set correctly. If nothing went wrong, error should be [].
 
-    properties (GetAccess=public, SetAccess=private)
+    properties (Access=public)
         % The ID of the benchmark being run. Unlike all the other properties, this one is scalar, since we want to
         % represent running _one_ benchmark on _multiple_ snapshots
         benchmarkID;

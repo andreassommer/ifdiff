@@ -8,7 +8,7 @@ classdef Benchmark
     % a parameter, matching the dimensions that the RHS expects
     % ODE solver options (from odeset)
 
-    properties (GetAccess=public, SetAccess=private)
+    properties (Access=public)
         % string (you can pass char into the constructor, though)
         id;
         % string (you can pass char into the constructor, though)
