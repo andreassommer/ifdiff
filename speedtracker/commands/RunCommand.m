@@ -62,6 +62,12 @@ classdef RunCommand < UserCommand
                                         "parameter Snapshots expects a 1xN string vector, but got dimensions " + dimStr));
                             end
                             commandConfig.Snapshots = value;
+                        case "OutputType"
+                            if ~UserConfig.checkOutputType(value)
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
+                                    UserConfig.describeBadOutputType(value)));
+                            end
+                            commandConfig.OutputType = value;
                         case "Benchmarks"
                             commandConfig.Benchmarks = value;
                         case "Config"
@@ -72,7 +78,7 @@ classdef RunCommand < UserCommand
             end
         end
 
-        function result = execute(~, logger, commandConfig)
+        function result = execute(this, logger, commandConfig)
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
             defaultBenchmark = Benchmark("defaultBenchmark", ...
@@ -119,7 +125,7 @@ classdef RunCommand < UserCommand
                     runner = runner.runBenchmarks(snapshots(i));
                     logger.info("ran all benchmarks");
                 end
-                result = runner.results;
+                result = this.convertBenchmarkResults(runner.results, commandConfig);
             catch error
                 logger.error("error while running benchmarks, restoring project state");
                 try
@@ -134,6 +140,27 @@ classdef RunCommand < UserCommand
                 rethrow(error);
             end
             snapshotManager.restoreProjectState();
+        end
+
+        % Convert a cell array of BenchmarkResult objects depending on the specified value of OutputType:
+        % convert each to a table, convert them all into one big table, or just return the BenchmarkResult cell
+        % unchanged.
+        function prettyResult = convertBenchmarkResults(~, results, commandConfig)
+            if isfield(commandConfig, "OutputType")
+                outputType = commandConfig.OutputType;
+            else
+                userConfig = ConfigProvider.getUserConfig();
+                outputType = userConfig.OutputType;
+            end
+            switch outputType
+                case "NTables"
+                    prettyResult = cellfun(@(benchmarkResult) benchmarkResult.toTable(), results, 'UniformOutput', false);
+                case "OneTable"
+                    tables = cellfun(@(benchmarkResult) benchmarkResult.toTable(), results, 'UniformOutput', false);
+                    prettyResult = vertcat(tables{:});
+                otherwise
+                    prettyResult = results;
+            end
         end
     end
 end

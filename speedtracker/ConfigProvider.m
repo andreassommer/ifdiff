@@ -5,6 +5,7 @@ classdef ConfigProvider
 
     properties (Constant)
         ERROR_SPEEDTRACKER_CONFIG_NOT_SET = "ConfigProvider:SpeedtrackerConfigNotSet"
+        ERROR_USER_CONFIG_NOT_SET = "ConfigProvider:UserConfigNotSet"
     end
 
     methods (Static)
@@ -28,6 +29,30 @@ classdef ConfigProvider
                 config = speedtrackerConfig;
             else
                 speedtrackerConfig = newConfig;
+            end
+        end
+
+
+        % Get the UserConfig, which holds user-settable configuration parameters
+        % Errors:
+        % E1 if the config has not been set by means of ConfigProvider.setUserConfig, throw an exception.
+        function config = getUserConfig()
+            config = ConfigProvider.getSetUserConfig();
+        end
+
+        % Set the UserConfig, which holds user-settable configuration parameters
+        function setUserConfig(newConfig)
+            ConfigProvider.getSetUserConfig(newConfig);
+        end
+
+        function config = getSetUserConfig(newConfig)
+            persistent userConfig;
+            if (nargin == 0 && isempty(userConfig))
+                throw(MException(ConfigProvider.ERROR_USER_CONFIG_NOT_SET, "UserConfig not set"));
+            elseif (nargin ==0)
+                config = userConfig;
+            else
+                userConfig = newConfig;
             end
         end
     end

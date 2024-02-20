@@ -40,6 +40,7 @@ function [result, status] = speedtracker(varargin)
     config.tempDir = ST_TEMP_DIR;
     config.userCommands = commands;
     ConfigProvider.setSpeedtrackerConfig(config);
+    ConfigProvider.setUserConfig(UserConfig());
 
     % An extra logger to log system commands in debug mode
     systemLogger = makeSystemLogger();
