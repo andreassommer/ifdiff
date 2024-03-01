@@ -1,5 +1,9 @@
 classdef BenchmarkRunner
-    %UNTITLED Runs benchmarks across various snapshots. 
+    %BENCHMARKRUNNER Runs benchmarks across various snapshots. 
+
+    properties (Constant)
+        BENCHMARK_ID_REGEX = "^[a-zA-Z][a-zA-Z0-9-_/]*$"
+    end
 
     properties (GetAccess=public, SetAccess=private)
         logger;
@@ -40,7 +44,7 @@ classdef BenchmarkRunner
             try
                 datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
                                                              'solver', benchmark.solver, ...
-                                                             'options', benchmark.odeOptions);
+                                                             'options', benchmark.options);
                 sol = solveODE(datahandle, benchmark.tSpan, benchmark.x0, benchmark.p);
             catch error
                 time = toc;
