@@ -87,7 +87,7 @@ classdef RunCommand < UserCommand
                 "expRHS", func2str(@ode45), [0 4], exp(2), 0, odeset('AbsTol', 1e-8, 'RelTol', 1e-6));
             runner = BenchmarkRunner(logger, {defaultBenchmark, expBenchmark});
             try
-                snapshotManager.saveProjectState();
+                snapshotManager = snapshotManager.saveProjectState();
             catch savingError
                 switch savingError.identifier
                     case SnapshotLoader.ERROR_SAVED_STATE_PRESENT
@@ -121,7 +121,7 @@ classdef RunCommand < UserCommand
                 logger.info("  on snapshots " + strjoin(snapshots, ", "));
                 for i=1:length(snapshots)
                     logger.info("loading snapshot " + snapshots(i));
-                    snapshotManager.loadSnapshot(snapshots(i));
+                    snapshotManager = snapshotManager.loadSnapshot(snapshots(i));
                     runner = runner.runBenchmarks(snapshots(i));
                     logger.info("ran all benchmarks");
                 end
@@ -129,7 +129,7 @@ classdef RunCommand < UserCommand
             catch error
                 logger.error("error while running benchmarks, restoring project state");
                 try
-                    snapshotManager.restoreProjectState();
+                    snapshotManager = snapshotManager.restoreProjectState();
                     logger.info("successfully restored project state");
                 catch restoreError
                     logger.error("failed to restore state. try checking out previous branch and");
@@ -139,7 +139,7 @@ classdef RunCommand < UserCommand
                 end
                 rethrow(error);
             end
-            snapshotManager.restoreProjectState();
+            snapshotManager = snapshotManager.restoreProjectState();
         end
 
         % Convert a cell array of BenchmarkResult objects depending on the specified value of OutputType:

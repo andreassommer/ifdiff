@@ -38,6 +38,11 @@ classdef GitSnapshotManager < SnapshotLoader
         METADATA_REF_NAME = "refs/speedtracker/snapshot-manager"
         METADATA_TEMP_FILE_NAME = "speedtracker-git-snapshot-manager-temp";
         SNAPSHOTS_FILE_NAME = "snapshots.txt";
+        % MATLAB doesn't grok that a file changed unless its timestamp on disk is a full second away from the timestamp
+        % inside MATLAB. To ensure that the current snapshot is actually being used, we must wait 1s between checkouts.
+        % Note that this also applies to restoreProjectState, but not to saveProjectState, since the latter does not
+        % actually alter any files. So, here is our wait time in seconds.
+        SNAPSHOT_LOAD_WAIT_TIME = 1;
     end
 
     properties (Access=public)
@@ -45,10 +50,15 @@ classdef GitSnapshotManager < SnapshotLoader
         logger;
     end
 
+    properties (Access=private)
+        lastSnapshotLoadTime;
+    end
+
     methods (Access=public)
         function instance = GitSnapshotManager(speedtrackerConfig, logger)
             instance.speedtrackerConfig = speedtrackerConfig;
             instance.logger = logger;
+            instance.lastSnapshotLoadTime = instance.getPosixTime();
         end
 
         %% SnapshotLoader interface
@@ -64,7 +74,7 @@ classdef GitSnapshotManager < SnapshotLoader
         %       SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a ERROR_DETACHED_HEAD as a cause
         %   If there is already a saved state, throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
         % In all cases, leave the project behind the same state it was in before.
-        function saveProjectState(this)
+        function this = saveProjectState(this)
             % throws in case of E1, staged changes
             if ~this.isGitIndexClean()
                 innerError = MException(GitSnapshotManager.ERROR_STAGED_CHANGES_PRESENT, ...
@@ -121,7 +131,7 @@ classdef GitSnapshotManager < SnapshotLoader
         % Exceptions:
         %   If the ID is syntactically invalid or no such snapshot exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
         %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
-        function loadSnapshot(this, id)
+        function this = loadSnapshot(this, id)
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -135,10 +145,16 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     "cannot load snapshot without first saving project state"));
             end
+            % Ensure the wait time has already passed to avoid MATLAB using old versions of newly-checked out code
+            waitTime = this.getWaitTimeForLoading();
+            if (waitTime > 0)
+                java.lang.Thread.sleep(waitTime);
+            end
             [status, cmdout] = SystemUtil.safeSystem(sprintf("git checkout %s", sha));
             if status ~= 0
                 throw(this.genericGitError(cmdout));
             end
+            this.lastSnapshotLoadTime = this.getPosixTime();
         end
 
         % Restore the state of the project from the temporary snapshot created by saveProjectState and
@@ -149,7 +165,7 @@ classdef GitSnapshotManager < SnapshotLoader
         % SnapshotLoader.ERROR_NO_SAVED_STATE if there is no saved state to load
         % SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE if the saved state cannot be parsed or if the `git switch` or
         %    `git reset` commands required to restore fail.
-        function restoreProjectState(this)
+        function this = restoreProjectState(this)
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     "could not restore project state because no saved state present"));
@@ -164,6 +180,12 @@ classdef GitSnapshotManager < SnapshotLoader
                     "found save state, but could not parse it");
                 throw(outerErr.addCause(parseError));
             end
+            % Ensure the wait time has already passed to avoid MATLAB using old versions of newly-checked out code
+            waitTime = this.getWaitTimeForLoading();
+            if (waitTime > 0)
+                java.lang.Thread.sleep(waitTime);
+            end
+
             [status, cmdout] = SystemUtil.safeSystem(sprintf("git switch %s", branchName));
             if (status ~= 0)
                 % push back the metadata, so we end up in the same state as before calling the procedure
@@ -185,6 +207,7 @@ classdef GitSnapshotManager < SnapshotLoader
                     throw(outerErr.addCause(gitErr));
                 end
             end
+            this.lastSnapshotLoadTime = this.getPosixTime();
         end
 
         %% Snapshot editing (CRUD)
@@ -610,6 +633,16 @@ classdef GitSnapshotManager < SnapshotLoader
 
         function s12 = appendSnapshots(this, s1, s2)
             s12 = this.makeSnapshotList([s1.id s2.id], [s1.sha s2.sha], [s1.timestamp s2.timestamp]);
+        end
+
+        %% Miscellaneous
+        % How long we must wait before the next snapshot loading operation, in milliseconds
+        function milliseconds = getWaitTimeForLoading(this)
+            secondsSinceLastLoad = (this.getPosixTime() - this.lastSnapshotLoadTime);
+            milliseconds = (GitSnapshotManager.SNAPSHOT_LOAD_WAIT_TIME - secondsSinceLastLoad) * 1000;
+        end
+        function seconds = getPosixTime(~)
+            seconds = posixtime(datetime("now", "TimeZone", "+0000"));
         end
     end
 end
