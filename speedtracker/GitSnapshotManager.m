@@ -176,6 +176,8 @@ classdef GitSnapshotManager < SnapshotLoader
                 branchName = metadata.branch;
                 prevCommitSha = metadata.prevCommitSha;
             catch parseError
+                this.logger.error("could not parse saved metadata, re-saving saved state");
+                this.pushMetadata(metadataString);
                 outerErr = MException(SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE, ...
                     "found save state, but could not parse it");
                 throw(outerErr.addCause(parseError));
