@@ -61,19 +61,6 @@ classdef BenchmarkResult
             this.time = [this.time other.time];
             this.error = [this.error other.error];
         end
-
-        % Put this BenchmarkResult into a table with the columns' names matching the fields of BenchmarkResult.
-        % Most of the fields are just transposed. The exceptions are benchmarkID, which is repeated in every
-        % row, and xEnd, where each entry is pressed into a 1xd row inside a cell array. This allows concatenating
-        % multiple BenchmarkResults' tables into one.
-        function tab = toTable(this)
-            n = length(this.snapshotID);
-            emptyColumn = repelem(this.benchmarkID, n)';
-            % Transpose xEnd, then convert each row into a cell. This allows us to merge tables
-            xEndCell = mat2cell(this.xEnd', ones(size(this.xEnd, 2), 1));
-            tab = table(emptyColumn, this.snapshotID', xEndCell, this.switchingPoints', this.time', this.error', ...
-                'VariableNames', ["benchmarkID", "snapshotID", "xEnd", "switchingPoints", "time", "error"]);
-        end
     end
 end
 

@@ -63,12 +63,23 @@ classdef RunCommand < UserCommand
                             end
                             commandConfig.Snapshots = value;
                         case "OutputType"
+                            % This property overrides a property in UserConfig, that's why UserConfig also has a
+                            % method for checking if the value is acceptable.
                             if ~UserConfig.checkOutputType(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
                                     UserConfig.describeBadOutputType(value)));
                             end
                             commandConfig.OutputType = value;
                         case "Benchmarks"
+                            if ~isstring(value)
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
+                                        "parameter Benchmarks expects a string vector, but got type " + class(value)));
+                            end
+                            if length(size(value)) ~= 2 || (size(value, 1) ~= 1)
+                                dimStr = strjoin(string(size(value)), " x ");
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
+                                        "parameter Benchmarks expects a 1xN string vector, but got dimensions " + dimStr));
+                            end
                             commandConfig.Benchmarks = value;
                         case "Config"
                             commandConfig.Config = value;
@@ -81,17 +92,21 @@ classdef RunCommand < UserCommand
         function result = execute(this, logger, commandConfig)
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
-            runner = IfdiffBenchmarkRunner(speedtrackerConfig, logger);
+            benchmarkRunner = IfdiffBenchmarkRunner(speedtrackerConfig, logger);
 
             if isfield(commandConfig, "Snapshots")
                 snapshots = commandConfig.Snapshots;
             else
                 snapshots = snapshotManager.listSnapshots();
             end
-            benchmarks = ["canonicalExampleBenchmark", "expBenchmark"];
-
+            if isfield(commandConfig, "Benchmarks")
+                benchmarks = commandConfig.Benchmarks;
+            else
+                benchmarks = benchmarkRunner.listBenchmarks();
+            end
+            disp(benchmarks);
             try
-                runner = runner.init(benchmarks);
+                benchmarkRunner = benchmarkRunner.init(benchmarks);
             catch initError
                 switch initError.identifier
                     case BenchmarkRunner.ERROR_BAD_BENCHMARK
@@ -134,11 +149,11 @@ classdef RunCommand < UserCommand
                     logger.info("loading snapshot " + snapshots(i));
                     snapshotManager = snapshotManager.loadSnapshot(snapshots(i));
                     for j=1:length(benchmarks)
-                        runner = runner.runBenchmark(snapshots(i), benchmarks(j));
+                        benchmarkRunner = benchmarkRunner.runBenchmark(snapshots(i), benchmarks(j));
                     end
                     logger.info("ran all benchmarks");
                 end
-                result = this.convertBenchmarkResults(runner.getResults(), commandConfig);
+                result = this.convertBenchmarkResults(benchmarkRunner, commandConfig);
             catch error
                 logger.error("error while running benchmarks, restoring project state");
                 try
@@ -158,7 +173,8 @@ classdef RunCommand < UserCommand
         % Convert a cell array of BenchmarkResult objects depending on the specified value of OutputType:
         % convert each to a table, convert them all into one big table, or just return the BenchmarkResult cell
         % unchanged.
-        function prettyResult = convertBenchmarkResults(~, results, commandConfig)
+        function prettyResult = convertBenchmarkResults(~, benchmarkRunner, commandConfig)
+            results = benchmarkRunner.getResults();
             if isfield(commandConfig, "OutputType")
                 outputType = commandConfig.OutputType;
             else
@@ -167,9 +183,13 @@ classdef RunCommand < UserCommand
             end
             switch outputType
                 case "NTables"
-                    prettyResult = cellfun(@(benchmarkResult) benchmarkResult.toTable(), results, 'UniformOutput', false);
+                    prettyResult = cellfun(@(benchmarkResult) benchmarkRunner.makeTable(benchmarkResult), ...
+                        results, ...
+                        'UniformOutput', false);
                 case "OneTable"
-                    tables = cellfun(@(benchmarkResult) benchmarkResult.toTable(), results, 'UniformOutput', false);
+                    tables = cellfun(@(benchmarkResult) benchmarkRunner.makeTable(benchmarkResult), ...
+                        results, ...
+                        'UniformOutput', false);
                     prettyResult = vertcat(tables{:});
                 otherwise
                     prettyResult = results;

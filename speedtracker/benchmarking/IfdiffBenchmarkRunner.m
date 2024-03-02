@@ -25,6 +25,24 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             this.logger = logger;
         end
 
+        % List all available benchmarks. To be precise, all .m files in
+        % <tempDir>/benchmarks that contain functions with no arguments are treated as benchmarks, and their function
+        % names used as benchmark IDs. So make sure there is no garbage lying around in that folder!
+        function benchmarks = listBenchmarks(this)
+            benchmarks = [];
+            benchmarksDir = this.getBenchmarksDirectory();
+            contents = dir(benchmarksDir);
+            contents = contents(arrayfun(@(file) exist(file.name, "file")==2, contents));
+            functions = contents(arrayfun(@(file) endsWith(file.name, ".m"), contents));
+            for i=1:length(functions)
+                fileName = string(functions(i).name);
+                funcName = extractBefore(fileName, strlength(fileName) - 1);
+                if (nargin(str2func(funcName)) == 0)
+                    benchmarks = [benchmarks funcName];
+                end
+            end
+        end
+
         % For a list of benchmark IDs, load each one and validate that they are correct and complete
         % Exceptions:
         % BenchmarkRunner.ERROR_BAD_BENCHMARK if any benchmark is malformed or cannot be found
@@ -61,6 +79,19 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
                 benchmarkID = this.benchmarkIDList(i);
                 results{i} = this.results(benchmarkID);
             end
+        end
+
+        % Put a BenchmarkResult into a table with the columns' names matching the fields of BenchmarkResult.
+        % Most of the fields are just transposed. The exceptions are benchmarkID, which is repeated in every
+        % row, and xEnd, where each entry is pressed into a 1xd row inside a cell array. This allows concatenating
+        % multiple BenchmarkResults' tables into one.
+        function tab = makeTable(~, result)
+            n = length(result.snapshotID);
+            emptyColumn = repelem(result.benchmarkID, n)';
+            % Transpose xEnd, then convert each row into a cell. This allows us to merge tables
+            xEndCell = mat2cell(result.xEnd', ones(size(result.xEnd, 2), 1));
+            tab = table(emptyColumn, result.snapshotID', xEndCell, result.switchingPoints', result.time', result.error', ...
+                'VariableNames', ["benchmarkID", "snapshotID", "xEnd", "switchingPoints", "time", "error"]);
         end
     end
 
@@ -103,9 +134,9 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
         end
 
         function benchmark = loadBenchmark(this, benchmarkID)
-            benchmarkFile = fullfile(this.speedtrackerConfig.tempDir, IfdiffBenchmarkRunner.BENCHMARKS_FOLDER, benchmarkID + ".m");
+            benchmarkFile = fullfile(this.getBenchmarksDirectory(), benchmarkID + ".m");
             if exist(benchmarkFile, 'file') ~= 2
-                throw(MException(IfdiffBenchmarkRunner.ERROR_BENCHMARK_NOT_FOUND, "no benchmark with id " + benchmarkID));
+                throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, "no benchmark with id " + benchmarkID));
             end
             benchmarkFunctionName = benchmarkID;
             benchmarkFunction = str2func(benchmarkFunctionName);
@@ -120,24 +151,29 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             try
                 this.validateBenchmark(benchmark)
             catch error
-                throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, "bad benchmark: " + benchmarkID).addCause(error));
+                message = "bad benchmark " + benchmarkID + ": " + error.message;
+                throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, message).addCause(error));
             end
         end
         function validateBenchmark(~, benchmark)
-            assert(isfield(benchmark, "id"),         "benchmark has member id");
-            assert(isa(benchmark.id, "string"),      "benchmark member id is of type string");
-            assert(isfield(benchmark, "rhs"),        "benchmark has member rhs");
-            assert(isa(benchmark.rhs, "string"),     "benchmark member rhs is of type string");
-            assert(isfield(benchmark, "solver"),     "benchmark has member solver");
-            assert(isa(benchmark.solver, "string"),  "benchmark member solver is of type string");
-            assert(isfield(benchmark, "tSpan"),      "benchmark has member tSpan");
-            assert(isa(benchmark.tSpan, "double"),   "benchmark member tSpan is of type double");
-            assert(isfield(benchmark, "x0"),         "benchmark has member x0");
-            assert(isa(benchmark.x0, "double"),      "benchmark member x0 is of type double");
-            assert(isfield(benchmark, "p"),          "benchmark has member p");
-            assert(isa(benchmark.p, "double"),       "benchmark member p is of type double");
-            assert(isfield(benchmark, "options"),    "benchmark has member options");
-            assert(isa(benchmark.options, "struct"), "benchmark member options is of type struct");
+            assert(isfield(benchmark, "id"),         "benchmark lacks member id");
+            assert(isa(benchmark.id, "string"),      "benchmark member id is not of type string");
+            assert(isfield(benchmark, "rhs"),        "benchmark lacks member rhs");
+            assert(isa(benchmark.rhs, "string"),     "benchmark member rhs is not of type string");
+            assert(isfield(benchmark, "solver"),     "benchmark lacks member solver");
+            assert(isa(benchmark.solver, "string"),  "benchmark member solver is not of type string");
+            assert(isfield(benchmark, "tSpan"),      "benchmark lacks member tSpan");
+            assert(isa(benchmark.tSpan, "double"),   "benchmark member tSpan is not of type double");
+            assert(isfield(benchmark, "x0"),         "benchmark lacks member x0");
+            assert(isa(benchmark.x0, "double"),      "benchmark member x0 is not of type double");
+            assert(isfield(benchmark, "p"),          "benchmark lacks member p");
+            assert(isa(benchmark.p, "double"),       "benchmark member p is not of type double");
+            assert(isfield(benchmark, "options"),    "benchmark lacks member options");
+            assert(isa(benchmark.options, "struct"), "benchmark member options is not of type struct");
+        end
+
+        function directory = getBenchmarksDirectory(this)
+            directory = fullfile(this.speedtrackerConfig.tempDir, IfdiffBenchmarkRunner.BENCHMARKS_FOLDER);
         end
     end
 end

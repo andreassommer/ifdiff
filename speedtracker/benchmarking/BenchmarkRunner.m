@@ -10,7 +10,7 @@ classdef (Abstract) BenchmarkRunner
 
     methods (Abstract)
         % List all available benchmarks. Return a vector of their IDs, which must be strings
-        % benchmarks = listBenchmarks(this)
+        benchmarks = listBenchmarks(this)
 
         % Prepare to run the provided benchmarks, given as a list of their IDs. For example, loading benchmarks from
         % disk or preallocating a return structure.
@@ -36,6 +36,6 @@ classdef (Abstract) BenchmarkRunner
 
         % Make a MATLAB table from a benchmark's result.
         % R1 the tables must have similar enough columns that they can be concatenated with vertcat
-        % table = makeTable(this, result)
+        tab = makeTable(this, result)
     end
 end
