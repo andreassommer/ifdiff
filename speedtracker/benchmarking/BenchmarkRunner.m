@@ -1,121 +1,41 @@
-classdef BenchmarkRunner
-    %BENCHMARKRUNNER Runs benchmarks across various snapshots.
-
-    properties (GetAccess=public, SetAccess=private)
-        speedtrackerConfig;
-        logger;
-        % Cell array of the benchmarks to run. Since we have to run them all, load a new snapshot, then run them
-        % again, they are set in the constructor instead of being passed to runBenchmarks, and each call to
-        % runBenchmarks modifies the BenchmarkRunner.
-        benchmarks;
-        % Cell array of the benchmarks' results, always of the same length as benchmarks.
-        results;
-    end
+classdef (Abstract) BenchmarkRunner
+    %BENCHMARKRUNNER Runs benchmarks across various snapshots. All IFDIFF-specific functionality
+    % should be hidden behind this interface, so that Speedtracker can be used with other
+    % libraries
 
     properties (Constant)
-        ERROR_BENCHMARK_NOT_FOUND = "BenchmarkRunner:benchmarkNotFound";
-        ERROR_BAD_BENCHMARK = "BenchmarkRunner:badBenchmark";
+        ERROR_BAD_BENCHMARK = "BenchmarkRunner:badBenchmark"
+        ERROR_BENCHMARK_NOT_LOADED = "BenchmarkRunner:benchmarkNotLoaded"
     end
 
-    properties (Constant, Access=private)
-        BENCHMARKS_FOLDER = "benchmarks";
-    end
+    methods (Abstract)
+        % List all available benchmarks. Return a vector of their IDs, which must be strings
+        % benchmarks = listBenchmarks(this)
 
-    methods
-        function this = BenchmarkRunner(speedtrackerConfig, logger, benchmarks)
-            this.speedtrackerConfig = speedtrackerConfig;
-            this.logger = logger;
-            this.benchmarks = benchmarks;
-            this.results = cell(1, length(benchmarks));
-            for i=1:length(benchmarks)
-                this.results{i} = BenchmarkResult(benchmarks(i));
-            end
-        end
-        function this = runBenchmarks(this, snapshotID)
-            initPaths();
-            for i=1:length(this.benchmarks)
-                benchmark = this.loadBenchmark(this.benchmarks(i));
-                result = this.runBenchmark(benchmark, snapshotID);
-                resultsSoFar = this.results{i};
-                this.results{i} = resultsSoFar.merge(result);
-            end
-        end
-    end
-
-    methods (Access=private)
+        % Prepare to run the provided benchmarks, given as a list of their IDs. For example, loading benchmarks from
+        % disk or preallocating a return structure.
+        % Should throw errors with the following identifiers in the given cases:
+        % ERROR_BAD_BENCHMARK if one of the provided benchmarks does not exist or is faulty
+        this = init(this, benchmarkIDs)
 
         % Run a single benchmark and return a BenchmarkResult containing only its results, which can then be
         % added to the results from the other snapshots for that particular benchmark.
-        % If an exception occurs during the solving of the ODE, return a failed
-        function benchmarkResult = runBenchmark(this, benchmark, snapshotID)
-            tic;
-            try
-                datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
-                                                             'solver', benchmark.solver, ...
-                                                             'options', benchmark.options);
-                sol = solveODE(datahandle, benchmark.tSpan, benchmark.x0, benchmark.p);
-            catch error
-                time = toc;
-                this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
-                benchmarkResult = BenchmarkResult( ...
-                    benchmark.id, snapshotID, NaN(size(benchmark.x0), "double"), {[]}, time, {error});
-                return;
-            end
+        % Exceptions:
+        %    if an exception occurs during the solving of the ODE, do not simply crash but return a valid result
+        %    object that is recognizable as failed.
+        % Should throw errors with the following identifiers in the given cases:
+        % ERROR_BENCHMARK_NOT_LOADED if the given benchmark was not previously loaded with init(), either because
+        %     it was not among the list passed or because init() was never called.
+        this = runBenchmark(this, currentSnapshotID, benchmarkID)
 
-            time = toc;
-            xEnd = sol.y(:,end);
-            switchingPoints = {sol.switches};
-            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time, {[]});
-        end
+        % Return the results of all benchmarking across all snapshots. There are three degrees of freedom: Snapshots,
+        % Benchmarks, and metrics. An abstract representation would be a third-order tensor. But tensors are confusing,
+        % so instead this must return a cell array of structs each containing the results for one benchmark.
+        % R1 each element of the returned cell array must be compatible with makeTable()
+        results = getResults(this)
 
-        function benchmark = makeBenchmark(~, id, rhs, solver, tSpan, x0, p, options)
-            benchmark = struct( ...
-                "id", id, ...
-                "rhs", rhs, ...
-                "solver", solver, ...
-                "tSpan", tSpan, ...
-                "x0", x0, ...
-                "p", p, ...
-                "options", options ...
-            );
-        end
-
-        function benchmark = loadBenchmark(this, benchmarkID)
-            benchmarkFile = fullfile(this.speedtrackerConfig.tempDir, BenchmarkRunner.BENCHMARKS_FOLDER, benchmarkID + ".m");
-            if exist(benchmarkFile, 'file') ~= 2
-                throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_FOUND, "no benchmark with id " + benchmarkID));
-            end
-            benchmarkFunctionName = benchmarkID;
-            benchmarkFunction = str2func(benchmarkFunctionName);
-            if nargin(benchmarkFunction) ~= 0
-                throw(MException( ...
-                    BenchmarkRunner.ERROR_BAD_BENCHMARK, ...
-                    "benchmark function should be parameterless, but actually expects %s arguments", ...
-                    nargin(benchmarkFunction)));
-            end
-            benchmark = benchmarkFunction();
-            benchmark.id = benchmarkID;
-            try
-                this.validateBenchmark(benchmark)
-            catch error
-                throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, "bad benchmark: " + benchmarkID).addCause(error));
-            end
-        end
-        function validateBenchmark(~, benchmark)
-            assert(isfield(benchmark, "id"),         "benchmark has member id");
-            assert(isa(benchmark.id, "string"),      "benchmark member id is of type string");
-            assert(isfield(benchmark, "rhs"),        "benchmark has member rhs");
-            assert(isa(benchmark.rhs, "string"),     "benchmark member rhs is of type string");
-            assert(isfield(benchmark, "solver"),     "benchmark has member solver");
-            assert(isa(benchmark.solver, "string"),  "benchmark member solver is of type string");
-            assert(isfield(benchmark, "tSpan"),      "benchmark has member tSpan");
-            assert(isa(benchmark.tSpan, "double"),   "benchmark member tSpan is of type double");
-            assert(isfield(benchmark, "x0"),         "benchmark has member x0");
-            assert(isa(benchmark.x0, "double"),      "benchmark member x0 is of type double");
-            assert(isfield(benchmark, "p"),          "benchmark has member p");
-            assert(isa(benchmark.p, "double"),       "benchmark member p is of type double");
-            assert(isfield(benchmark, "options"),    "benchmark has member options");
-            assert(isa(benchmark.options, "struct"), "benchmark member options is of type struct");
-        end
+        % Make a MATLAB table from a benchmark's result.
+        % R1 the tables must have similar enough columns that they can be concatenated with vertcat
+        % table = makeTable(this, result)
     end
 end

@@ -81,7 +81,26 @@ classdef RunCommand < UserCommand
         function result = execute(this, logger, commandConfig)
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
-            runner = BenchmarkRunner(speedtrackerConfig, logger, ["canonicalExampleBenchmark", "expBenchmark"]);
+            runner = IfdiffBenchmarkRunner(speedtrackerConfig, logger);
+
+            if isfield(commandConfig, "Snapshots")
+                snapshots = commandConfig.Snapshots;
+            else
+                snapshots = snapshotManager.listSnapshots();
+            end
+            benchmarks = ["canonicalExampleBenchmark", "expBenchmark"];
+
+            try
+                runner = runner.init(benchmarks);
+            catch initError
+                switch initError.identifier
+                    case BenchmarkRunner.ERROR_BAD_BENCHMARK
+                        throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, initError.message));
+                    otherwise
+                        rethrow(initError);
+                end
+            end
+
             try
                 snapshotManager = snapshotManager.saveProjectState();
             catch savingError
@@ -105,23 +124,21 @@ classdef RunCommand < UserCommand
                         rethrow(savingError);
                 end
             end
+
             % Put everything in a try block to ensure that we can restore
             % state if anything goes wrong
             try
-                if isfield(commandConfig, "Snapshots")
-                    snapshots = commandConfig.Snapshots;
-                else
-                    snapshots = snapshotManager.listSnapshots();
-                end
-                logger.info("running benchmarks " + strjoin(runner.benchmarks, ", "));
+                logger.info("running benchmarks " + strjoin(benchmarks, ", "));
                 logger.info("  on snapshots " + strjoin(snapshots, ", "));
                 for i=1:length(snapshots)
                     logger.info("loading snapshot " + snapshots(i));
                     snapshotManager = snapshotManager.loadSnapshot(snapshots(i));
-                    runner = runner.runBenchmarks(snapshots(i));
+                    for j=1:length(benchmarks)
+                        runner = runner.runBenchmark(snapshots(i), benchmarks(j));
+                    end
                     logger.info("ran all benchmarks");
                 end
-                result = this.convertBenchmarkResults(runner.results, commandConfig);
+                result = this.convertBenchmarkResults(runner.getResults(), commandConfig);
             catch error
                 logger.error("error while running benchmarks, restoring project state");
                 try
