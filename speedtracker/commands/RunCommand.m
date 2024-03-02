@@ -81,11 +81,7 @@ classdef RunCommand < UserCommand
         function result = execute(this, logger, commandConfig)
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
-            defaultBenchmark = BenchmarkRunner.makeBenchmark("defaultBenchmark", ...
-                    "canonicalExampleRHS", func2str(@ode45), [0 20], [1; 0], 5.437, odeset('AbsTol', 1e-8, 'RelTol', 1e-6));
-            expBenchmark = BenchmarkRunner.makeBenchmark("expBenchmark", ...
-                "expRHS", func2str(@ode45), [0 4], exp(2), 0, odeset('AbsTol', 1e-8, 'RelTol', 1e-6));
-            runner = BenchmarkRunner(logger, {defaultBenchmark, expBenchmark});
+            runner = BenchmarkRunner(speedtrackerConfig, logger, ["canonicalExampleBenchmark", "expBenchmark"]);
             try
                 snapshotManager = snapshotManager.saveProjectState();
             catch savingError
@@ -117,7 +113,7 @@ classdef RunCommand < UserCommand
                 else
                     snapshots = snapshotManager.listSnapshots();
                 end
-                logger.info("running benchmarks " + strjoin(cellfun(@(b) b.id, runner.benchmarks), ", "));
+                logger.info("running benchmarks " + strjoin(runner.benchmarks, ", "));
                 logger.info("  on snapshots " + strjoin(snapshots, ", "));
                 for i=1:length(snapshots)
                     logger.info("loading snapshot " + snapshots(i));
