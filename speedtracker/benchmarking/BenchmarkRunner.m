@@ -14,7 +14,7 @@ classdef (Abstract) BenchmarkRunner
 
         % Prepare to run the provided benchmarks, given as a list of their IDs. For example, loading benchmarks from
         % disk or preallocating a return structure.
-        % Should throw errors with the following identifiers in the given cases:
+        % Must throw errors with the following identifiers in the given cases:
         % ERROR_BAD_BENCHMARK if one of the provided benchmarks does not exist or is faulty
         this = init(this, benchmarkIDs)
 
@@ -23,7 +23,7 @@ classdef (Abstract) BenchmarkRunner
         % Exceptions:
         %    if an exception occurs during the solving of the ODE, do not simply crash but return a valid result
         %    object that is recognizable as failed.
-        % Should throw errors with the following identifiers in the given cases:
+        % _May_ throw an error with the following identifiers in the given cases:
         % ERROR_BENCHMARK_NOT_LOADED if the given benchmark was not previously loaded with init(), either because
         %     it was not among the list passed or because init() was never called.
         this = runBenchmark(this, currentSnapshotID, benchmarkID)
