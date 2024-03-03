@@ -89,9 +89,9 @@ classdef RunCommand < UserCommand
         end
 
         function result = execute(this, logger, commandConfig)
-            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
-            snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
-            benchmarkRunner = IfdiffBenchmarkRunner(speedtrackerConfig, logger);
+            this.saveGlobalParameters(commandConfig);
+            snapshotManager = GitSnapshotManager(logger);
+            benchmarkRunner = IfdiffBenchmarkRunner(logger);
 
             if isfield(commandConfig, "Snapshots")
                 snapshots = commandConfig.Snapshots;
@@ -152,7 +152,7 @@ classdef RunCommand < UserCommand
                     end
                     logger.info("ran all benchmarks");
                 end
-                result = this.convertBenchmarkResults(benchmarkRunner, commandConfig);
+                result = this.convertBenchmarkResults(benchmarkRunner);
             catch error
                 logger.error("error while running benchmarks, restoring project state");
                 try
@@ -169,17 +169,26 @@ classdef RunCommand < UserCommand
             snapshotManager = snapshotManager.restoreProjectState();
         end
 
+    end
+
+
+    methods (Access=private)
+        % Store all the user parameters that overwrite global config parameters in the global UserConfig
+        function saveGlobalParameters(~, commandConfig)
+            userConfig = ConfigProvider.getUserConfig();
+            if isfield(commandConfig, "OutputType")
+                userConfig.OutputType = commandConfig.OutputType;
+            end
+            ConfigProvider.setUserConfig(userConfig);
+        end
+
         % Convert a cell array of BenchmarkResult objects depending on the specified value of OutputType:
         % convert each to a table, convert them all into one big table, or just return the BenchmarkResult cell
         % unchanged.
-        function prettyResult = convertBenchmarkResults(~, benchmarkRunner, commandConfig)
+        function prettyResult = convertBenchmarkResults(~, benchmarkRunner)
             results = benchmarkRunner.getResults();
-            if isfield(commandConfig, "OutputType")
-                outputType = commandConfig.OutputType;
-            else
-                userConfig = ConfigProvider.getUserConfig();
-                outputType = userConfig.OutputType;
-            end
+            userConfig = ConfigProvider.getUserConfig();
+            outputType = userConfig.OutputType;
             switch outputType
                 case "NTables"
                     prettyResult = cellfun(@(benchmarkResult) benchmarkRunner.makeTable(benchmarkResult), ...

@@ -16,7 +16,8 @@ classdef ConfigProvider
             config = ConfigProvider.getSetSpeedtrackerConfig();
         end
 
-        % Set the SpeedtrackerConfig, which holds program-global, immutable constants
+        % Set the SpeedtrackerConfig, which holds program-global, immutable constants. Should only ever be done once
+        % by main function right at the start of program execution.
         function setSpeedtrackerConfig(newConfig)
             ConfigProvider.getSetSpeedtrackerConfig(newConfig);
         end
@@ -40,7 +41,9 @@ classdef ConfigProvider
             config = ConfigProvider.getSetUserConfig();
         end
 
-        % Set the UserConfig, which holds user-settable configuration parameters
+        % Set the UserConfig, which holds user-settable configuration parameters. These parameters can be overridden
+        % by the user at runtime, but they are constant and global during one run of the program. As such,
+        % this method may be used at the start of a UserCommand's execute() method, but only once.
         function setUserConfig(newConfig)
             ConfigProvider.getSetUserConfig(newConfig);
         end

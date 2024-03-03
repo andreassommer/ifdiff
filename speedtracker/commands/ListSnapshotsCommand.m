@@ -25,8 +25,7 @@ classdef ListSnapshotsCommand < UserCommand
         end
 
         function message = execute(~, logger, ~)
-            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
-            snapshotManager = GitSnapshotManager(speedtrackerConfig, logger);
+            snapshotManager =  GitSnapshotManager(logger);
             snapshots = snapshotManager.listSnapshots();
             if isempty(snapshots)
                 message = "";

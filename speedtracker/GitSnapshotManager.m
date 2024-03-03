@@ -46,7 +46,6 @@ classdef GitSnapshotManager < SnapshotLoader
     end
 
     properties (Access=public)
-        speedtrackerConfig;
         logger;
     end
 
@@ -55,8 +54,7 @@ classdef GitSnapshotManager < SnapshotLoader
     end
 
     methods (Access=public)
-        function instance = GitSnapshotManager(speedtrackerConfig, logger)
-            instance.speedtrackerConfig = speedtrackerConfig;
+        function instance = GitSnapshotManager(logger)
             instance.logger = logger;
             instance.lastSnapshotLoadTime = instance.getPosixTime();
         end
@@ -337,8 +335,9 @@ classdef GitSnapshotManager < SnapshotLoader
             delete(metadataTempFile);
         end
 
-        function filename = getMetadataTempFileName(this)
-            filename = fullfile(this.speedtrackerConfig.tempDir, GitSnapshotManager.METADATA_TEMP_FILE_NAME);
+        function filename = getMetadataTempFileName(~)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
+            filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.METADATA_TEMP_FILE_NAME);
         end
 
         % Get the metadata stored by pushMetadata. If there are metadata present, also delete them.
@@ -543,14 +542,16 @@ classdef GitSnapshotManager < SnapshotLoader
 
         % Get the filename for the snapshot file. Note: this is the file in the original
         % speedtracker directory, not the temp dir! Do not mix snapshot CRUD and snapshot loading.
-        function filename = getSnapshotsFileName(this)
-            filename = fullfile(this.speedtrackerConfig.speedtrackerDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
+        function filename = getSnapshotsFileName(~)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig(); 
+            filename = fullfile(speedtrackerConfig.speedtrackerDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
         end
 
         % Get the filename for the temp copy of the snapshot file. Needed when loading snapshots, because the
         % original will be overwritten by loading snapshots.
-        function filename = getSnapshotsTempFileName(this)
-            filename = fullfile(this.speedtrackerConfig.tempDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
+        function filename = getSnapshotsTempFileName(~)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig(); 
+            filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
         end
 
         % Read a snapshot file and return a snapshot list. If it does not exist, return an empty snapshot list.

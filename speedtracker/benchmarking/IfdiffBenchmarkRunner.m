@@ -2,7 +2,6 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
     %BENCHMARKRUNNER Runs benchmarks across various snapshots.
 
     properties (Access=public)
-        speedtrackerConfig;
         logger;
     end
 
@@ -20,8 +19,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
     end
 
     methods
-        function this = IfdiffBenchmarkRunner(speedtrackerConfig, logger)
-            this.speedtrackerConfig = speedtrackerConfig;
+        function this = IfdiffBenchmarkRunner(logger)
             this.logger = logger;
         end
 
@@ -172,8 +170,9 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             assert(isa(benchmark.options, "struct"), "benchmark member options is not of type struct");
         end
 
-        function directory = getBenchmarksDirectory(this)
-            directory = fullfile(this.speedtrackerConfig.tempDir, IfdiffBenchmarkRunner.BENCHMARKS_FOLDER);
+        function directory = getBenchmarksDirectory(~)
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
+            directory = fullfile(speedtrackerConfig.tempDir, IfdiffBenchmarkRunner.BENCHMARKS_FOLDER);
         end
     end
 end
