@@ -27,10 +27,13 @@ classdef RunCommand < UserCommand
                 "    the available vararg parameters are :", ...
                 "    Snapshots: a 1xN string array of snapshot IDs to test in the order specified.", ...
                 "      Default is all snapshots in the order their commits were created.", ...
-                "    Benchmarks: a 1xN string array of benchmark IDs to run", ...
+                "    Benchmarks: a 1xN string array of benchmark IDs to run. By default, all benchmarks are", ...
+                "      run in an unspecified order.", ...
                 "    OutputType: (NTables | OneTable | Raw) how to print the output: As one struct for each", ...
                 "      benchmark (Raw), one table for each benchmark(NTables), or one table for all benchmarks" ...
                 "      (OneTable, default) ", ...
+                "    XEndTol: a 1x1 double describing the relative tolerance for deciding whether the final x", ...
+                "      values of two different snapshots' benchmark runs are considered the same.", ...
                 "    "
             ], SystemUtil.lineSep());
         end
@@ -41,6 +44,7 @@ classdef RunCommand < UserCommand
         %   [SnapshotFile: simpleString]
         %   [Benchmarks: 1xN string]
         %   [OutputType: ("NTables" | "OneTable" | "Raw")]
+        %   [XEndTol: 1xN double]
         % }
         % where simpleString means either a 1x1 string array or a 1xN character array.
         function commandConfig = handleArgs(~, argCell)
@@ -63,14 +67,6 @@ classdef RunCommand < UserCommand
                                         "parameter Snapshots expects a 1xN string vector, but got dimensions " + dimStr));
                             end
                             commandConfig.Snapshots = value;
-                        case "OutputType"
-                            % This property overrides a property in UserConfig, that's why UserConfig also has a
-                            % method for checking if the value is acceptable.
-                            if ~UserConfig.checkOutputType(value)
-                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                                    UserConfig.describeBadOutputType(value)));
-                            end
-                            commandConfig.OutputType = value;
                         case "Benchmarks"
                             if ~isstring(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
@@ -82,6 +78,19 @@ classdef RunCommand < UserCommand
                                         "parameter Benchmarks expects a 1xN string vector, but got dimensions " + dimStr));
                             end
                             commandConfig.Benchmarks = value;
+                        case "OutputType"
+                            % This property overrides a property in UserConfig, that's why UserConfig also has a
+                            % method for checking if the value is acceptable.
+                            if ~UserConfig.checkOutputType(value)
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
+                                    UserConfig.describeBadOutputType(value)));
+                            end
+                            commandConfig.OutputType = value;
+                        case "XEndTol"
+                            if ~UserConfig.checkXEndTol(value)
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, UserConfig.describeBadXEndTol(value)));
+                            end
+                            commandConfig.XEndTol = value;
                         otherwise
                     end
                 end
@@ -178,6 +187,9 @@ classdef RunCommand < UserCommand
             userConfig = ConfigProvider.getUserConfig();
             if isfield(commandConfig, "OutputType")
                 userConfig.OutputType = commandConfig.OutputType;
+            end
+            if isfield(commandConfig, "XEndTol")
+                userConfig.XEndTol = commandConfig.XEndTol;
             end
             ConfigProvider.setUserConfig(userConfig);
         end

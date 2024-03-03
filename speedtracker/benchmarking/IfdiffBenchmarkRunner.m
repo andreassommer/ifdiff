@@ -80,16 +80,9 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
         end
 
         % Put a BenchmarkResult into a table with the columns' names matching the fields of BenchmarkResult.
-        % Most of the fields are just transposed. The exceptions are benchmarkID, which is repeated in every
-        % row, and xEnd, where each entry is pressed into a 1xd row inside a cell array. This allows concatenating
-        % multiple BenchmarkResults' tables into one.
+        % delegated to BenchmarkResult#toTable
         function tab = makeTable(~, result)
-            n = length(result.snapshotID);
-            emptyColumn = repelem(result.benchmarkID, n)';
-            % Transpose xEnd, then convert each row into a cell. This allows us to merge tables
-            xEndCell = mat2cell(result.xEnd', ones(size(result.xEnd, 2), 1));
-            tab = table(emptyColumn, result.snapshotID', xEndCell, result.switchingPoints', result.time', result.error', ...
-                'VariableNames', ["benchmarkID", "snapshotID", "xEnd", "switchingPoints", "time", "error"]);
+            tab = result.toTable();
         end
     end
 

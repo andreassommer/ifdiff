@@ -61,6 +61,45 @@ classdef BenchmarkResult
             this.time = [this.time other.time];
             this.error = [this.error other.error];
         end
+
+        % Put this BenchmarkResult into a table with the columns' names matching the fields of BenchmarkResult.
+        % Most of the fields are just transposed. The exceptions are benchmarkID, which is repeated in every
+        % row, and xEnd, where each entry is pressed into a 1xd row inside a 1x1 cell array. This allows concatenating
+        % multiple BenchmarkResults' tables into one.
+        function tab = toTable(this)
+            userConfig = ConfigProvider.getUserConfig();
+            n = length(this.snapshotID); % number of snapshots
+            idColumn = repelem(this.benchmarkID, n)';
+            % Transpose xEnd, then convert each row into a cell. This allows us to merge tables
+            xEndCell = mat2cell(this.xEnd', ones(size(this.xEnd, 2), 1));
+            xEndChanged = this.makeChangedFlags(userConfig.XEndTol, xEndCell, "changed", "");
+            tab = table(idColumn, this.snapshotID', xEndCell, xEndChanged, this.switchingPoints', this.time', this.error', ...
+                'VariableNames', ["benchmarkID", "snapshotID", "xEnd", "xEnd changed", "switchingPoints", "time", "error"]);
+        end
+    end
+
+    methods (Access=private)
+        % Given a cell vector of length n containing doubles, create a logical array that describes, for each entry,
+        % whether it differs from the previous. More precisely, given a cell array c, create an Nx1 array d,
+        % where d(i) is 0 iff c(i) and c(i-1) are equal up to tolerance tol, and c(0) is 0. Equality is determined
+        % using ismembertol. If entries have different sizes, they are, of course, considered different.
+        % Optionally, pass the arguments yesVal and noVal to use instead of 1 and 0 in the result array.
+        function changed = makeChangedFlags(~, tol, c, yesVal, noVal)
+            changedFlags = zeros(length(c), 1);
+            for i=1:length(changedFlags)-1
+                if size(c{i}) ~= size(c{i+1})
+                    changedFlags(i+1) = 1;
+                else
+                    changedFlags(i+1) = ~all(all(ismembertol(c{i}, c{i+1}, tol)));
+                end
+            end
+            if nargin == 2
+                changed = changedFlags;
+                return;
+            end
+            answers = [yesVal; noVal];
+            changed = answers(2 - changedFlags);
+        end
     end
 end
 
