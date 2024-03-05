@@ -103,83 +103,11 @@ classdef RunCommand < UserCommand
 
             snapshotManager = GitSnapshotManager(logger);
             benchmarkRunner = IfdiffBenchmarkRunner(logger);
+            speedtracker = Speedtracker(logger, snapshotManager, benchmarkRunner);
 
-            if isfield(commandConfig, "Snapshots")
-                snapshots = commandConfig.Snapshots;
-            else
-                snapshots = snapshotManager.listSnapshots();
-            end
-            if isfield(commandConfig, "Benchmarks")
-                benchmarks = commandConfig.Benchmarks;
-            else
-                benchmarks = benchmarkRunner.listBenchmarks();
-            end
-
-            try
-                benchmarkRunner = benchmarkRunner.init(benchmarks);
-            catch initError
-                switch initError.identifier
-                    case BenchmarkRunner.ERROR_BAD_BENCHMARK
-                        throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, initError.message));
-                    otherwise
-                        rethrow(initError);
-                end
-            end
-
-            try
-                snapshotManager = snapshotManager.saveProjectState();
-            catch savingError
-                switch savingError.identifier
-                    case SnapshotLoader.ERROR_SAVED_STATE_PRESENT
-                        throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, ...
-                            "cannot save project state as a saved state is already present" + SystemUtil.lineSep() + ...
-                            " you may try the restore-state command to restore the project and consume the saved state."));
-                    case SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE
-                        if isempty(savingError.cause)
-                            rethrow(savingError);
-                        end
-                        innerError = savingError.cause{1};
-                        if ismember(innerError.identifier, [GitSnapshotManager.ERROR_DETACHED_HEAD, ...
-                                GitSnapshotManager.ERROR_STAGED_CHANGES_PRESENT])
-                            throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, innerError.message));
-                        else
-                            rethrow(savingError);
-                        end
-                    otherwise
-                        rethrow(savingError);
-                end
-            end
-
-            % Put everything in a try block to ensure that we can restore
-            % state if anything goes wrong
-            try
-                logger.info("running benchmarks " + strjoin(benchmarks, ", "));
-                logger.info("  on snapshots " + strjoin(snapshots, ", "));
-                for i=1:length(snapshots)
-                    logger.info("loading snapshot " + snapshots(i));
-                    snapshotManager = snapshotManager.loadSnapshot(snapshots(i));
-                    for j=1:length(benchmarks)
-                        benchmarkRunner = benchmarkRunner.runBenchmark(snapshots(i), benchmarks(j));
-                    end
-                    logger.info("ran all benchmarks");
-                end
-                result = this.convertBenchmarkResults(benchmarkRunner);
-            catch error
-                logger.error("error while running benchmarks, restoring project state");
-                try
-                    snapshotManager = snapshotManager.restoreProjectState();
-                    logger.info("successfully restored project state");
-                catch restoreError
-                    logger.error("failed to restore state. try checking out previous branch and");
-                    logger.error("    running restore-state command. If this fails, consult the instructions.");
-                    logger.error("    restoring state failed because of:");
-                    logger.error(restoreError.getReport());
-                end
-                rethrow(error);
-            end
-            snapshotManager = snapshotManager.restoreProjectState();
+            speedtracker = speedtracker.run(commandConfig);
+            result = speedtracker.getBenchmarkResults();
         end
-
     end
 
 
@@ -200,26 +128,5 @@ classdef RunCommand < UserCommand
             IfdiffBenchmarkRunner.setConfig(benchmarkConfig);
         end
 
-        % Convert a cell array of BenchmarkResult objects depending on the specified value of OutputType:
-        % convert each to a table, convert them all into one big table, or just return the BenchmarkResult cell
-        % unchanged.
-        function prettyResult = convertBenchmarkResults(~, benchmarkRunner)
-            results = benchmarkRunner.getResults();
-            userConfig = ConfigProvider.getUserConfig();
-            outputType = userConfig.OutputType;
-            switch outputType
-                case "NTables"
-                    prettyResult = cellfun(@(benchmarkResult) benchmarkRunner.makeTable(benchmarkResult), ...
-                        results, ...
-                        'UniformOutput', false);
-                case "OneTable"
-                    tables = cellfun(@(benchmarkResult) benchmarkRunner.makeTable(benchmarkResult), ...
-                        results, ...
-                        'UniformOutput', false);
-                    prettyResult = vertcat(tables{:});
-                otherwise
-                    prettyResult = results;
-            end
-        end
     end
 end
