@@ -55,7 +55,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             for i=1:length(benchmarkIDs)
                 benchmark = this.loadBenchmark(benchmarkIDs(i));
                 this.benchmarks(benchmark.id) = benchmark;
-                this.results(benchmark.id) = BenchmarkResult(benchmark.id);
+                this.results(benchmark.id) = IfdiffBenchmarkResult(benchmark.id);
             end
         end
 
@@ -83,8 +83,8 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             end
         end
 
-        % Put a BenchmarkResult into a table with the columns' names matching the fields of BenchmarkResult.
-        % delegated to BenchmarkResult#toTable
+        % Put a IfdiffBenchmarkResult into a table with the columns' names matching the fields of IfdiffBenchmarkResult.
+        % delegated to IfdiffBenchmarkResult#toTable
         function tab = makeTable(~, result)
             tab = result.toTable();
         end
@@ -115,7 +115,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
 
     methods (Access=private)
 
-        % Run a single benchmark and return a BenchmarkResult containing only its results, which can then be
+        % Run a single benchmark and return a IfdiffBenchmarkResult containing only its results, which can then be
         % added to the results from the other snapshots for that particular benchmark.
         % If an exception occurs during the solving of the ODE, return a failed
         function benchmarkResult = runBenchmarkInternal(this, snapshotID, benchmark)
@@ -128,7 +128,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             catch error
                 time = toc;
                 this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
-                benchmarkResult = BenchmarkResult( ...
+                benchmarkResult = IfdiffBenchmarkResult( ...
                     benchmark.id, snapshotID, NaN(size(benchmark.x0), "double"), {[]}, time, {error});
                 return;
             end
@@ -136,7 +136,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             time = toc;
             xEnd = sol.y(:,end);
             switchingPoints = {sol.switches};
-            benchmarkResult = BenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time, {[]});
+            benchmarkResult = IfdiffBenchmarkResult(benchmark.id, snapshotID, xEnd, switchingPoints, time, {[]});
         end
 
         function benchmark = makeBenchmark(~, id, rhs, solver, tSpan, x0, p, options)

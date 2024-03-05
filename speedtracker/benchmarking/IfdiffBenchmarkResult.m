@@ -1,4 +1,4 @@
-classdef BenchmarkResult
+classdef IfdiffBenchmarkResult
     %BENCHMARKRESULT Result of running a benchmark on a number of snapshots, accumulating a list of
     % results. This class follows the "struct-of-arrays over array-of-structs" convention, so all fields
     % except the benchmark itself are vectors, representing the results of multiple benchmarking runs.
@@ -27,10 +27,10 @@ classdef BenchmarkResult
     end
 
     methods
-        function this = BenchmarkResult(benchmarkID, snapshotID, xEnd, switchingPoints, time, error)
+        function this = IfdiffBenchmarkResult(benchmarkID, snapshotID, xEnd, switchingPoints, time, error)
             % You can also call this with no results to initialize an empty list.
             if (nargin == 1)
-                assert(isa(benchmarkID, "string"), "BenchmarkResult member benchmark is of type string");
+                assert(isa(benchmarkID, "string"), "IfdiffBenchmarkResult member benchmark is of type string");
                 this.benchmarkID = benchmarkID;
                 this.snapshotID = string([]);
                 this.xEnd = double([]);
@@ -39,11 +39,11 @@ classdef BenchmarkResult
                 this.error = [];
                 return;
             end
-            assert(isa(benchmarkID, "string"),   "BenchmarkResult member benchmark is of type string");
-            assert(isa(snapshotID, "string"),    "BenchmarkResult member snapshotID is of type string");
-            assert(isa(xEnd, "double"),          "BenchmarkResult member xEnd is of type double");
-            assert(isa(switchingPoints, "cell"), "BenchmarkResult member switchingPoints is of type cell");
-            assert(isa(time, "double"),          "BenchmarkResult member time is of type double");
+            assert(isa(benchmarkID, "string"),   "IfdiffBenchmarkResult member benchmark is of type string");
+            assert(isa(snapshotID, "string"),    "IfdiffBenchmarkResult member snapshotID is of type string");
+            assert(isa(xEnd, "double"),          "IfdiffBenchmarkResult member xEnd is of type double");
+            assert(isa(switchingPoints, "cell"), "IfdiffBenchmarkResult member switchingPoints is of type cell");
+            assert(isa(time, "double"),          "IfdiffBenchmarkResult member time is of type double");
             this.benchmarkID = benchmarkID;
             this.snapshotID = snapshotID;
             this.xEnd = xEnd;
@@ -54,7 +54,7 @@ classdef BenchmarkResult
 
         % Add the result of one or more testing runs to this list by merging the member arrays.
         function this = merge(this, other)
-            assert(this.benchmarkID == other.benchmarkID, "other BenchmarkResult is from the same benchmark");
+            assert(this.benchmarkID == other.benchmarkID, "other IfdiffBenchmarkResult is from the same benchmark");
             this.snapshotID = [this.snapshotID other.snapshotID];
             this.xEnd = [this.xEnd other.xEnd];
             this.switchingPoints = [this.switchingPoints other.switchingPoints];
@@ -62,10 +62,10 @@ classdef BenchmarkResult
             this.error = [this.error other.error];
         end
 
-        % Put this BenchmarkResult into a table with the columns' names matching the fields of BenchmarkResult.
+        % Put this IfdiffBenchmarkResult into a table with the columns' names matching the fields of IfdiffBenchmarkResult.
         % Most of the fields are just transposed. The exceptions are benchmarkID, which is repeated in every
         % row, and xEnd, where each entry is pressed into a 1xd row inside a 1x1 cell array. This allows concatenating
-        % multiple BenchmarkResults' tables into one.
+        % multiple IfdiffBenchmarkResults' tables into one.
         function tab = toTable(this)
             benchmarkConfig = IfdiffBenchmarkRunner.getConfig();
             n = length(this.snapshotID); % number of snapshots
