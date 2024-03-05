@@ -5,6 +5,10 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
         logger;
     end
 
+    properties (Constant)
+        ERROR_CONFIG_NOT_SET = "IfdiffBenchmarkRunner:configNotSet"
+    end
+
     properties (Access=private)
         % dictionary of benchmarks
         benchmarks;
@@ -83,6 +87,29 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
         % delegated to BenchmarkResult#toTable
         function tab = makeTable(~, result)
             tab = result.toTable();
+        end
+    end
+
+    methods (Static)
+        % Return the IfdiffBenchmarkConfig, which contains user-settable, global configuration parameters
+        % specific to IfdiffBenchmarkRunner. If 
+        function config = getConfig()
+            config = IfdiffBenchmarkRunner.getSetConfig();
+        end
+        % Set the IfdiffBenchmarkConfig, which contains user-settable, global configuration parameters
+        % specific to IfdiffBenchmarkRunner.
+        function setConfig(newConfig)
+            IfdiffBenchmarkRunner.getSetConfig(newConfig);
+        end
+        function config = getSetConfig(newConfig)
+            persistent benchmarkConfig;
+            if (nargin == 0 && isempty(benchmarkConfig))
+                throw(MException(IfdiffBenchmarkRunner.ERROR_CONFIG_NOT_SET, "IfdiffBenchmarkConfig not set"));
+            elseif (nargin ==0)
+                config = benchmarkConfig;
+            else
+                benchmarkConfig = newConfig;
+            end
         end
     end
 

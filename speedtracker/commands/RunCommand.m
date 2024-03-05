@@ -87,8 +87,8 @@ classdef RunCommand < UserCommand
                             end
                             commandConfig.OutputType = value;
                         case "XEndTol"
-                            if ~UserConfig.checkXEndTol(value)
-                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, UserConfig.describeBadXEndTol(value)));
+                            if ~IfdiffBenchmarkConfig.checkXEndTol(value)
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, IfdiffBenchmarkConfig.describeBadXEndTol(value)));
                             end
                             commandConfig.XEndTol = value;
                         otherwise
@@ -98,7 +98,9 @@ classdef RunCommand < UserCommand
         end
 
         function result = execute(this, logger, commandConfig)
+            IfdiffBenchmarkRunner.setConfig(IfdiffBenchmarkConfig());
             this.saveGlobalParameters(commandConfig);
+
             snapshotManager = GitSnapshotManager(logger);
             benchmarkRunner = IfdiffBenchmarkRunner(logger);
 
@@ -185,13 +187,17 @@ classdef RunCommand < UserCommand
         % Store all the user parameters that overwrite global config parameters in the global UserConfig
         function saveGlobalParameters(~, commandConfig)
             userConfig = ConfigProvider.getUserConfig();
+            benchmarkConfig = IfdiffBenchmarkRunner.getConfig();
+
             if isfield(commandConfig, "OutputType")
                 userConfig.OutputType = commandConfig.OutputType;
             end
             if isfield(commandConfig, "XEndTol")
-                userConfig.XEndTol = commandConfig.XEndTol;
+                benchmarkConfig.XEndTol = commandConfig.XEndTol;
             end
+    
             ConfigProvider.setUserConfig(userConfig);
+            IfdiffBenchmarkRunner.setConfig(benchmarkConfig);
         end
 
         % Convert a cell array of BenchmarkResult objects depending on the specified value of OutputType:

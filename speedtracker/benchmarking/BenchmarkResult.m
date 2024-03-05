@@ -67,12 +67,12 @@ classdef BenchmarkResult
         % row, and xEnd, where each entry is pressed into a 1xd row inside a 1x1 cell array. This allows concatenating
         % multiple BenchmarkResults' tables into one.
         function tab = toTable(this)
-            userConfig = ConfigProvider.getUserConfig();
+            benchmarkConfig = IfdiffBenchmarkRunner.getConfig();
             n = length(this.snapshotID); % number of snapshots
             idColumn = repelem(this.benchmarkID, n)';
             % Transpose xEnd, then convert each row into a cell. This allows us to merge tables
             xEndCell = mat2cell(this.xEnd', ones(size(this.xEnd, 2), 1));
-            xEndChanged = this.makeChangedFlags(userConfig.XEndTol, xEndCell, "changed", "");
+            xEndChanged = this.makeChangedFlags(benchmarkConfig.XEndTol, xEndCell, "changed", "");
             tab = table(idColumn, this.snapshotID', xEndCell, xEndChanged, this.switchingPoints', this.time', this.error', ...
                 'VariableNames', ["benchmarkID", "snapshotID", "xEnd", "xEnd changed", "switchingPoints", "time", "error"]);
         end

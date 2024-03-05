@@ -1,8 +1,7 @@
 classdef (Abstract) BenchmarkRunner
     %BENCHMARKRUNNER Runs benchmarks across various snapshots. All IFDIFF-specific functionality
     % should be hidden behind this interface, so that Speedtracker can be used with other
-    % libraries. If you do try to use this with another library, UserConfig will have to change too, and possibly
-    % other code, too, so be careful.
+    % libraries.
 
     properties (Constant)
         ERROR_BAD_BENCHMARK = "BenchmarkRunner:badBenchmark"

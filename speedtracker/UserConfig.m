@@ -7,11 +7,7 @@ classdef UserConfig
     properties (Access=public)
         % Output format for benchmark results. value: "Raw" | "OneTable" | "NTables", default "OneTable".
         % Used by RunCommand.
-        OutputType = "OneTable";
-        % Relative tolerance for final x (solution) values. Benchmark results contain a flag for whether a given
-        % solution's final x value differs from the previous value. This value sets the relative tolerance for
-        % that flag.
-        XEndTol = 1e-6;
+        OutputType = Configuration.OutputType;
     end
 
     properties (Constant, Access=private)
@@ -26,10 +22,6 @@ classdef UserConfig
             assert(UserConfig.checkOutputType(value));
             obj.OutputType = value;
         end
-        function obj = set.XEndTol(obj, value)
-            assert(UserConfig.checkXEndTol(value));
-            obj.XEndTol = value;
-        end
     end
 
     methods (Static)
@@ -43,17 +35,6 @@ classdef UserConfig
             else
                 message = sprintf("OutputType expects one of %s, but value has type %s", ...
                     strjoin(UserConfig.OutputTypeValues, "|"), class(value));
-            end
-        end
-
-        function isValid = checkXEndTol(value)
-            isValid = isnumeric(value) && length(value) == 1;
-        end
-        function message = describeBadXEndTol(value)
-            if isnumeric(value)
-                message = sprintf("XEndTol expects scalar, but got dimensions %s", strjoin(string(size(value), ", ")));
-            else
-                message = sprintf("XEndTol expects double, but got %s", class(value));
             end
         end
     end
