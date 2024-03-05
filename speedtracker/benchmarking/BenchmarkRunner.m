@@ -19,11 +19,10 @@ classdef (Abstract) BenchmarkRunner
         % ERROR_BAD_BENCHMARK if one of the provided benchmarks does not exist or is faulty
         this = init(this, benchmarkIDs)
 
-        % Run a single benchmark and return a BenchmarkResult containing only its results, which can then be
-        % added to the results from the other snapshots for that particular benchmark.
+        % Run a single benchmark and store its results, which can later be retrieved with getResults.
         % Exceptions:
         %    if an exception occurs during the solving of the ODE, do not simply crash but return a valid result
-        %    object that is recognizable as failed.
+        %    object that is recognizable as failure.
         % _May_ throw an error with the following identifiers in the given cases:
         % ERROR_BENCHMARK_NOT_LOADED if the given benchmark was not previously loaded with init(), either because
         %     it was not among the list passed or because init() was never called.
@@ -35,8 +34,10 @@ classdef (Abstract) BenchmarkRunner
         % R1 each element of the returned cell array must be compatible with makeTable()
         results = getResults(this)
 
-        % Make a MATLAB table from a benchmark's result.
-        % R1 the tables must have similar enough columns that they can be concatenated with vertcat
+        % Make a MATLAB table from a single benchmark's result. Since getResults returns the results of all benchmarks,
+        % you can do something like `cellfun(@(result) this.makeTable(result, this.getResults())`
+        % R1 the tables obtained from each result must have similar enough columns that they can be concatenated
+        % with vertcat, even if not all benchmarks were run with the same set of snapshots
         tab = makeTable(this, result)
     end
 end
