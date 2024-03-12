@@ -26,7 +26,7 @@ classdef UserConfig
 
     methods (Static)
         function isValid = checkOutputType(value)
-            isValid = ismember(value, UserConfig.OutputTypeValues);
+            isValid = ismember(lower(value), arrayfun(@lower, UserConfig.OutputTypeValues));
         end
         function message = describeBadOutputType(value)
             if (isstring(value))

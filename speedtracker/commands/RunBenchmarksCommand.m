@@ -55,8 +55,8 @@ classdef RunBenchmarksCommand < UserCommand
                 for i=2:2:endIx
                     key = argCell{i};
                     value = argCell{i+1};
-                    switch(key)
-                        case "Snapshots"
+                    switch(lower(key))
+                        case "snapshots"
                             if ~isstring(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
                                         "parameter Snapshots expects a string vector, but got type " + class(value)));
@@ -67,7 +67,7 @@ classdef RunBenchmarksCommand < UserCommand
                                         "parameter Snapshots expects a 1xN string vector, but got dimensions " + dimStr));
                             end
                             commandConfig.Snapshots = value;
-                        case "Benchmarks"
+                        case "benchmarks"
                             if ~isstring(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
                                         "parameter Benchmarks expects a string vector, but got type " + class(value)));
@@ -78,7 +78,7 @@ classdef RunBenchmarksCommand < UserCommand
                                         "parameter Benchmarks expects a 1xN string vector, but got dimensions " + dimStr));
                             end
                             commandConfig.Benchmarks = value;
-                        case "OutputType"
+                        case "outputtype"
                             % This property overrides a property in UserConfig, that's why UserConfig also has a
                             % method for checking if the value is acceptable.
                             if ~UserConfig.checkOutputType(value)
@@ -86,7 +86,7 @@ classdef RunBenchmarksCommand < UserCommand
                                     UserConfig.describeBadOutputType(value)));
                             end
                             commandConfig.OutputType = value;
-                        case "XEndTol"
+                        case "xendtol"
                             if ~IfdiffBenchmarkConfig.checkXEndTol(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, IfdiffBenchmarkConfig.describeBadXEndTol(value)));
                             end
