@@ -12,9 +12,9 @@ classdef DeleteSnapshotCommand < UserCommand
         end
 
         function msg = longHelp(this)
-            msg = strjoin([
+            msg = strjoin([ ...
                 sprintf("speedtracker(""%s"", <id>)", this.getName()), ...
-                "    Delete the snapshot indicated by the name <id>, if it exists."
+                "    Delete the snapshot indicated by the name <id>, if it exists." ...
             ], SystemUtil.lineSep());
         end
 

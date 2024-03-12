@@ -1,6 +1,6 @@
-classdef RunCommand < UserCommand
+classdef RunBenchmarksCommand < UserCommand
     methods
-        function this = RunCommand()
+        function this = RunBenchmarksCommand()
         end
 
         function name = getName(~)
@@ -12,7 +12,7 @@ classdef RunCommand < UserCommand
         end
 
         function msg = longHelp(this)
-            msg = strjoin([
+            msg = strjoin([v
                 sprintf("speedtracker(""%s"", <varargin>)", this.getName()), ...
                 "    Run benchmarks across various snapshots and collect the results.", ...
                 "    speedtracker does this by successively checking out each snapshot,", ...
@@ -34,7 +34,7 @@ classdef RunCommand < UserCommand
                 "      (OneTable, default) ", ...
                 "    XEndTol: a 1x1 double describing the relative tolerance for deciding whether the final x", ...
                 "      values of two different snapshots' benchmark runs are considered the same.", ...
-                "    "
+                "    " ...
             ], SystemUtil.lineSep());
         end
 

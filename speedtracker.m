@@ -32,9 +32,11 @@ function [result, status] = speedtracker(varargin)
     end
 
     %% Global configuration required for the business code
+    % The available subcommands (`speedtracker("list-snapshots")`, `speedtracker("run")`, etc.). They implement the
+    % interface UserCommand, which makes adding new commands easy and clean.
     help = HelpCommand();
     commands = {help, CreateSnapshotCommand(), DeleteSnapshotCommand(), ...
-        ListSnapshotsCommand(), ShowSnapshotCommand(), RunCommand(), RestoreStateCommand()};
+        ListSnapshotsCommand(), ShowSnapshotCommand(), RunBenchmarksCommand(), RestoreStateCommand()};
 
     config = SpeedtrackerConfig();
     config.baseDir = SRC_BASEDIR;

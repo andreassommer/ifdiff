@@ -12,9 +12,9 @@ classdef ListSnapshotsCommand < UserCommand
         end
 
         function msg = longHelp(this)
-            msg = strjoin([
+            msg = strjoin([ ...
                 sprintf("speedtracker(""%s"")", this.getName()), ...
-                "    List all available snapshots"
+                "    List all available snapshots" ...
             ], SystemUtil.lineSep());
         end
 

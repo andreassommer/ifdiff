@@ -12,9 +12,9 @@ classdef HelpCommand < UserCommand
         end
 
         function msg = longHelp(this)
-            msg = strjoin([
-                sprintf("speedtracker(""%s"", [<command>])", this.getName()),
-                "    describe a command's function and usage, or show general help if <command> is not provided"
+            msg = strjoin([ ...
+                sprintf("speedtracker(""%s"", [<command>])", this.getName()), ...
+                "    describe a command's function and usage, or show general help if <command> is not provided" ...
             ], SystemUtil.lineSep());
         end
 

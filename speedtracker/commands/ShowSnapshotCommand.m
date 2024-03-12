@@ -12,9 +12,9 @@ classdef ShowSnapshotCommand < UserCommand
         end
 
         function msg = longHelp(this)
-            msg = strjoin([
+            msg = strjoin([ ...
                 sprintf("speedtracker(""%s"", <id>)", this.getName()), ...
-                "    Describe the snapshot indicated by the name <id>, if it exists."
+                "    Describe the snapshot indicated by the name <id>, if it exists." ...
             ], SystemUtil.lineSep());
         end
 
