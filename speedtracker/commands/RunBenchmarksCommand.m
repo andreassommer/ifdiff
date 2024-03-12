@@ -57,25 +57,21 @@ classdef RunBenchmarksCommand < UserCommand
                     value = argCell{i+1};
                     switch(lower(key))
                         case "snapshots"
-                            if ~isstring(value)
+                            if ~StringUtil.isStringArray(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                                        "parameter Snapshots expects a string vector, but got type " + class(value)));
+                                        "Snapshots: " + StringUtil.describeBadStringArray(value)));
                             end
-                            if length(size(value)) ~= 2 || (size(value, 1) ~= 1)
-                                dimStr = strjoin(string(size(value)), " x ");
-                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                                        "parameter Snapshots expects a 1xN string vector, but got dimensions " + dimStr));
+                            if iscellstr(value)
+                                value = cellfun(@string, value);
                             end
                             commandConfig.Snapshots = value;
                         case "benchmarks"
-                            if ~isstring(value)
+                            if ~StringUtil.isStringArray(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                                        "parameter Benchmarks expects a string vector, but got type " + class(value)));
+                                        "Benchmarks: " + StringUtil.describeBadStringArray(value)));
                             end
-                            if length(size(value)) ~= 2 || (size(value, 1) ~= 1)
-                                dimStr = strjoin(string(size(value)), " x ");
-                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                                        "parameter Benchmarks expects a 1xN string vector, but got dimensions " + dimStr));
+                            if iscellstr(value)
+                                value = cellfun(@string, value);
                             end
                             commandConfig.Benchmarks = value;
                         case "outputtype"
@@ -83,12 +79,13 @@ classdef RunBenchmarksCommand < UserCommand
                             % method for checking if the value is acceptable.
                             if ~UserConfig.checkOutputType(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
-                                    UserConfig.describeBadOutputType(value)));
+                                    "OutputType: " + UserConfig.describeBadOutputType(value)));
                             end
                             commandConfig.OutputType = value;
                         case "xendtol"
                             if ~IfdiffBenchmarkConfig.checkXEndTol(value)
-                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, IfdiffBenchmarkConfig.describeBadXEndTol(value)));
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, ...
+                                    "XEndTol: " + IfdiffBenchmarkConfig.describeBadXEndTol(value)));
                             end
                             commandConfig.XEndTol = value;
                         otherwise
