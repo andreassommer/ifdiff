@@ -9,19 +9,37 @@ classdef ConfigProvider
     end
 
     methods (Static)
-        % Get the SpeedtrackerConfig, which holds program-global, immutable constants
-        % Errors:
-        % E1 if the config has not been set by means of ConfigProvider.setSpeedtrackerConfig, throw an exception.
         function config = getSpeedtrackerConfig()
+            % Get the SpeedtrackerConfig, which holds program-global, immutable constants
+            % Errors:
+            % E1 if the config has not been set by means of ConfigProvider.setSpeedtrackerConfig, throw an exception.
             config = ConfigProvider.getSetSpeedtrackerConfig();
         end
 
-        % Set the SpeedtrackerConfig, which holds program-global, immutable constants. Should only ever be done once
-        % by main function right at the start of program execution.
         function setSpeedtrackerConfig(newConfig)
+            % Set the SpeedtrackerConfig, which holds program-global, immutable constants.
+            % Should only ever be done once by main function right at the start of program execution.
             ConfigProvider.getSetSpeedtrackerConfig(newConfig);
         end
 
+
+        function config = getUserConfig()
+            % Get the UserConfig, which holds user-settable, global configuration parameters
+            % Errors:
+            % E1 if the config has not been set by means of ConfigProvider.setUserConfig, throw an exception.
+            config = ConfigProvider.getSetUserConfig();
+        end
+
+        function setUserConfig(newConfig)
+            % Set the UserConfig, which holds user-settable configuration parameters.
+            % These parameters can be overridden
+            % by the user at runtime, but they are constant and global during one run of the program. As such,
+            % this method may be used at the start of a UserCommand's execute() method, but only once.
+            ConfigProvider.getSetUserConfig(newConfig);
+        end
+    end
+
+    methods (Static, Access=private)
         function config = getSetSpeedtrackerConfig(newConfig)
             persistent speedtrackerConfig;
             if (nargin == 0 && isempty(speedtrackerConfig))
@@ -31,21 +49,6 @@ classdef ConfigProvider
             else
                 speedtrackerConfig = newConfig;
             end
-        end
-
-
-        % Get the UserConfig, which holds user-settable configuration parameters
-        % Errors:
-        % E1 if the config has not been set by means of ConfigProvider.setUserConfig, throw an exception.
-        function config = getUserConfig()
-            config = ConfigProvider.getSetUserConfig();
-        end
-
-        % Set the UserConfig, which holds user-settable configuration parameters. These parameters can be overridden
-        % by the user at runtime, but they are constant and global during one run of the program. As such,
-        % this method may be used at the start of a UserCommand's execute() method, but only once.
-        function setUserConfig(newConfig)
-            ConfigProvider.getSetUserConfig(newConfig);
         end
 
         function config = getSetUserConfig(newConfig)

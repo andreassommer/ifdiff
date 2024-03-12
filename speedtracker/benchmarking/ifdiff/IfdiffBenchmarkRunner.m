@@ -91,16 +91,16 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
     end
 
     methods (Static)
-        % Return the IfdiffBenchmarkConfig, which contains user-settable, global configuration parameters
-        % specific to IfdiffBenchmarkRunner. If 
         function config = getConfig()
+            % Return the IfdiffBenchmarkConfig, which contains user-settable configuration parameters specific to IFDIFF
             config = IfdiffBenchmarkRunner.getSetConfig();
         end
-        % Set the IfdiffBenchmarkConfig, which contains user-settable, global configuration parameters
-        % specific to IfdiffBenchmarkRunner.
         function setConfig(newConfig)
+            % Set the IfdiffBenchmarkConfig, which contains user-settable  configuration parameters specific to IFDIFF
             IfdiffBenchmarkRunner.getSetConfig(newConfig);
         end
+    end
+    methods (Static, Access=private)
         function config = getSetConfig(newConfig)
             persistent benchmarkConfig;
             if (nargin == 0 && isempty(benchmarkConfig))
@@ -115,10 +115,10 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
 
     methods (Access=private)
 
-        % Run a single benchmark and return a IfdiffBenchmarkResult containing only its results, which can then be
-        % added to the results from the other snapshots for that particular benchmark.
-        % If an exception occurs during the solving of the ODE, return a failed
         function benchmarkResult = runBenchmarkInternal(this, snapshotID, benchmark)
+            % Run a single benchmark and return a IfdiffBenchmarkResult containing only its results.
+            % These can then be added to the results from the other snapshots for that particular benchmark.
+            % If an exception occurs during the solving of the ODE, return a failed
             tic;
             try
                 datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
