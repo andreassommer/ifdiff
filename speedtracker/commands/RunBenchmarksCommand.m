@@ -102,7 +102,11 @@ classdef RunBenchmarksCommand < UserCommand
             benchmarkRunner = IfdiffBenchmarkRunner(logger);
             speedtracker = Speedtracker(logger, snapshotManager, benchmarkRunner);
 
-            speedtracker = speedtracker.run(commandConfig);
+            try
+                speedtracker = speedtracker.run(commandConfig);
+            catch error
+                throw(this.wrapSpeedtrackerError(error));
+            end
             result = speedtracker.getBenchmarkResults();
         end
     end
@@ -125,5 +129,37 @@ classdef RunBenchmarksCommand < UserCommand
             IfdiffBenchmarkRunner.setConfig(benchmarkConfig);
         end
 
+        function newError = wrapSpeedtrackerError(~, error)
+            % Set an exception's identifier to UserCommand.ERROR_EXPECTED_EXCEPTION if it is one of the expected exceptions
+            % The expected exceptions, as per the instructions, are:
+            % E1: There are staged changes in Git
+            % E2: The Git repository is in detached HEAD mode
+            % E3: The project state cannot be saved because there is already a saved state present
+            % E4: One or more of the requested benchmarks are not found or faulty
+            switch error.identifier
+                case BenchmarkRunner.ERROR_BAD_BENCHMARK
+                    newError = MException( ...
+                        UserCommand.ERROR_EXPECTED_EXCEPTION, ...
+                        "could not initialize a benchmark: " + error.message);
+                case SnapshotLoader.ERROR_SAVED_STATE_PRESENT
+                    newError = MException( ...
+                        UserCommand.ERROR_EXPECTED_EXCEPTION, ...
+                        "cannot save project state as a saved state is already present" + SystemUtil.lineSep() + ...
+                        " you may try the restore-state command to restore the project and consume the saved state.");
+                case SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE
+                    if isempty(error.cause)
+                        newError = error;
+                        return;
+                    end
+                    innerError = error.cause{1};
+                    if ismember(innerError.identifier, ...
+                            [ GitSnapshotManager.ERROR_DETACHED_HEAD GitSnapshotManager.ERROR_STAGED_CHANGES_PRESENT])
+                        newError = MException(UserCommand.ERROR_EXPECTED_EXCEPTION, innerError.message);
+                    else
+                        newError = error;
+                    end
+                otherwise
+            end
+        end
     end
 end

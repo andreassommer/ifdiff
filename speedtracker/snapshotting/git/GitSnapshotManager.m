@@ -71,7 +71,9 @@ classdef GitSnapshotManager < SnapshotLoader
             %
             % Exceptions:
             %   If there are staged changes, throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a
-            %        ERROR_STAGED_CHANGES_PRESENT as a cause
+            %        ERROR_STAGED_CHANGES_PRESENT as a cause.
+            %        Since we are saving changed files in the worktree using a temporary commit, it would be very
+            %        difficult to reconstruct which changes were staged and which were not.
             %   The repo must be on a branch. If this is run in detached HEAD mode, throw 
             %       SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a ERROR_DETACHED_HEAD as a cause
             %   If there is already a saved state, throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
@@ -80,7 +82,7 @@ classdef GitSnapshotManager < SnapshotLoader
             % throws in case of E1, staged changes
             if ~this.isGitIndexClean()
                 innerError = MException(GitSnapshotManager.ERROR_STAGED_CHANGES_PRESENT, ...
-                    "cannot switch snapshots while there are staged changes");
+                    "cannot save state while there are staged changes");
                 outerError = MException(SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE, ...
                     "project's state cannot be saved");
                 throw(outerError.addCause(innerError));

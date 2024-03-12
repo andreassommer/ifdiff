@@ -1,13 +1,13 @@
 classdef Speedtracker
     %SPEEDTRACKER Runner for the main benchmarking functionality.
     % Receives a SnapshotLoader and a BenchmarkRunner and performs the main benchmarking.
-    
+
     properties
         logger;
         snapshotLoader;
         benchmarkRunner;
     end
-    
+
     methods
         function obj = Speedtracker(logger, snapshotLoader, benchmarkRunner)
             obj.logger = logger;
@@ -21,6 +21,20 @@ classdef Speedtracker
             % through commandConfig.Snapshots, or all snapshots that SnapshotLoader#listSnapshots returns. The
             % benchmarks are either a 1xN array of strings passed through commandConfig.Benchmarks, or all benchmarks
             % returned by BenchmarkRunner#listBenchmarks.
+            % The basic procedure is:
+            % 1. determine snapshots and benchmarks
+            % 2. initialize the BenchmarkRunner and its benchmarks
+            % 3. save project state with the SnapshotLoader
+            % 4. check out each snapshot in sequence. for each snapshot, run all benchmarks over it and collect the
+            %    results
+            % The results can then be retrieved (see getBenchmarkResults)
+            % Exceptions:
+            % E1 one of the benchmarks is faulty or nonexistent: throw BenchmarkRunner.ERROR_BAD_BENCHMARK
+            % E2 cannot save project state because a save is already present: throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
+            % E3 cannot save project state for other reasons: throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE
+            %    as per the API of SnapshotLoader, there may be another exception attached as a cause.
+            % Exceptions during benchmark execution should be caught by the BenchmarkRunner, as per its API.
+            % Unexpected exceptions may occur, of course, but only in really, well, unexpected cases.
             if isfield(commandConfig, "Snapshots")
                 snapshots = commandConfig.Snapshots;
             else
@@ -32,43 +46,13 @@ classdef Speedtracker
                 benchmarks = this.benchmarkRunner.listBenchmarks();
             end
 
-            try
-                this.benchmarkRunner = this.benchmarkRunner.init(benchmarks);
-            catch initError
-                switch initError.identifier
-                    case BenchmarkRunner.ERROR_BAD_BENCHMARK
-                        throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, initError.message));
-                    otherwise
-                        rethrow(initError);
-                end
-            end
+            % Initialize the benchmarks
+            this.benchmarkRunner = this.benchmarkRunner.init(benchmarks);
 
-            %% Save project state so we can check out snapshots
-            try
-                this.snapshotLoader = this.snapshotLoader.saveProjectState();
-            catch savingError
-                switch savingError.identifier
-                    case SnapshotLoader.ERROR_SAVED_STATE_PRESENT
-                        throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, ...
-                            "cannot save project state as a saved state is already present" + SystemUtil.lineSep() + ...
-                            " you may try the restore-state command to restore the project and consume the saved state."));
-                    case SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE
-                        if isempty(savingError.cause)
-                            rethrow(savingError);
-                        end
-                        innerError = savingError.cause{1};
-                        if ismember(innerError.identifier, [GitSnapshotManager.ERROR_DETACHED_HEAD, ...
-                                GitSnapshotManager.ERROR_STAGED_CHANGES_PRESENT])
-                            throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, innerError.message));
-                        else
-                            rethrow(savingError);
-                        end
-                    otherwise
-                        rethrow(savingError);
-                end
-            end
+            % Save project state so we can check out snapshots
+            this.snapshotLoader = this.snapshotLoader.saveProjectState();
 
-            %% The meat: check out each snapshot, run all benchmarks over it, then proceed to the next snapshot.
+            % The meat: check out each snapshot, run all benchmarks over it, then proceed to the next snapshot.
             % Everything is in a try block so we can at least call restore project state no matter what goes wrong.
             try
                 this.logger.info("running benchmarks " + strjoin(benchmarks, ", "));
