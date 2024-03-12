@@ -4,16 +4,17 @@ function [result, status] = speedtracker(varargin)
 
     %% init: set constants
     DEBUG = 0;
-    SRC_BASEDIR = pwd;
 
+    [SRC_BASEDIR, ~, ~] = fileparts(mfilename('fullpath'));
     SRC_ST_DIR = fullfile(SRC_BASEDIR, "speedtracker");
 
-    OS_TEMP_DIR = tempdir;
-    ST_DIR = "ifdiff-speedtracker";
+    OS_TEMP_DIR = tempdir();
+    ST_DIR = "speedtracker_temp";
     ST_TEMP_DIR = fullfile(OS_TEMP_DIR, ST_DIR);
 
     % Ensure we are in the project root directory
-    assert(endsWith(pwd, "ifdiff")); % pretty crappy check, but what more can we do?
+    oldPwd = pwd();
+    cd(SRC_BASEDIR);
 
     %% setup: create temp dir and put all of Speedtracker's files there
     % Ensures that speedtracker does not get messed up when a different snapshot is loaded (because its own files could
@@ -27,6 +28,7 @@ function [result, status] = speedtracker(varargin)
     %% to avoid clashes, ensure that the original speedtracker folder is not on the path
     if (contains(path, SRC_ST_DIR))
         rmpath(genpath(SRC_ST_DIR));
+        rehash();
     end
 
     %% Global configuration required for the business code
@@ -36,7 +38,7 @@ function [result, status] = speedtracker(varargin)
 
     config = SpeedtrackerConfig();
     config.baseDir = SRC_BASEDIR;
-    config.speedtrackerDir = fullfile(SRC_BASEDIR, "speedtracker");
+    config.speedtrackerDir = SRC_ST_DIR;
     config.tempDir = ST_TEMP_DIR;
     config.userCommands = commands;
     ConfigProvider.setSpeedtrackerConfig(config);
@@ -59,8 +61,7 @@ function [result, status] = speedtracker(varargin)
     catch argError % can be either an unknown command or bad arguments to that command
         result = sprintf("%s\n\nERROR: %s", help.generalHelp(), argError.message);
         status = 1;
-        rmpath(genpath(ST_TEMP_DIR));
-        rmdir(ST_TEMP_DIR, "s");
+        teardown();
         return;
     end
 
@@ -81,15 +82,21 @@ function [result, status] = speedtracker(varargin)
         status = 1;
     end
 
+    teardown();
+
     %% teardown
-    rmpath(genpath(ST_TEMP_DIR));
-    rmdir(ST_TEMP_DIR, "s");
+    function teardown()
+        rmpath(genpath(ST_TEMP_DIR));
+        rmdir(ST_TEMP_DIR, "s");
+        cd(oldPwd);
+        rehash();
+    end
 end
 
-% Given a cell array of UserCommand objects and some program arguments,
-% select the correct UserCommand based on the first argument.
-% If the argument list is empty or the first argument is not a key in the dictionary, throw an exception.
 function command = getCommand(commands, argCell)
+    % Given a cell array of UserCommand objects and a cell array of program arguments,
+    % select the correct UserCommand based on the first argument.
+    % If the argument list is empty or the first argument does not match any command, throw an exception.
     if isempty(argCell)
         throw(MException("speedtracker:main", "no inputs"));
     end
@@ -100,9 +107,9 @@ function command = getCommand(commands, argCell)
     end
 end
 
-% Pretty much just exists to make prepending the command as aprefix; the whole file-configuring stuff isn't used,
-% we're just using disp() on everything.
 function logger = makeCommandLogger(commandName)
+    % Make a logger for a UserCommand.
+    % Prepends the command as a prefix and logs everything except debug messages.
     logger = SimpleLogger(1);
     logger.debugPrefix = "DEBUG(" + commandName + "): ";
     logger.infoPrefix = "INFO (" + commandName + "): ";
@@ -111,6 +118,7 @@ function logger = makeCommandLogger(commandName)
 end
 
 function logger = makeSystemLogger()
+    % Make an extra logger for the SystemUtil, which handles calls to the host OS
     logger = SimpleLogger(1);
     logger.debugPrefix = "DEBUG(SystemUtil): ";
     logger.infoPrefix = "INFO (SystemUtil): ";
