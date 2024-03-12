@@ -26,9 +26,11 @@ classdef UserConfig
 
     methods (Static)
         function isValid = checkOutputType(value)
+            % Verify that a value is a valid setting for OutputType
             isValid = ismember(lower(value), arrayfun(@lower, UserConfig.OutputTypeValues));
         end
         function message = describeBadOutputType(value)
+            % Given an invalid value for OutputType, return a message describing why it is not valid
             if (isstring(value))
                 message = sprintf("OutputType expects one of %s, but got %s", ...
                     strjoin(UserConfig.OutputTypeValues, " | "), StringUtil.toStr(value));

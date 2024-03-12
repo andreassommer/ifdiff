@@ -1,6 +1,7 @@
 classdef Logger
-    % Handle for logging events in the code. This is also intended as a configurable replacement for using disp(),
-    % there is no distinction between internal logging and responding to the user as of now, except via log levels.
+    % Handler for logging events in the code.
+    % This is also intended as a configurable replacement for using disp().
+    % There is no distinction between internal logging and program output as of now, except via log levels.
     properties (Constant)
         LEVEL_NONE = 0;
         LEVEL_ERROR = 1;

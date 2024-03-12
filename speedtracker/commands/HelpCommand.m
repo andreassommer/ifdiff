@@ -18,12 +18,13 @@ classdef HelpCommand < UserCommand
             ], SystemUtil.lineSep());
         end
 
-        % Process arguments, producing a struct of the form:
-        % {
-        %   [About: command]    % simpleString that is one of the available commands.
-        % }
-        % where simpleString means either a 1x1 string array or a 1xN character array.
         function commandConfig = handleArgs(~, argCell)
+            % Process arguments, producing a struct that can be passed to execute()
+            % Form of the result struct:
+            % {
+            %   [About: command]    % simpleString that is one of the available commands.
+            % }
+            % where simpleString means either a 1x1 string array or a 1xN character array.
             commandConfig = struct();
             if (length(argCell) > 1)
                 if ~StringUtil.isSimpleString(argCell{2})
@@ -47,8 +48,8 @@ classdef HelpCommand < UserCommand
             end
         end
 
-        % Create a general help message listing the commands and describing how to get more info about each.
         function message = generalHelp(this)
+            % Create a general help message listing the commands and describing how to get more info about each.
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
             commands = speedtrackerConfig.userCommands;
             messageLines = ["Usage:", " "];

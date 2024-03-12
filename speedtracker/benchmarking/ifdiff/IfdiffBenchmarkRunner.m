@@ -27,10 +27,11 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             this.logger = logger;
         end
 
-        % List all available benchmarks. To be precise, all .m files in
-        % <tempDir>/benchmarks that contain functions with no arguments are treated as benchmarks, and their function
-        % names used as benchmark IDs. So make sure there is no garbage lying around in that folder!
         function benchmarks = listBenchmarks(this)
+            % List all available benchmarks.
+            % To be precise, all .m files in
+            % <tempDir>/benchmarks that contain functions with no arguments are treated as benchmarks, and their function
+            % names used as benchmark IDs. So make sure there is no garbage lying around in that folder!
             benchmarks = [];
             benchmarksDir = this.getBenchmarksDirectory();
             contents = dir(benchmarksDir);
@@ -45,10 +46,11 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             end
         end
 
-        % For a list of benchmark IDs, load each one and validate that they are correct and complete
-        % Exceptions:
-        % BenchmarkRunner.ERROR_BAD_BENCHMARK if any benchmark is malformed or cannot be found
+
         function this = init(this, benchmarkIDs)
+            % For a list of benchmark IDs, load each one and validate that they are correct and complete
+            % Exceptions:
+            % BenchmarkRunner.ERROR_BAD_BENCHMARK if any benchmark is malformed or cannot be found
             this.benchmarkIDList = benchmarkIDs;
             this.benchmarks = dictionary;
             this.results = dictionary;
@@ -59,11 +61,11 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             end
         end
 
-        % Run a benchmark and store its results.
-        % Exceptions:
-        % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
-        %     because the benchmark was not in the list or because init() was not called at all.
         function this = runBenchmark(this, currentSnapshotID, benchmarkID)
+            % Run a benchmark and store its results.
+            % Exceptions:
+            % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
+            %     because the benchmark was not in the list or because init() was not called at all.
             if ~isKey(this.benchmarks, benchmarkID)
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, ...
                     "benchmark " + benchmarkID + " was not loaded with init()"));
@@ -74,8 +76,8 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             this.results(benchmarkID) = resultsSoFar.merge(result);
         end
 
-        % Get the results from all the benchmarking runs so far.
         function results = getResults(this)
+            % Get the results from all the benchmarking runs so far.
             results = cell(1, length(this.benchmarkIDList));
             for i=1:length(this.benchmarkIDList)
                 benchmarkID = this.benchmarkIDList(i);
@@ -83,9 +85,9 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             end
         end
 
-        % Put a IfdiffBenchmarkResult into a table with the columns' names matching the fields of IfdiffBenchmarkResult.
-        % delegated to IfdiffBenchmarkResult#toTable
         function tab = makeTable(~, result)
+            % Put a IfdiffBenchmarkResult into a table with the columns' names matching the fields of IfdiffBenchmarkResult.
+            % delegated to IfdiffBenchmarkResult#toTable
             tab = result.toTable();
         end
     end

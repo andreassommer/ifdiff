@@ -1,5 +1,6 @@
 classdef (Abstract) BenchmarkRunner
-    %BENCHMARKRUNNER Runs benchmarks across various snapshots. All IFDIFF-specific functionality
+    %BENCHMARKRUNNER Runs benchmarks across various snapshots.
+    % All IFDIFF-specific functionality
     % should be hidden behind this interface, so that Speedtracker can be used with other
     % libraries.
 
@@ -12,8 +13,8 @@ classdef (Abstract) BenchmarkRunner
         % List all available benchmarks. Return a vector of their IDs, which must be strings
         benchmarks = listBenchmarks(this)
 
-        % Prepare to run the provided benchmarks, given as a list of their IDs. For example, loading benchmarks from
-        % disk or preallocating a return structure.
+        % Prepare to run the provided benchmarks, given as a list of their IDs.
+        % For example, loading benchmarks from disk or preallocating a return structure.
         % Must throw errors with the following identifiers in the given cases:
         % ERROR_BAD_BENCHMARK if one of the provided benchmarks does not exist or is faulty
         this = init(this, benchmarkIDs)
@@ -27,7 +28,8 @@ classdef (Abstract) BenchmarkRunner
         %     it was not among the list passed or because init() was never called.
         this = runBenchmark(this, currentSnapshotID, benchmarkID)
 
-        % Return the results of all benchmarking across all snapshots. There are three degrees of freedom: Snapshots,
+        % Return the results of all benchmarking across all snapshots.
+        % There are three degrees of freedom: Snapshots,
         % Benchmarks, and metrics. An abstract representation would be a third-order tensor. But tensors are confusing,
         % so instead this must return a cell array of structs each containing the results for one benchmark.
         % R1 each element of the returned cell array must be compatible with makeTable()

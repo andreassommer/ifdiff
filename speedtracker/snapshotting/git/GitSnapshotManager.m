@@ -33,11 +33,12 @@ classdef GitSnapshotManager < SnapshotLoader
     end
 
     properties(Constant, Access=private)
-        % Git ref name under which metadata about the saved state can be found. Due to the contract of
-        % restoreProjectState, this must always be a class constant.
+        % Git ref name under which metadata about the saved state can be found.
+        % Due to the contract of restoreProjectState, this must always be a class constant.
         METADATA_REF_NAME = "refs/speedtracker/snapshot-manager"
         METADATA_TEMP_FILE_NAME = "speedtracker-git-snapshot-manager-temp";
         SNAPSHOTS_FILE_NAME = "snapshots.txt";
+        % Wait time between Snapshot check-outs
         % MATLAB doesn't grok that a file changed unless its timestamp on disk is a full second away from the timestamp
         % inside MATLAB. To ensure that the current snapshot is actually being used, we must wait 1s between checkouts.
         % Note that this also applies to restoreProjectState, but not to saveProjectState, since the latter does not
@@ -60,19 +61,22 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         %% SnapshotLoader interface
-        % Save the current state of the working directory. If there are any changes
-        % in the index, throw an exception, because saving state without destroying the index is too difficult.
-        % If there are changes in the working tree, commit them to a temporary commit and store information for
-        % retrieving it in a tagged blob.
-        %
-        % Exceptions:
-        %   If there are staged changes, throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a
-        %        ERROR_STAGED_CHANGES_PRESENT as a cause
-        %   The repo must be on a branch. If this is run in detached HEAD mode, throw 
-        %       SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a ERROR_DETACHED_HEAD as a cause
-        %   If there is already a saved state, throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
-        % In all cases, leave the project behind the same state it was in before.
         function this = saveProjectState(this)
+            % Save the current state of the working directory.
+            % The saved state is stored in the Git objects database, so it persists across check-outs.
+            % If there are any changes
+            % in the index, throw an exception, because saving state without destroying the index is too difficult.
+            % If there are changes in the working tree, commit them to a temporary commit and store information for
+            % retrieving it in a tagged blob.
+            %
+            % Exceptions:
+            %   If there are staged changes, throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a
+            %        ERROR_STAGED_CHANGES_PRESENT as a cause
+            %   The repo must be on a branch. If this is run in detached HEAD mode, throw 
+            %       SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a ERROR_DETACHED_HEAD as a cause
+            %   If there is already a saved state, throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
+            % In all cases, leave the project behind the same state it was in before.
+
             % throws in case of E1, staged changes
             if ~this.isGitIndexClean()
                 innerError = MException(GitSnapshotManager.ERROR_STAGED_CHANGES_PRESENT, ...
@@ -81,6 +85,7 @@ classdef GitSnapshotManager < SnapshotLoader
                     "project's state cannot be saved");
                 throw(outerError.addCause(innerError));
             end
+
             % throws in case of E2, detached head state
             currentBranch = this.getCurrentBranch();
             if strcmp(currentBranch, "")
@@ -123,13 +128,11 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Load the snapshot specified by `id`. The previous state must already have been saved with
-        % saveProjectState.
-        %
-        % Exceptions:
-        %   If the ID is syntactically invalid or no such snapshot exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
-        %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
         function this = loadSnapshot(this, id)
+            % Load the snapshot specified by `id`. The previous state must already have been saved with saveProjectState.
+            % Exceptions:
+            %   If the ID is syntactically invalid or no such snapshot exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
+            %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -155,15 +158,15 @@ classdef GitSnapshotManager < SnapshotLoader
             this.lastSnapshotLoadTime = this.getPosixTime();
         end
 
-        % Restore the state of the project from the temporary snapshot created by saveProjectState and
-        % delete the temp snapshot. Must guarantee:
-        % 1. The snapshot can be restored statelessly, using only the same subclass - not instance - of
-        %     SnapshotManager.
-        % Exceptions:
-        % SnapshotLoader.ERROR_NO_SAVED_STATE if there is no saved state to load
-        % SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE if the saved state cannot be parsed or if the `git switch` or
-        %    `git reset` commands required to restore fail.
         function this = restoreProjectState(this)
+            % Restore the state of the project from the save state created by saveProjectState and delete the save state.
+            % Must guarantee:
+            % 1. The snapshot can be restored statelessly, using only the same subclass - not instance - of
+            %     SnapshotManager.
+            % Exceptions:
+            % SnapshotLoader.ERROR_NO_SAVED_STATE if there is no saved state to load
+            % SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE if the saved state cannot be parsed or if the `git switch` or
+            %    `git reset` commands required to restore fail.
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     "could not restore project state because no saved state present"));
@@ -211,9 +214,10 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         %% Snapshot editing (CRUD)
-        % Create a snapshot with a provided ID. If the argument commit is passed, create the snapshot
-        % from the commit it points to. Otherwise, use the commit pointed to by HEAD.
         function [id, commit] = createSnapshot(this, id, commitSha)
+            % Create a snapshot with a provided ID.
+            % If the third parameter commitSha is passed, create the snapshot from the commit it points to.
+            % Otherwise, use the commit pointed to by HEAD.
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -241,9 +245,9 @@ classdef GitSnapshotManager < SnapshotLoader
             this.saveSnapshots(newSnapshots, this.getSnapshotsFileName());
         end
 
-        % Delete a snapshot given its string ID.
-        % Throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID if the ID is invalid or no such snapshot exists
         function [id, sha] = deleteSnapshot(this, id)
+            % Delete a snapshot.
+            % Throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID if the ID is invalid or no such snapshot exists
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -258,23 +262,24 @@ classdef GitSnapshotManager < SnapshotLoader
             this.saveSnapshots(remainingSnapshots, this.getSnapshotsFileName());
         end
 
-        % return all snapshots' IDs sorted ascendingly by their commit's author date, i.e. when the commit was created.
         function snapshots = listSnapshots(this)
+            % return all snapshots' IDs sorted ascendingly by their commit's author date, i.e. when the commit was created.
             snapshotList = this.loadSnapshots(this.getSnapshotsFileName());
             [~, indices] = sort(snapshotList.timestamp);
             snapshots = snapshotList.id(indices);
         end
 
-        % Get information about a snapshot, returning a dict with the properties:
-        %   commitSha: the snapshot's commit SHA
-        %   author: the commit's author (Name <e@mail.address>)
-        %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
-        %   authorTimeZone: time zone of the author date, in the format +0100
-        %   commitDate: commit date in Unix time (string)
-        %   commitTimeZone: time zone of the commit date, in the format +0100
-        %   subject: the "subject line", containing the commit message and some other stuff (and not necessarily one
-        %   line long!
         function info = getSnapshotInfo(this, id)
+            % Get information about a snapshot, returning a dictionary
+            % The dictionary contains the properties:
+            %   commitSha: the snapshot's commit SHA
+            %   author: the commit's author (Name <e@mail.address>)
+            %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
+            %   authorTimeZone: time zone of the author date, in the format +0100
+            %   commitDate: commit date in Unix time (string)
+            %   commitTimeZone: time zone of the commit date, in the format +0100
+            %   subject: the "subject line", containing the commit message and some other stuff (and not necessarily one
+            %   line long!
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -294,17 +299,17 @@ classdef GitSnapshotManager < SnapshotLoader
 
     methods (Access=private)
         %% Metadata Storage for Project State Saving
-        % Find out if metadata have been stored. Do this by simply checking for the tag that is mapped
-        % to the metadata blob.
         function isPresent = isMetadataPresent(this)
+            % Find out if metadata have been stored.
+            % Do this by simply checking for the git ref that points to the metadata blob.
             isPresent = this.getShaOfRef(GitSnapshotManager.METADATA_REF_NAME) ~= "";
         end
 
-        % Store metadata in the Git object database (so it is safe against getting lost during checkout of snapshots)
-        % Like a browser cookie, there is just one data string for GitSnapshotManager. For now, this is just
-        % intended to be a really minimal "where was I?" so each method that uses it will just make its own JSON
-        % and hopefully we won't need any more abstractions.
         function pushMetadata(this, stringData)
+            % Store metadata in the Git object database (so it is safe against getting lost during checkout of snapshots)
+            % Like a browser cookie, there is just one data string for GitSnapshotManager. For now, this is just
+            % intended to be a really minimal "where was I?" so each method that uses it will just make its own JSON
+            % and hopefully we won't need any more abstractions.
             if this.isMetadataPresent()
                 throw(MException(GitSnapshotManager.ERROR_METADATA_ALREADY_PRESENT, "metadata already present"));
             end
@@ -340,9 +345,10 @@ classdef GitSnapshotManager < SnapshotLoader
             filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.METADATA_TEMP_FILE_NAME);
         end
 
-        % Get the metadata stored by pushMetadata. If there are metadata present, also delete them.
-        % If there are none present, throw an exception with the identifier ERROR_NO_METADATA_PRESENT
         function stringData = popMetadata(this)
+        % Pop the metadata stored by pushMetadata.
+        % If there are metadata present, delete them. If there are none present, throw an exception
+        % with the identifier ERROR_NO_METADATA_PRESENT
             if ~this.isMetadataPresent()
                 throw(MException(GitSnapshotManager.ERROR_NO_METADATA_PRESENT, "no metadata present"));
             end
@@ -361,10 +367,11 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Save all current changes in the working directory to a temporary commit.
-        % Must not be run if there are staged changes.
-        % Returns the SHA of the previous commit, so we know what commit to `git reset --mixed` to when restoring.
         function prevCommitSha = saveWorkdirToTempCommit(this)
+            % Save all current changes in the working directory to a temporary commit.
+            % Must not be run if there are staged changes.
+            % Returns the SHA of the previous commit, so we know what commit to `git reset --mixed` to when restoring.
+
             % get last commit SHA
             [status, cmdout] = SystemUtil.safeSystem("git rev-parse HEAD");
             if (status ~= 0)
@@ -393,9 +400,10 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         %% Snapshot ID wrangling
-        % Given a 1xN char or a 1x1 string, determine if it is a valid snapshot name: it must start with
-        % a letter and consist of only letters, digits, dashes, and underscores.
         function isValid = isValidSnapshotID(~, id)
+            % Given a 1xN char or a 1x1 string, determine if it is a valid snapshot name
+            % It must start with
+            % a letter and consist of only letters, digits, dashes, and underscores.
             if regexp(id, GitSnapshotManager.SNAPSHOT_ID_REGEX)
                 isValid = 1;
             else
@@ -404,6 +412,7 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function exception = invalidSnapshotIDException(~, id)
+            % Create an exception for bad snapshot IDs
             idPattern = GitSnapshotManager.SNAPSHOT_ID_REGEX;
             exception = MException( ...
                 SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, ...
@@ -412,8 +421,8 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         %% Primitive or nearly-primitive Git functions
-        % Get the SHA of the object that a given ref is pointing to. If there is none, return the empty string.
         function commitSha = getShaOfRef(this, ref)
+            % Get the SHA of the object that a given ref is pointing to. If there is none, return the empty string.
             [status, cmdout] = SystemUtil.safeSystem(sprintf("git show-ref --hash %s", ref));
             if (status ~= 0 && strlength(cmdout) == 0)
                 commitSha = "";
@@ -424,8 +433,8 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Get the name of the current branch. If the repo is in detached HEAD mode, return the empty string.
         function branch = getCurrentBranch(this)
+            % Get the name of the current branch. If the repo is in detached HEAD mode, return the empty string.
             [status, cmdout] = SystemUtil.safeSystem("git rev-parse --abbrev-ref HEAD");
             if contains(cmdout, "HEAD")
                 branch = "";
@@ -436,8 +445,8 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Return 1 if there are no staged changes, or 0 otherwise.
         function isClean = isGitIndexClean(~)
+            % Return 1 if there are no staged changes, or 0 otherwise.
             [status, cmdout] = SystemUtil.safeSystem("git diff-index --cached HEAD");
             if (status == 0 && strlength(cmdout) == 0)
                 isClean = 1;
@@ -446,9 +455,9 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Return 1 if the `git status` says that there are no changes present, neither in the index, the worktree,
-        % nor any untracked files, 0 otherwise.
         function isClean = isGitStatusClean(this)
+            % Return 1 if the `git status` says that there are no changes present, 0 otherwise
+            % Returns 1 only if there are no changes in the index, the worktree, nor any untracked files.
             [status, cmdout] = SystemUtil.safeSystem("git status");
             if (status ~= 0)
                 throw(this.genericGitError(cmdout));
@@ -461,14 +470,14 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        % Check if a string points to a commit (i.e. is a ref or SHA) 
         function exists = commitExists(~, str)
+            % Check if a string points to a commit (i.e. is a ref or SHA) 
             [status, cmdout] = SystemUtil.safeSystem(sprintf("git cat-file -t %s", str));
             exists = (status == 0) && (strcmp(cmdout, "commit"));
         end
 
-        % Verify that a string is the SHA of a commit. Not a ref, but a commit.
         function isSha = isCommitSha(this, sha)
+            % Verify that a string is the SHA of a commit. Not a ref, but a commit.
             if ~regexp(sha, "[a-f0-9]+")
                 isSha = 0;
                 return;
@@ -481,8 +490,8 @@ classdef GitSnapshotManager < SnapshotLoader
             isSha = status == 0 && strcmp(sha, cmdout); % this check filters out refs, e.g. HEAD
         end
 
-        % Get the SHA of the commit that HEAD is pointing to.
         function sha = getCurrentCommitSha(this)
+            % Get the SHA of the commit that HEAD is pointing to.
             [status, cmdout] = SystemUtil.safeSystem("git rev-parse --verify HEAD");
             if (status == 1)
                 throw(this.genericGitError(cmdout));
@@ -490,23 +499,25 @@ classdef GitSnapshotManager < SnapshotLoader
             sha = cmdout;
         end
 
-        % Return a generic exception for when a Git command went wrong in an unexpected way. This should never be used
-        % for actual, expected error conditions. Only in cases where it should be impossible for anything to go wrong
-        % (but you know how it is, we make mistakes, we don't know when exactly a Git command may return an error...),
-        % include a check for error conditions and throw one of these so the error doesn't disappear silently.
         function err = genericGitError(~, cmdout)
+            % Return a generic exception for when a Git command went wrong in an unexpected way.
+            % This should never be used for actual, expected error conditions. Only in cases where it
+            % should be impossible for anything to go wrong (but you know how it is - we make mistakes,
+            % we don't know when exactly a Git command may return an error...),
+            % include a check for error conditions and throw one of these so the error doesn't disappear silently.
             err = MException(GitSnapshotManager.ERROR_GIT_GENERIC, "error in Git command: " + cmdout);
         end
 
-        % Get info about a commit, returning a dictionary containing:
-        %   author: the commit's author (Firstname Lastname <e@mail.address>)
-        %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
-        %   authorTimeZone: time zone of the author date, in the format +0100
-        %   commitDate: commit date in Unix time (string)
-        %   commitTimeZone: time zone of the commit date, in the format +0100
-        %   subject: the "subject line", containing the commit message and some other stuff (and not necessarily one
-        %   line long!
         function dict = getCommitInfo(this, sha)
+            % Get info about a commit, returning a dictionary
+            % Properties:
+            %   author: the commit's author (Firstname Lastname <e@mail.address>)
+            %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
+            %   authorTimeZone: time zone of the author date, in the format +0100
+            %   commitDate: commit date in Unix time (string)
+            %   commitTimeZone: time zone of the commit date, in the format +0100
+            %   subject: the "subject line", containing the commit message and some other stuff (and not necessarily one
+            %   line long!
             [status, cmdout] = SystemUtil.safeSystem(sprintf("git cat-file commit %s", sha));
             if (status ~= 0)
                 throw(this.genericGitError(cmdout));
@@ -540,24 +551,25 @@ classdef GitSnapshotManager < SnapshotLoader
         % (row vectors), called a _snapshot list_.
         % For storage, we simply write each snapshot on a line with id, sha, and timestamp separated by spaces.
 
-        % Get the filename for the snapshot file. Note: this is the file in the original
-        % speedtracker directory, not the temp dir! Do not mix snapshot CRUD and snapshot loading.
         function filename = getSnapshotsFileName(~)
+            % Get the filename for the snapshot file.
+            % Note: this is the file in the original
+            % speedtracker directory, not the temp dir! Do not mix snapshot CRUD and snapshot loading.
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig(); 
             filename = fullfile(speedtrackerConfig.speedtrackerDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
         end
 
-        % Get the filename for the temp copy of the snapshot file. Needed when loading snapshots, because the
-        % original will be overwritten by loading snapshots.
         function filename = getSnapshotsTempFileName(~)
+            % Get the filename for the temp copy of the snapshot file.
+            % Needed when loading snapshots, because the original will be overwritten by loading snapshots.
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig(); 
             filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
         end
 
-        % Read a snapshot file and return a snapshot list. If it does not exist, return an empty snapshot list.
-        % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the file cannot be opened/written
-        %   and GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE if the file cannot be parsed.
         function snapshots = loadSnapshots(this, file)
+            % Read a snapshot file and return a snapshot list. If it does not exist, return an empty snapshot list.
+            % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the file cannot be opened/written
+            %   and GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE if the file cannot be parsed.
             if ~isfile(file)
                 snapshots = this.makeSnapshotList(strings(0), strings(0), zeros(0));
                 return;
@@ -591,9 +603,9 @@ classdef GitSnapshotManager < SnapshotLoader
             snapshots = this.makeSnapshotList(snapshotArray(:, 1)', snapshotArray(:, 2)', timestamps');
         end
 
-        % Save snapshots given as a snapshot list to a snapshot file. If there are 0 snapshots, delete the file.
-        % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the snapshot file cannot be accessed
         function saveSnapshots(~, snapshots, file)
+            % Save snapshots given as a snapshot list to a snapshot file. If there are 0 snapshots, delete the file.
+            % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the snapshot file cannot be accessed
             if (isempty(snapshots.id))
                 try
                     delete(file);
@@ -626,8 +638,8 @@ classdef GitSnapshotManager < SnapshotLoader
             list = struct("id", id, "sha", sha, "timestamp", timestamp);
         end
 
-        % Given a snapshot list, get the sublist (or individual snapshot) at the provided indices.
         function subList = idxSnapshots(~, snapshotList, idx)
+            % Given a snapshot list, get the sublist (or individual snapshot) at the provided indices
             if length(size(idx)) > 2 || size(idx, 1) > 1 && size(idx, 2) > 1
                 throw(MException("GitSnapshotManager:index", "index array must be a scalar or vector"));
             end
@@ -639,8 +651,8 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         %% Miscellaneous
-        % How long we must wait before the next snapshot loading operation, in milliseconds
         function milliseconds = getWaitTimeForLoading(this)
+            % How long we must wait before the next snapshot loading operation, in milliseconds
             secondsSinceLastLoad = (this.getPosixTime() - this.lastSnapshotLoadTime);
             milliseconds = (GitSnapshotManager.SNAPSHOT_LOAD_WAIT_TIME - secondsSinceLastLoad) * 1000;
         end

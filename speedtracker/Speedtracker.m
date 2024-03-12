@@ -1,6 +1,6 @@
 classdef Speedtracker
-    %SPEEDTRACKER Runner for the main benchmarking functionality. Receives a SnapshotLoader and a BenchmarkRunner
-    % and performs the main benchmarking.
+    %SPEEDTRACKER Runner for the main benchmarking functionality.
+    % Receives a SnapshotLoader and a BenchmarkRunner and performs the main benchmarking.
     
     properties
         logger;
@@ -15,11 +15,12 @@ classdef Speedtracker
             obj.benchmarkRunner = benchmarkRunner;
         end
 
-        % Run a set of benchmarks across a set of snapshots. The snapshots are either 1xN array of strings passed
-        % through commandConfig.Snapshots, or all snapshots that SnapshotLoader#listSnapshots returns. The
-        % benchmarks are either a 1xN array of strings passed through commandConfig.Benchmarks, or all benchmarks
-        % returned by BenchmarkRunner#listBenchmarks.
         function this = run(this, commandConfig)
+            % Run a set of benchmarks across a set of snapshots.
+            % The snapshots are either 1xN array of strings passed
+            % through commandConfig.Snapshots, or all snapshots that SnapshotLoader#listSnapshots returns. The
+            % benchmarks are either a 1xN array of strings passed through commandConfig.Benchmarks, or all benchmarks
+            % returned by BenchmarkRunner#listBenchmarks.
             if isfield(commandConfig, "Snapshots")
                 snapshots = commandConfig.Snapshots;
             else
@@ -42,6 +43,7 @@ classdef Speedtracker
                 end
             end
 
+            %% Save project state so we can check out snapshots
             try
                 this.snapshotLoader = this.snapshotLoader.saveProjectState();
             catch savingError
@@ -66,8 +68,8 @@ classdef Speedtracker
                 end
             end
 
-            % Put everything in a try block to ensure that we can restore
-            % state if anything goes wrong
+            %% The meat: check out each snapshot, run all benchmarks over it, then proceed to the next snapshot.
+            % Everything is in a try block so we can at least call restore project state no matter what goes wrong.
             try
                 this.logger.info("running benchmarks " + strjoin(benchmarks, ", "));
                 this.logger.info("  on snapshots " + strjoin(snapshots, ", "));
@@ -96,9 +98,9 @@ classdef Speedtracker
         end
 
 
-        % Convert this.benchmarkRunner's results depending on the configuration value of OutputType. See
-        % Configuration#OutputType for explanation on the available options.
         function prettyResults = getBenchmarkResults(this)
+            % Convert this.benchmarkRunner's results depending on the configuration value of OutputType.
+            % See Configuration#OutputType for explanation on the available options.
             results = this.benchmarkRunner.getResults();
             userConfig = ConfigProvider.getUserConfig();
             outputType = userConfig.OutputType;

@@ -15,6 +15,7 @@ classdef SimpleLogger < Logger
 
     methods
         function this = SimpleLogger(outputFile)
+            % Constructor with one parameter: FD for the output file.
             this.outputFile = outputFile;
         end
 

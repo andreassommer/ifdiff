@@ -18,12 +18,13 @@ classdef DeleteSnapshotCommand < UserCommand
             ], SystemUtil.lineSep());
         end
 
-        % Process arguments, producing a struct of the form:
-        % {
-        %   ID: simpleString
-        % }
-        % where simpleString means either a 1x1 string array or a 1xN character array.
         function commandConfig = handleArgs(~, argCell)
+            % Process arguments, producing a struct that can be passed to execute()
+            % Form of the result struct:
+            % {
+            %   ID: simpleString
+            % }
+            % where simpleString means either a 1x1 string array or a 1xN character array.
             commandConfig = struct();
             if (length(argCell) <= 1)
                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, "no snapshot ID provided"));

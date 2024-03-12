@@ -21,8 +21,9 @@ classdef RestoreStateCommand < UserCommand
             ], SystemUtil.lineSep());
         end
 
-        % Process arguments, producing an empty struct
+
         function commandConfig = handleArgs(~, ~)
+            % Process arguments, producing an empty struct
             commandConfig = struct();
         end
 

@@ -38,16 +38,16 @@ classdef RunBenchmarksCommand < UserCommand
             ], SystemUtil.lineSep());
         end
 
-        % Process arguments, producing a struct of the form:
-        % {
-        %   [Snapshots: 1xN string]      % only one of Snapshots and SnapshotFile can be present
-        %   [SnapshotFile: simpleString]
-        %   [Benchmarks: 1xN string]
-        %   [OutputType: ("NTables" | "OneTable" | "Raw")]
-        %   [XEndTol: 1xN double]
-        % }
-        % where simpleString means either a 1x1 string array or a 1xN character array.
         function commandConfig = handleArgs(~, argCell)
+            % Process arguments, producing a struct that can be passed to execute()
+            % Form of the result struct:
+            % {
+            %   [Snapshots: 1xN string]
+            %   [Benchmarks: 1xN string]
+            %   [OutputType: ("NTables" | "OneTable" | "Raw")]
+            %   [XEndTol: 1xN double]
+            % }
+            % where simpleString means either a 1x1 string array or a 1xN character array.
             commandConfig = struct();
             if length(argCell) > 2
                 % ignore excess last argument

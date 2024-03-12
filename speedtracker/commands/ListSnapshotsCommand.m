@@ -18,9 +18,10 @@ classdef ListSnapshotsCommand < UserCommand
             ], SystemUtil.lineSep());
         end
 
-        % Process arguments, producing a struct of the form
-        % { }
         function commandConfig = handleArgs(~, ~)
+            % Process arguments, producing a struct that can be passed to execute()
+            % Form of the result struct:
+            % { <empty> }
             commandConfig = struct();
         end
 
