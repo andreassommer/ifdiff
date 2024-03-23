@@ -2,11 +2,11 @@ classdef (Abstract) SnapshotLoader
     %SnapshotManager Abstract class for loading snapshots
 
     properties (Constant)
-        ERROR_COULD_NOT_SAVE_STATE = "SnapshotLoader:couldNotSaveState";
-        ERROR_NO_SAVED_STATE = "SnapshotLoader:noSavedStateFound";
-        ERROR_SAVED_STATE_PRESENT = "SnapshotLoader:savedStatePresent";
-        ERROR_BAD_SNAPSHOT_ID = "SnapshotLoader:badSnapshotID";
-        ERROR_COULD_NOT_LOAD_STATE = "SnapshotLoader:couldNotLoadState";
+        ERROR_COULD_NOT_SAVE_STATE = 'SnapshotLoader:couldNotSaveState';
+        ERROR_NO_SAVED_STATE = 'SnapshotLoader:noSavedStateFound';
+        ERROR_SAVED_STATE_PRESENT = 'SnapshotLoader:savedStatePresent';
+        ERROR_BAD_SNAPSHOT_ID = 'SnapshotLoader:badSnapshotID';
+        ERROR_COULD_NOT_LOAD_STATE = 'SnapshotLoader:couldNotLoadState';
     end
     methods (Abstract)
         % Save the current state of the project to a temporary snapshot.
@@ -50,7 +50,7 @@ classdef (Abstract) SnapshotLoader
         %     ERROR_COULD_NOT_LOAD_STATE if something else went wrong loading the state
         % Implementation-specific errors can be attached as causes.
         this = restoreProjectState(this)
-        % List all available snapshots, returning an array of their IDs as strings
+        % List all available snapshots, returning a cellstring of their IDs
         snapshots = listSnapshots(this)
     end
 end

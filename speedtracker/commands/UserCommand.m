@@ -5,11 +5,11 @@ classdef (Abstract) UserCommand
     % messages, and execution in one class.
 
     properties (Constant)
-        ERROR_BAD_ARGUMENT = "UserCommand:badArgument";
+        ERROR_BAD_ARGUMENT = 'UserCommand:badArgument';
         % An exception that is "expected" and, accordingly, should be handled and/or logged in a legible way.
         % Concretely, an exception with this identifier should have a user-friendly message that the main script
         % will simply print out. All other exceptions should be debug-logged with stack trace.
-        ERROR_EXPECTED_EXCEPTION = "UserCommand:expectedException";
+        ERROR_EXPECTED_EXCEPTION = 'UserCommand:expectedException';
     end
 
     methods (Abstract)

@@ -31,9 +31,9 @@ classdef IfdiffBenchmarkConfig
             % Given an invalid value for XEndTol, describe why it is invalid
             % Will not work properly if you pass in a valid XEndtol value.
             if isnumeric(value)
-                message = sprintf("expecting scalar, but got dimensions %s", StringUtil.dimStr(value));
+                message = sprintf('expecting scalar, but got dimensions %s', StringUtil.dimStr(value));
             else
-                message = sprintf("expecting numeric type, but got %s", class(value));
+                message = sprintf('expecting numeric type, but got %s', class(value));
             end
         end
 

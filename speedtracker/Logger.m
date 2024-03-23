@@ -12,23 +12,23 @@ classdef Logger
 
     methods (Access=public)
         function debug(~, message)
-            fprintf("%s\n", message);
-            disp(" ");
+            fprintf('%s\n', message);
+            disp(' ');
         end
 
         function info(~, message)
-            fprintf("%s\n", message);
-            disp(" ");
+            fprintf('%s\n', message);
+            disp(' ');
         end
 
         function warn(~, message)
-            fprintf("%s\n", message);
-            disp(" ");
+            fprintf('%s\n', message);
+            disp(' ');
         end
 
         function error(~, message)
-            fprintf("%s\n", message);
-            disp(" ");
+            fprintf('%s\n', message);
+            disp(' ');
         end
     end
 end

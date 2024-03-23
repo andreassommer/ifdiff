@@ -5,13 +5,13 @@ classdef UserConfig
     %   checkConfigOption and describeBadConfigOption for validating it and describing what it should look like if a
     %   user passes a bad value.
     properties (Access=public)
-        % Output format for benchmark results. value: "Raw" | "OneTable" | "NTables", default "OneTable".
+        % Output format for benchmark results. value: 'Raw' | 'OneTable' | 'NTables', default 'OneTable'.
         % Used by RunCommand.
         OutputType = Configuration.OutputType;
     end
 
     properties (Constant, Access=private)
-        OutputTypeValues = ["Raw", "OneTable", "NTables"];
+        OutputTypeValues = {'Raw', 'OneTable', 'NTables'};
     end
 
     methods
@@ -27,17 +27,18 @@ classdef UserConfig
     methods (Static)
         function isValid = checkOutputType(value)
             % Verify that a value is a valid setting for OutputType
-            isValid = StringUtil.isSimpleString(value) && ismember(lower(value), arrayfun(@lower, UserConfig.OutputTypeValues));
+            isValid = StringUtil.isSimpleString(value) && ismember( ...
+                lower(value), cellfun(@lower, UserConfig.OutputTypeValues, 'UniformOutput', false));
         end
         function message = describeBadOutputType(value)
             disp(value)
             % Given an invalid value for OutputType, return a message describing why it is not valid
             if (isstring(value))
-                message = sprintf("OutputType expects one of %s, but got %s", ...
-                    strjoin(UserConfig.OutputTypeValues, " | "), StringUtil.toStr(value));
+                message = sprintf('OutputType expects one of %s, but got %s', ...
+                    strjoin(UserConfig.OutputTypeValues, ' | '), StringUtil.toStr(value));
             else
-                message = sprintf("OutputType expects one of %s, but value has type %s", ...
-                    strjoin(UserConfig.OutputTypeValues, "|"), class(value));
+                message = sprintf('OutputType expects one of %s, but value has type %s', ...
+                    strjoin(UserConfig.OutputTypeValues, ' | '), class(value));
             end
         end
     end

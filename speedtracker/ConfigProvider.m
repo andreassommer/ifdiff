@@ -4,8 +4,8 @@ classdef ConfigProvider
     % SpeedtrackerConfig    for global and immutable (at least during one run of the program) constants
 
     properties (Constant)
-        ERROR_SPEEDTRACKER_CONFIG_NOT_SET = "ConfigProvider:SpeedtrackerConfigNotSet"
-        ERROR_USER_CONFIG_NOT_SET = "ConfigProvider:UserConfigNotSet"
+        ERROR_SPEEDTRACKER_CONFIG_NOT_SET = 'ConfigProvider:SpeedtrackerConfigNotSet'
+        ERROR_USER_CONFIG_NOT_SET = 'ConfigProvider:UserConfigNotSet'
     end
 
     methods (Static)
@@ -43,7 +43,7 @@ classdef ConfigProvider
         function config = getSetSpeedtrackerConfig(newConfig)
             persistent speedtrackerConfig;
             if (nargin == 0 && isempty(speedtrackerConfig))
-                throw(MException(ConfigProvider.ERROR_SPEEDTRACKER_CONFIG_NOT_SET, "SpeedtrackerConfig not set"));
+                throw(MException(ConfigProvider.ERROR_SPEEDTRACKER_CONFIG_NOT_SET, 'SpeedtrackerConfig not set'));
             elseif (nargin == 0)
                 config = speedtrackerConfig;
             else
@@ -54,7 +54,7 @@ classdef ConfigProvider
         function config = getSetUserConfig(newConfig)
             persistent userConfig;
             if (nargin == 0 && isempty(userConfig))
-                throw(MException(ConfigProvider.ERROR_USER_CONFIG_NOT_SET, "UserConfig not set"));
+                throw(MException(ConfigProvider.ERROR_USER_CONFIG_NOT_SET, 'UserConfig not set'));
             elseif (nargin ==0)
                 config = userConfig;
             else

@@ -6,7 +6,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
     end
 
     properties (Constant)
-        ERROR_CONFIG_NOT_SET = "IfdiffBenchmarkRunner:configNotSet"
+        ERROR_CONFIG_NOT_SET = 'IfdiffBenchmarkRunner:configNotSet'
     end
 
     properties (Access=private)
@@ -19,7 +19,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
     end
 
     properties (Constant, Access=private)
-        BENCHMARKS_FOLDER = "benchmarks";
+        BENCHMARKS_FOLDER = 'benchmarks';
     end
 
     methods
@@ -32,16 +32,16 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             % To be precise, all .m files in
             % <tempDir>/benchmarks that contain functions with no arguments are treated as benchmarks, and their function
             % names used as benchmark IDs. So make sure there is no garbage lying around in that folder!
-            benchmarks = [];
+            benchmarks = {};
             benchmarksDir = this.getBenchmarksDirectory();
             contents = dir(benchmarksDir);
-            contents = contents(arrayfun(@(file) exist(file.name, "file")==2, contents));
-            functions = contents(arrayfun(@(file) endsWith(file.name, ".m"), contents));
+            contents = contents(arrayfun(@(file) exist(file.name, 'file')==2, contents));
+            functions = contents(arrayfun(@(file) endsWith(file.name, '.m'), contents));
             for i=1:length(functions)
-                fileName = string(functions(i).name);
+                fileName = functions(i).name;
                 funcName = extractBefore(fileName, strlength(fileName) - 1);
                 if (nargin(str2func(funcName)) == 0)
-                    benchmarks = [benchmarks funcName];
+                    benchmarks{end+1} = funcName;
                 end
             end
         end
@@ -55,7 +55,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             this.benchmarks = dictionary;
             this.results = dictionary;
             for i=1:length(benchmarkIDs)
-                benchmark = this.loadBenchmark(benchmarkIDs(i));
+                benchmark = this.loadBenchmark(benchmarkIDs{i});
                 this.benchmarks(benchmark.id) = benchmark;
                 this.results(benchmark.id) = IfdiffBenchmarkResult(benchmark.id);
             end
@@ -67,8 +67,8 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
             %     because the benchmark was not in the list or because init() was not called at all.
             if ~isKey(this.benchmarks, benchmarkID)
-                throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, ...
-                    "benchmark " + benchmarkID + " was not loaded with init()"));
+                throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
+                    'benchmark %s was not loaded with init()', benchmarkID)));
             end
             initPaths();
             result = this.runBenchmarkInternal(currentSnapshotID, this.benchmarks(benchmarkID));
@@ -106,7 +106,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
         function config = getSetConfig(newConfig)
             persistent benchmarkConfig;
             if (nargin == 0 && isempty(benchmarkConfig))
-                throw(MException(IfdiffBenchmarkRunner.ERROR_CONFIG_NOT_SET, "IfdiffBenchmarkConfig not set"));
+                throw(MException(IfdiffBenchmarkRunner.ERROR_CONFIG_NOT_SET, 'IfdiffBenchmarkConfig not set'));
             elseif (nargin ==0)
                 config = benchmarkConfig;
             else
@@ -120,18 +120,18 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
         function benchmarkResult = runBenchmarkInternal(this, snapshotID, benchmark)
             % Run a single benchmark and return a IfdiffBenchmarkResult containing only its results.
             % These can then be added to the results from the other snapshots for that particular benchmark.
-            % If an exception occurs during the solving of the ODE, return a failed
+            % If an exception occurs during the solving of the ODE, return a failed benchmark
             tic;
             try
-                datahandle = prepareDatahandleForIntegration(convertStringsToChars(benchmark.rhs), ...
+                datahandle = prepareDatahandleForIntegration(benchmark.rhs, ...
                                                              'solver', benchmark.solver, ...
                                                              'options', benchmark.options);
                 sol = solveODE(datahandle, benchmark.tSpan, benchmark.x0, benchmark.p);
             catch error
                 time = toc;
-                this.logger.error("exception in benchmark " + benchmark.id + ", continuing with other benchmarks");
+                this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmark.id));
                 benchmarkResult = IfdiffBenchmarkResult( ...
-                    benchmark.id, snapshotID, NaN(size(benchmark.x0), "double"), {[]}, time, {error});
+                    benchmark.id, snapshotID, NaN(size(benchmark.x0), 'double'), {[]}, time, {error});
                 return;
             end
 
@@ -143,53 +143,54 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
 
         function benchmark = makeBenchmark(~, id, rhs, solver, tSpan, x0, p, options)
             benchmark = struct( ...
-                "id", id, ...
-                "rhs", rhs, ...
-                "solver", solver, ...
-                "tSpan", tSpan, ...
-                "x0", x0, ...
-                "p", p, ...
-                "options", options ...
+                'id', id, ...
+                'rhs', rhs, ...
+                'solver', solver, ...
+                'tSpan', tSpan, ...
+                'x0', x0, ...
+                'p', p, ...
+                'options', options ...
             );
         end
 
         function benchmark = loadBenchmark(this, benchmarkID)
-            benchmarkFile = fullfile(this.getBenchmarksDirectory(), benchmarkID + ".m");
+            benchmarkFile = fullfile(this.getBenchmarksDirectory(), sprintf('%s.m', benchmarkID));
             if exist(benchmarkFile, 'file') ~= 2
-                throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, "no benchmark with id " + benchmarkID));
+                throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, sprintf( ...
+                        'no benchmark with id %s', benchmarkID)));
             end
             benchmarkFunctionName = benchmarkID;
             benchmarkFunction = str2func(benchmarkFunctionName);
             if nargin(benchmarkFunction) ~= 0
                 throw(MException( ...
-                    BenchmarkRunner.ERROR_BAD_BENCHMARK, ...
-                    "benchmark function should be parameterless, but actually expects %s arguments", ...
-                    nargin(benchmarkFunction)));
+                    BenchmarkRunner.ERROR_BAD_BENCHMARK, sprintf( ...
+                        'benchmark function should be parameterless, but actually expects %s arguments', ...
+                        nargin(benchmarkFunction))));
             end
             benchmark = benchmarkFunction();
             benchmark.id = benchmarkID;
             try
                 this.validateBenchmark(benchmark)
             catch error
-                message = "bad benchmark " + benchmarkID + ": " + error.message;
+                message = sprintf('bad benchmark %s: %s', benchmarkID, error.message);
                 throw(MException(BenchmarkRunner.ERROR_BAD_BENCHMARK, message).addCause(error));
             end
         end
         function validateBenchmark(~, benchmark)
-            assert(isfield(benchmark, "id"),         "benchmark lacks member id");
-            assert(isa(benchmark.id, "string"),      "benchmark member id is not of type string");
-            assert(isfield(benchmark, "rhs"),        "benchmark lacks member rhs");
-            assert(isa(benchmark.rhs, "string"),     "benchmark member rhs is not of type string");
-            assert(isfield(benchmark, "solver"),     "benchmark lacks member solver");
-            assert(isa(benchmark.solver, "string"),  "benchmark member solver is not of type string");
-            assert(isfield(benchmark, "tSpan"),      "benchmark lacks member tSpan");
-            assert(isa(benchmark.tSpan, "double"),   "benchmark member tSpan is not of type double");
-            assert(isfield(benchmark, "x0"),         "benchmark lacks member x0");
-            assert(isa(benchmark.x0, "double"),      "benchmark member x0 is not of type double");
-            assert(isfield(benchmark, "p"),          "benchmark lacks member p");
-            assert(isa(benchmark.p, "double"),       "benchmark member p is not of type double");
-            assert(isfield(benchmark, "options"),    "benchmark lacks member options");
-            assert(isa(benchmark.options, "struct"), "benchmark member options is not of type struct");
+            assert(isfield(benchmark, 'id'),         'benchmark lacks member id');
+            assert(isa(benchmark.id, 'char'),      'benchmark member id is not of type char');
+            assert(isfield(benchmark, 'rhs'),        'benchmark lacks member rhs');
+            assert(isa(benchmark.rhs, 'char'),     'benchmark member rhs is not of type char');
+            assert(isfield(benchmark, 'solver'),     'benchmark lacks member solver');
+            assert(isa(benchmark.solver, 'char'),  'benchmark member solver is not of type char');
+            assert(isfield(benchmark, 'tSpan'),      'benchmark lacks member tSpan');
+            assert(isa(benchmark.tSpan, 'double'),   'benchmark member tSpan is not of type double');
+            assert(isfield(benchmark, 'x0'),         'benchmark lacks member x0');
+            assert(isa(benchmark.x0, 'double'),      'benchmark member x0 is not of type double');
+            assert(isfield(benchmark, 'p'),          'benchmark lacks member p');
+            assert(isa(benchmark.p, 'double'),       'benchmark member p is not of type double');
+            assert(isfield(benchmark, 'options'),    'benchmark lacks member options');
+            assert(isa(benchmark.options, 'struct'), 'benchmark member options is not of type struct');
         end
 
         function directory = getBenchmarksDirectory(~)

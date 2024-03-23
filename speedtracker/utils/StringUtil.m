@@ -17,7 +17,8 @@ classdef StringUtil
         end
 
         function isit = isStringArray(str)
-            % Return 1 if a value is a string array (vector of strings) or a vector cellstring (cell array of char vectors)
+            % Return 1 if a value is a string array (vector of strings) or 
+            % a vector cellstring (cell array of char vectors)
             isit = 0;
             if isstring(str) && numel(str) == length(str)
                 isit = 1;
@@ -30,13 +31,13 @@ classdef StringUtil
             % Return a message describing why a value did not pass the test of StringUtil.isStringArray()
             % Will return nonsense if the value DOES pass StringUtil.isStringArray().
             if isstring(value)
-                msg = sprintf("expecting vector of strings, but array has dimensions %s", StringUtil.dimStr(value));
+                msg = sprintf('expecting vector of strings, but array has dimensions %s', StringUtil.dimStr(value));
             elseif iscellstr(value)
-                msg = sprintf("expecting vector of strings, but array has dimensions %s", StringUtil.dimStr(value));
+                msg = sprintf('expecting vector of strings, but array has dimensions %s', StringUtil.dimStr(value));
             elseif iscell(value)
-                msg = "expecting cellstring, but cell elements are not (all) of type char";
+                msg = 'expecting cellstring, but cell elements are not (all) of type char';
             else
-                msg = sprintf("expecting string array or cellstring, but value has type %s", class(value));
+                msg = sprintf('expecting string array or cellstring, but value has type %s', class(value));
             end
         end
 
@@ -46,20 +47,20 @@ classdef StringUtil
             % this is mostly for reporting bad arguments to speedtracker, and those are usually typed out by hand, so it's
             % unlikely someone will accidentally put in a matrix where a vector of strings was expected.
             if (isempty(x))
-                str = "[]";
+                str = '[]';
             else
-                joined = strjoin(string(x), ", ");
+                joined = char(strjoin(string(x), ', '));
                 if size(x) == 1
                     str = joined;
                 else
-                    str = "[" + joined + "]";
+                    str = ['[' joined ']'];
                 end
             end
         end
 
         function str = dimStr(array)
-            % Return a string representation of an array's dimensions
-            str = strjoin(string(size(array)), " x ");
+            % Return a string representation of an array's dimensions e.g. '2 x 3 x 5' or '1 x 4'
+            str = char(strjoin(string(size(array)), ' x '));
         end
     end
 end

@@ -8,18 +8,18 @@ classdef ScrewAroundCommand < UserCommand
 
     methods
         function name = getName(~)
-            name = "screw-around";
+            name = 'screw-around';
         end
 
         function msg = shortHelp(this)
-            msg = sprintf("speedtracker(""%s"")", this.getName());
+            msg = sprintf('speedtracker(''%s'')', this.getName());
         end
 
         function msg = longHelp(this)
-            msg = strjoin([ ...
-                sprintf("speedtracker(""%s"")", this.getName()), ...
-                "    Dummy command for messing around while developing." ...
-            ], SystemUtil.lineSep());
+            msg = strjoin({ ...
+                sprintf('speedtracker(''%s'')', this.getName()), ...
+                '    Dummy command for messing around while developing.' ...
+            }, SystemUtil.lineSep());
         end
 
         function commandConfig = handleArgs(~, ~)
@@ -32,7 +32,7 @@ classdef ScrewAroundCommand < UserCommand
             % The run command is now impossible, and you have to use restore-state first.
             snapshotManager =  GitSnapshotManager(logger);
             snapshotManager.saveProjectState();
-            message = "saved project state";
+            message = 'saved project state';
         end
     end
 end

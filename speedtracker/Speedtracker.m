@@ -35,12 +35,12 @@ classdef Speedtracker
             %    as per the API of SnapshotLoader, there may be another exception attached as a cause.
             % Exceptions during benchmark execution should be caught by the BenchmarkRunner, as per its API.
             % Unexpected exceptions may occur, of course, but only in really, well, unexpected cases.
-            if isfield(commandConfig, "Snapshots")
+            if isfield(commandConfig, 'Snapshots')
                 snapshots = commandConfig.Snapshots;
             else
                 snapshots = this.snapshotLoader.listSnapshots();
             end
-            if isfield(commandConfig, "Benchmarks")
+            if isfield(commandConfig, 'Benchmarks')
                 benchmarks = commandConfig.Benchmarks;
             else
                 benchmarks = this.benchmarkRunner.listBenchmarks();
@@ -55,25 +55,25 @@ classdef Speedtracker
             % The meat: check out each snapshot, run all benchmarks over it, then proceed to the next snapshot.
             % Everything is in a try block so we can at least call restore project state no matter what goes wrong.
             try
-                this.logger.info("running benchmarks " + strjoin(benchmarks, ", "));
-                this.logger.info("  on snapshots " + strjoin(snapshots, ", "));
+                this.logger.info(sprintf('running benchmarks %s', strjoin(benchmarks, ', ')));
+                this.logger.info(sprintf('  on snapshots %s', strjoin(snapshots, ', ')));
                 for i=1:length(snapshots)
-                    this.logger.info("loading snapshot " + snapshots(i));
-                    this.snapshotLoader = this.snapshotLoader.loadSnapshot(snapshots(i));
+                    this.logger.info(sprintf('loading snapshot %s', snapshots{i}));
+                    this.snapshotLoader = this.snapshotLoader.loadSnapshot(snapshots{i});
                     for j=1:length(benchmarks)
-                        this.benchmarkRunner = this.benchmarkRunner.runBenchmark(snapshots(i), benchmarks(j));
+                        this.benchmarkRunner = this.benchmarkRunner.runBenchmark(snapshots{i}, benchmarks{j});
                     end
-                    this.logger.info("ran all benchmarks");
+                    this.logger.info('ran all benchmarks');
                 end
             catch error
-                this.logger.error("error while running benchmarks, restoring project state");
+                this.logger.error('error while running benchmarks, restoring project state');
                 try
                     this.snapshotLoader = this.snapshotLoader.restoreProjectState();
-                    this.logger.info("successfully restored project state");
+                    this.logger.info('successfully restored project state');
                 catch restoreError
-                    this.logger.error("failed to restore state. try checking out previous branch and");
-                    this.logger.error("    running restore-state command. If this fails, consult the instructions.");
-                    this.logger.error("    restoring state failed because of:");
+                    this.logger.error('failed to restore state. try checking out previous branch and');
+                    this.logger.error('    running restore-state command. If this fails, consult the instructions.');
+                    this.logger.error('    restoring state failed because of:');
                     this.logger.error(restoreError.getReport());
                 end
                 rethrow(error);
@@ -89,11 +89,11 @@ classdef Speedtracker
             userConfig = ConfigProvider.getUserConfig();
             outputType = userConfig.OutputType;
             switch lower(outputType)
-                case "ntables"
+                case 'ntables'
                     prettyResults = cellfun(@(benchmarkResult) this.benchmarkRunner.makeTable(benchmarkResult), ...
                         results, ...
                         'UniformOutput', false);
-                case "onetable"
+                case 'onetable'
                     tables = cellfun(@(benchmarkResult) this.benchmarkRunner.makeTable(benchmarkResult), ...
                         results, ...
                         'UniformOutput', false);

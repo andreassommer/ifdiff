@@ -4,18 +4,18 @@ classdef ListSnapshotsCommand < UserCommand
         end
 
         function name = getName(~)
-            name = "list-snapshots";
+            name = 'list-snapshots';
         end
 
         function msg = shortHelp(this)
-            msg = sprintf("speedtracker(""%s"")", this.getName());
+            msg = sprintf('speedtracker(''%s'')', this.getName());
         end
 
         function msg = longHelp(this)
-            msg = strjoin([ ...
-                sprintf("speedtracker(""%s"")", this.getName()), ...
-                "    List all available snapshots" ...
-            ], SystemUtil.lineSep());
+            msg = strjoin({ ...
+                sprintf('speedtracker(''%s'')', this.getName()), ...
+                '    List all available snapshots' ...
+            }, SystemUtil.lineSep());
         end
 
         function commandConfig = handleArgs(~, ~)
@@ -29,7 +29,7 @@ classdef ListSnapshotsCommand < UserCommand
             snapshotManager =  GitSnapshotManager(logger);
             snapshots = snapshotManager.listSnapshots();
             if isempty(snapshots)
-                message = "";
+                message = '';
             else
                 message = strjoin(snapshots, SystemUtil.lineSep());
             end

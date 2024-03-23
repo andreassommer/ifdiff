@@ -16,43 +16,44 @@ classdef SystemUtil
         function [status, cmdout] = safeSystem(commandStr)
             % Run a system command, removing trailing newlines. Throw if the input contains newlines.
             logger = SystemUtil.setGetLogger();
-            if (contains(commandStr, sprintf("\r")) || contains(commandStr, newline))
-                throw(MException(SystemUtil.ERROR_ILLEGAL_ARGUMENT, "command contains line breaks: " + commandStr));
+            if (contains(commandStr, sprintf('\r')) || contains(commandStr, newline))
+                throw(MException(SystemUtil.ERROR_ILLEGAL_ARGUMENT, sprintf( ...
+                    'command contains line breaks: %s', commandStr)));
             end
-            logger.debug("`" + commandStr + "`");
+            logger.debug(sprintf('`%s`', commandStr));
             [status, cmdout] = system(commandStr);
-            if endsWith(cmdout, sprintf("\r\n"))
+            if endsWith(cmdout, sprintf('\r\n'))
                 cmdout = extractBefore(cmdout, strlength(cmdout) - 1);
             elseif endsWith(cmdout, newline)
                 cmdout = extractBefore(cmdout, strlength(cmdout));
-            elseif endsWith(cmdout, sprintf("\r"))
+            elseif endsWith(cmdout, sprintf('\r'))
                 cmdout = extractBefore(cmdout, strlength(cmdout));
             end
             cmdout = string(cmdout);
-            logger.debug("command output:");
+            logger.debug('command output:');
             outputLines = splitlines(cmdout);
             for i=1:length(outputLines)
-                logger.debug("    "  + outputLines(i));
+                logger.debug('    '  + outputLines(i));
             end
         end
     
         function [status, cmdout] = unsafeSystem(commandStr)
             % Run a system command, removing trailing newlines. If there are any newlines in the input, proceed anyway.
             logger = SystemUtil.setGetLogger();
-            logger.debug("`" + commandStr + "`");
+            logger.debug(sprintf('`%s`', commandStr));
             [status, cmdout] = system(commandStr);
-            if endsWith(cmdout, sprintf("\r\n"))
+            if endsWith(cmdout, sprintf('\r\n'))
                 cmdout = extractBefore(cmdout, strlength(cmdout) - 1);
             elseif endsWith(cmdout, newline)
                 cmdout = extractBefore(cmdout, strlength(cmdout));
-            elseif endsWith(cmdout, sprintf("\r"))
+            elseif endsWith(cmdout, sprintf('\r'))
                 cmdout = extractBefore(cmdout, strlength(cmdout));
             end
             cmdout = string(cmdout);
-            logger.debug("command output:");
+            logger.debug('command output:');
             outputLines = splitlines(cmdout);
             for i=1:length(outputLines)
-                logger.debug("    "  + outputLines(i));
+                logger.debug('    '  + outputLines(i));
             end
         end
 
@@ -65,13 +66,13 @@ classdef SystemUtil
             % good to keep this safeguard.
 
             % if ispc()
-            %     str = sprintf("\r\n");
+            %     str = sprintf('\r\n');
             % elseif ismac()
-            %     str = sprintf("\r");
+            %     str = sprintf('\r');
             % else
             %     str = string(newline);
             % end
-            str = string(newline);
+            str = newline;
         end
 
         function str = gitOutputLineSep()
@@ -82,7 +83,7 @@ classdef SystemUtil
             % which would imply just using the `newline` command everywhere and not bothering with a wrapper function.
             % However, e.g. the system command does not mention doing this (even though it does), so it could be
             % good to keep this safeguard.
-            str = string(newline);
+            str = newline;
         end
     end
 end

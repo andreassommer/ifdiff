@@ -12,7 +12,7 @@ classdef IfdiffBenchmarkResult
         % Unlike all the other properties, this one is scalar, since we want to
         % represent running _one_ benchmark on _multiple_ snapshots
         benchmarkID;
-        % IDs of the snapshots tested, 1xN string
+        % IDs of the snapshots tested, cellstring
         snapshotID;
         % value of the solution at the end of the integration horizon, dxN double (d=dimension of xEnd)
         xEnd;
@@ -31,20 +31,20 @@ classdef IfdiffBenchmarkResult
         function this = IfdiffBenchmarkResult(benchmarkID, snapshotID, xEnd, switchingPoints, time, error)
             % Initialize a benchmark result list. Pass in only one parameter (benchmarkID) to initialize an empty list.
             if (nargin == 1)
-                assert(isa(benchmarkID, "string"), "IfdiffBenchmarkResult member benchmark is of type string");
+                assert(isa(benchmarkID, 'char'), 'IfdiffBenchmarkResult member benchmark is of type char');
                 this.benchmarkID = benchmarkID;
-                this.snapshotID = string([]);
+                this.snapshotID = {};
                 this.xEnd = double([]);
                 this.switchingPoints = cell([]);
                 this.time = double([]);
                 this.error = [];
                 return;
             end
-            assert(isa(benchmarkID, "string"),   "IfdiffBenchmarkResult member benchmark is of type string");
-            assert(isa(snapshotID, "string"),    "IfdiffBenchmarkResult member snapshotID is of type string");
-            assert(isa(xEnd, "double"),          "IfdiffBenchmarkResult member xEnd is of type double");
-            assert(isa(switchingPoints, "cell"), "IfdiffBenchmarkResult member switchingPoints is of type cell");
-            assert(isa(time, "double"),          "IfdiffBenchmarkResult member time is of type double");
+            assert(isa(benchmarkID, 'char'),   'IfdiffBenchmarkResult member benchmark is of type char');
+            assert(isa(snapshotID, 'char'),    'IfdiffBenchmarkResult member snapshotID is of type char');
+            assert(isa(xEnd, 'double'),          'IfdiffBenchmarkResult member xEnd is of type double');
+            assert(isa(switchingPoints, 'cell'), 'IfdiffBenchmarkResult member switchingPoints is of type cell');
+            assert(isa(time, 'double'),          'IfdiffBenchmarkResult member time is of type double');
             this.benchmarkID = benchmarkID;
             this.snapshotID = snapshotID;
             this.xEnd = xEnd;
@@ -55,7 +55,7 @@ classdef IfdiffBenchmarkResult
 
         function this = merge(this, other)
             % Add the result of one or more testing runs to this list by concatenating the member arrays.
-            assert(this.benchmarkID == other.benchmarkID, "other IfdiffBenchmarkResult is from the same benchmark");
+            assert(strcmp(this.benchmarkID, other.benchmarkID), 'other IfdiffBenchmarkResult is from the same benchmark');
             this.snapshotID = [this.snapshotID other.snapshotID];
             this.xEnd = [this.xEnd other.xEnd];
             this.switchingPoints = [this.switchingPoints other.switchingPoints];
@@ -70,10 +70,10 @@ classdef IfdiffBenchmarkResult
             % multiple IfdiffBenchmarkResults' tables into one.
             benchmarkConfig = IfdiffBenchmarkRunner.getConfig();
             n = length(this.snapshotID); % number of snapshots
-            idColumn = repelem(this.benchmarkID, n)';
+            idColumn = repelem({this.benchmarkID}, n)';
             % Transpose xEnd, then convert each row into a cell. This allows us to merge tables
             xEndCell = mat2cell(this.xEnd', ones(size(this.xEnd, 2), 1));
-            xEndChanged = this.makeChangedFlags(benchmarkConfig.XEndTol, xEndCell, "changed", "");
+            xEndChanged = this.makeChangedFlags(benchmarkConfig.XEndTol, xEndCell, 'changed', '');
             tab = table(idColumn, this.snapshotID', xEndCell, xEndChanged, this.switchingPoints', this.time', this.error', ...
                 'VariableNames', ["benchmarkID", "snapshotID", "xEnd", "xEnd changed", "switchingPoints", "time", "error"]);
         end
@@ -99,7 +99,7 @@ classdef IfdiffBenchmarkResult
                 changed = changedFlags;
                 return;
             end
-            answers = [yesVal; noVal];
+            answers = {yesVal; noVal};
             changed = answers(2 - changedFlags);
         end
     end

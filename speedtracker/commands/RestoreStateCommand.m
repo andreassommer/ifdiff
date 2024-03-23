@@ -6,19 +6,19 @@ classdef RestoreStateCommand < UserCommand
         % Note: RunCommand has this name hard-coded in it a few times. If you change it, make sure to change it
         % in RunCommand as well.
         function name = getName(~)
-            name = "restore-state";
+            name = 'restore-state';
         end
 
         function msg = shortHelp(this)
-            msg = sprintf("speedtracker(""%s"")", this.getName());
+            msg = sprintf('speedtracker(''%s'')', this.getName());
         end
 
         function msg = longHelp(this)
-            msg = strjoin([ ...
-                sprintf("speedtracker(""%s"")", this.getName()), ...
-                "    Restore the state of the repository if something went wrong during the run command.", ...
-                "    This should never be necessary in regular use; this command is mostly a utility for development.", ...
-            ], SystemUtil.lineSep());
+            msg = strjoin({ ...
+                sprintf('speedtracker(''%s'')', this.getName()), ...
+                '    Restore the state of the repository if something went wrong during the run command.', ...
+                '    This should never be necessary in regular use; this command is mostly a utility for development.', ...
+            }, SystemUtil.lineSep());
         end
 
 
@@ -39,7 +39,7 @@ classdef RestoreStateCommand < UserCommand
                         rethrow(error)
                 end
             end
-            message = "";
+            message = '';
         end
     end
 end

@@ -5,12 +5,12 @@ classdef (Abstract) BenchmarkRunner
     % libraries.
 
     properties (Constant)
-        ERROR_BAD_BENCHMARK = "BenchmarkRunner:badBenchmark"
-        ERROR_BENCHMARK_NOT_LOADED = "BenchmarkRunner:benchmarkNotLoaded"
+        ERROR_BAD_BENCHMARK = 'BenchmarkRunner:badBenchmark'
+        ERROR_BENCHMARK_NOT_LOADED = 'BenchmarkRunner:benchmarkNotLoaded'
     end
 
     methods (Abstract)
-        % List all available benchmarks. Return a vector of their IDs, which must be strings
+        % List all available benchmarks. Return a cellstring of their IDs
         benchmarks = listBenchmarks(this)
 
         % Prepare to run the provided benchmarks, given as a list of their IDs.
