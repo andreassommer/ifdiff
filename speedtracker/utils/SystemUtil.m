@@ -29,11 +29,10 @@ classdef SystemUtil
             elseif endsWith(cmdout, sprintf('\r'))
                 cmdout = extractBefore(cmdout, strlength(cmdout));
             end
-            cmdout = string(cmdout);
             logger.debug('command output:');
             outputLines = splitlines(cmdout);
             for i=1:length(outputLines)
-                logger.debug('    '  + outputLines(i));
+                logger.debug(sprintf('    %s', outputLines{i}));
             end
         end
     
@@ -49,11 +48,10 @@ classdef SystemUtil
             elseif endsWith(cmdout, sprintf('\r'))
                 cmdout = extractBefore(cmdout, strlength(cmdout));
             end
-            cmdout = string(cmdout);
             logger.debug('command output:');
             outputLines = splitlines(cmdout);
             for i=1:length(outputLines)
-                logger.debug('    '  + outputLines(i));
+                logger.debug(sprintf('    %s', outputLines{i}));
             end
         end
 
@@ -70,7 +68,7 @@ classdef SystemUtil
             % elseif ismac()
             %     str = sprintf('\r');
             % else
-            %     str = string(newline);
+            %     str = newline;
             % end
             str = newline;
         end

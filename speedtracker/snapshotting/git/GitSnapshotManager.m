@@ -140,11 +140,8 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(this.invalidSnapshotIDException(id));
             end
             snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
-            indices = snapshots.id == id;
-            if isempty(indices(indices))
-                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no snapshot with ID %s', id)));
-            end
-            sha = snapshots.sha(indices);
+            snapshot = this.getSnapshotById(snapshots, id);
+            sha = snapshot.sha;
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     'cannot load snapshot without first saving project state'));
@@ -235,18 +232,19 @@ classdef GitSnapshotManager < SnapshotLoader
                 commit = this.getCurrentCommitSha();
             end
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
-            snapshotsWithSameId = snapshots.id(snapshots.id == id);
+            snapshotsWithSameId = snapshots(arrayfun(@(snapshot) strcmp(snapshot.id, id), snapshots));
             if ~isempty(snapshotsWithSameId)
                 throw(MException(GitSnapshotManager.ERROR_NAME_TAKEN, sprintf( ...
                     'snapshot with ID already exists: %s', id)));
             end
-            snapshotsWithSameSha = snapshots.id(snapshots.sha == commit);
-            if ~isempty(snapshotsWithSameSha)
-                this.logger.warn(sprintf('commit is already tagged in the snapshots: %s', strjoin(snapshotsWithSameSha, ', ')));
+            snapshotsWithSameSha = snapshots(arrayfun(@(snapshot) strcmp(snapshot.sha, commit), snapshots));
+            sameShaIDs = arrayfun(@(snapshot) snapshot.id, snapshotsWithSameSha, 'UniformOutput', false);
+            if ~isempty(sameShaIDs)
+                this.logger.warn(sprintf('commit is already tagged in the snapshots: %s', strjoin(sameShaIDs, ', ')));
             end
             infoDict = this.getCommitInfo(commit);
             timestamp = str2double(infoDict('authorDate'));
-            newSnapshots = this.appendSnapshots(snapshots, this.makeSnapshotList(id, commit, timestamp));
+            newSnapshots = [snapshots this.makeSnapshotStruct(id, commit, timestamp)];
             this.saveSnapshots(newSnapshots, this.getSnapshotsFileName());
         end
 
@@ -257,22 +255,18 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(this.invalidSnapshotIDException(id));
             end
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
-            indices = snapshots.id == id;
-            if isempty(indices(indices))
-                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no such snapshot: %s', id)));
-            end
-            snapshotToGo = this.idxSnapshots(snapshots, indices);
+            snapshotToGo = this.getSnapshotById(snapshots, id);
             sha = snapshotToGo.sha;
-            remainingSnapshots = this.idxSnapshots(snapshots, ~indices);
+            remainingSnapshots = snapshots(arrayfun(@(snapshot) ~strcmp(snapshot.id, id), snapshots));
             this.saveSnapshots(remainingSnapshots, this.getSnapshotsFileName());
         end
 
-        function snapshots = listSnapshots(this)
+        function snapshotIDs = listSnapshots(this)
             % return all snapshots' IDs sorted ascendingly by their commit's author date, i.e. when the commit was created.
-            snapshotList = this.loadSnapshots(this.getSnapshotsFileName());
-            [~, indices] = sort(snapshotList.timestamp);
-            snapshots = num2cell(snapshotList.id(indices));
-            snapshots = cellfun(@char, snapshots, 'UniformOutput', false);
+            snapshots = this.loadSnapshots(this.getSnapshotsFileName());
+            [~, indices] = sort(arrayfun(@(snapshot) snapshot.timestamp, snapshots));
+            snapshots = snapshots(indices);
+            snapshotIDs = arrayfun(@(snapshot) snapshot.id, snapshots, 'UniformOutput', false);
         end
 
         function info = getSnapshotInfo(this, id)
@@ -290,11 +284,8 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(this.invalidSnapshotIDException(id));
             end
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
-            indices = snapshots.id == id;
-            if isempty(indices(indices))
-                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no snapshot with ID %s', id)));
-            end
-            sha = snapshots.sha(indices);
+            snapshot = this.getSnapshotById(snapshots, id);
+            sha = snapshot.sha;
 
             % Get description
             commitDict = this.getCommitInfo(sha);
@@ -546,7 +537,7 @@ classdef GitSnapshotManager < SnapshotLoader
             subjectStart = emptyLines(1) + 1;
             subject = extractAfter(cmdout, subjectStart);
             dict = dictionary(["author", "authorDate", "authorTimeZone", "commitDate", "commitTimeZone", "subject"], ...
-                [author, authorDate, authorTimeZone, commitDate, commitTimeZone, subject]);
+                string({author, authorDate, authorTimeZone, commitDate, commitTimeZone, subject}));
         end
 
         %% Snapshot Storage
@@ -574,11 +565,11 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function snapshots = loadSnapshots(this, file)
-            % Read a snapshot file and return a snapshot list. If it does not exist, return an empty snapshot list.
+            % Read a snapshot file and return a snapshot list. If it does not exist, return an empty array.
             % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the file cannot be opened/written
             %   and GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE if the file cannot be parsed.
             if ~isfile(file)
-                snapshots = this.makeSnapshotList(strings(0), strings(0), zeros(0));
+                snapshots = [];
                 return;
             end
             try
@@ -588,26 +579,24 @@ classdef GitSnapshotManager < SnapshotLoader
                     sprintf('error opening or reading snapshot file: %s', fileError.message));
                 throw(error.addCause(fileError));
             end
-            lines = splitlines(string(text));
+            lines = splitlines(char(text));
             lines = lines(~startsWith(lines, '#'));
             lines = lines(strlength(lines) > 0);
-            snapshotArray = strings(length(lines), 3);
+            snapshots(length(lines)) = this.makeSnapshotStruct('', '', 0);
             for i=1:length(lines)
-                words = strsplit(lines(i));
+                words = strsplit(lines{i});
                 if length(words) ~= 3
                     throw(MException(GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE, ...
                         sprintf('snapshot #%d in %s is malformed %s', i, file, lines(i))));
                 end
-                snapshotArray(i, :) = words;
+                snapshots(i) = this.makeSnapshotStruct(words(1), words(2), str2double(words(3)));
             end
-            timestamps = cellfun(@str2double, snapshotArray(:, 3));
-            snapshots = this.makeSnapshotList(snapshotArray(:, 1)', snapshotArray(:, 2)', timestamps');
         end
 
         function saveSnapshots(~, snapshots, file)
-            % Save snapshots given as a snapshot list to a snapshot file. If there are 0 snapshots, delete the file.
+            % Save snapshots, given as an array of structs, to a snapshot file. If there are 0 snapshots, delete the file.
             % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the snapshot file cannot be accessed
-            if (isempty(snapshots.id))
+            if (isempty(snapshots))
                 try
                     delete(file);
                     return;
@@ -617,13 +606,10 @@ classdef GitSnapshotManager < SnapshotLoader
                     throw(error.addCause(fileError));
                 end
             end
-            snapshotArray = strings(length(snapshots.id), 3);
-            snapshotArray(:, 1) = snapshots.id';
-            snapshotArray(:, 2) = snapshots.sha';
-            snapshotArray(:, 3) = string(snapshots.timestamp)';
-            lines = strings(1, size(snapshotArray, 1));
-            for i=1:size(snapshotArray, 1)
-                lines(i) = strjoin(snapshotArray(i, :), ' ');
+            lines = cell(1, length(snapshots));
+            for i = 1:length(snapshots)
+                snapshot = snapshots(i);
+                lines{i} = strjoin({snapshot.id, snapshot.sha, sprintf('%d', snapshot.timestamp)}, ' ');
             end
             output = strjoin(lines, SystemUtil.lineSep());
             try
@@ -635,20 +621,19 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        function list = makeSnapshotList(~, id, sha, timestamp)
-            list = struct('id', id, 'sha', sha, 'timestamp', timestamp);
+        function snapshotStruct = makeSnapshotStruct(~, id, sha, timestamp)
+            snapshotStruct = struct('id', id, 'sha', sha, 'timestamp', timestamp);
         end
 
-        function subList = idxSnapshots(~, snapshotList, idx)
-            % Given a snapshot list, get the sublist (or individual snapshot) at the provided indices
-            if length(size(idx)) > 2 || size(idx, 1) > 1 && size(idx, 2) > 1
-                throw(MException('GitSnapshotManager:index', 'index array must be a scalar or vector'));
+        function snapshot = getSnapshotById(~, snapshots, id)
+            indices = arrayfun(@(snapshot) strcmp(snapshot.id, id), snapshots);
+            if isempty(indices(indices))
+                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no such snapshot: %s', id)));
             end
-            subList = struct('id', snapshotList.id(idx), 'sha', snapshotList.sha(idx), 'timestamp', snapshotList.timestamp(idx));
-        end
-
-        function s12 = appendSnapshots(this, s1, s2)
-            s12 = this.makeSnapshotList([s1.id s2.id], [s1.sha s2.sha], [s1.timestamp s2.timestamp]);
+            if length(indices(indices)) ~= 1
+                throw(MException(GitSnapshotManager.ERROR_FS_GENERIC, sprintf('multiple snapshots with ID %s', id)));
+            end
+            snapshot = snapshots(indices);
         end
 
         %% Miscellaneous
