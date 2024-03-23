@@ -33,10 +33,19 @@ classdef Speedtracker
             % E2 cannot save project state because a save is already present: throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
             % E3 cannot save project state for other reasons: throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE
             %    as per the API of SnapshotLoader, there may be another exception attached as a cause.
+            % E4 one of the snapshots is faulty or nonexistent: throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
             % Exceptions during benchmark execution should be caught by the BenchmarkRunner, as per its API.
             % Unexpected exceptions may occur, of course, but only in really, well, unexpected cases.
             if isfield(commandConfig, 'Snapshots')
                 snapshots = commandConfig.Snapshots;
+                % Check the snapshots
+                allSnapshots = this.snapshotLoader.listSnapshots();
+                for i = 1:length(snapshots)
+                    if ~ismember(snapshots{i}, allSnapshots)
+                        throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
+                            'no such snapshot: %s', snapshots{i})));
+                    end
+                end
             else
                 snapshots = this.snapshotLoader.listSnapshots();
             end
