@@ -39,7 +39,7 @@ classdef RestoreStateCommand < UserCommand
                         rethrow(error)
                 end
             end
-            message = '';
+            message = 'successfully restored project state';
         end
     end
 end
