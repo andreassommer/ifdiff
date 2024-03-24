@@ -1,6 +1,6 @@
-classdef Speedtracker
-    %SPEEDTRACKER Runner for the main benchmarking functionality.
-    % Receives a SnapshotLoader and a BenchmarkRunner and performs the main benchmarking.
+classdef SpeedtrackerRunner
+    %SPEEDTRACKERRUNNER Runner for the main benchmarking functionality.
+    % Receives a SnapshotLoader and a BenchmarkRunner and performs the benchmarking and collecting of results.
 
     properties
         logger;
@@ -9,13 +9,13 @@ classdef Speedtracker
     end
 
     methods
-        function obj = Speedtracker(logger, snapshotLoader, benchmarkRunner)
+        function obj = SpeedtrackerRunner(logger, snapshotLoader, benchmarkRunner)
             obj.logger = logger;
             obj.snapshotLoader = snapshotLoader;
             obj.benchmarkRunner = benchmarkRunner;
         end
 
-        function this = run(this, commandConfig)
+        function this = run(this, snapshots, benchmarks)
             % Run a set of benchmarks across a set of snapshots.
             % The snapshots are either 1xN array of strings passed
             % through commandConfig.Snapshots, or all snapshots that SnapshotLoader#listSnapshots returns. The
@@ -36,24 +36,6 @@ classdef Speedtracker
             % E4 one of the snapshots is faulty or nonexistent: throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
             % Exceptions during benchmark execution should be caught by the BenchmarkRunner, as per its API.
             % Unexpected exceptions may occur, of course, but only in really, well, unexpected cases.
-            if isfield(commandConfig, 'Snapshots')
-                snapshots = commandConfig.Snapshots;
-                % Check the snapshots
-                allSnapshots = this.snapshotLoader.listSnapshots();
-                for i = 1:length(snapshots)
-                    if ~ismember(snapshots{i}, allSnapshots)
-                        throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
-                            'no such snapshot: %s', snapshots{i})));
-                    end
-                end
-            else
-                snapshots = this.snapshotLoader.listSnapshots();
-            end
-            if isfield(commandConfig, 'Benchmarks')
-                benchmarks = commandConfig.Benchmarks;
-            else
-                benchmarks = this.benchmarkRunner.listBenchmarks();
-            end
 
             % Initialize the benchmarks
             this.benchmarkRunner = this.benchmarkRunner.init(benchmarks);

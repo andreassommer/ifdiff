@@ -10,9 +10,6 @@ classdef (Abstract) BenchmarkRunner
     end
 
     methods (Abstract)
-        % List all available benchmarks. Return a cellstring of their IDs
-        benchmarks = listBenchmarks(this)
-
         % Prepare to run the provided benchmarks, given as a list of their IDs.
         % For example, loading benchmarks from disk or preallocating a return structure.
         % Must throw errors with the following identifiers in the given cases:

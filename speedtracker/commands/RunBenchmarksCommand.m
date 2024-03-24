@@ -100,14 +100,35 @@ classdef RunBenchmarksCommand < UserCommand
 
             snapshotManager = GitSnapshotManager(logger);
             benchmarkRunner = IfdiffBenchmarkRunner(logger);
-            speedtracker = Speedtracker(logger, snapshotManager, benchmarkRunner);
+            speedtrackerRunner = SpeedtrackerRunner(logger, snapshotManager, benchmarkRunner);
 
+            % Determine snapshots and benchmarks to run
+            if isfield(commandConfig, 'Snapshots')
+                snapshots = commandConfig.Snapshots;
+                % Check the snapshots
+                allSnapshots = snapshotManager.listSnapshots();
+                for i = 1:length(snapshots)
+                    if ~ismember(snapshots{i}, allSnapshots)
+                        throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
+                            'no such snapshot: %s', snapshots{i})));
+                    end
+                end
+            else
+                snapshots = snapshotManager.listSnapshots();
+            end
+            if isfield(commandConfig, 'Benchmarks')
+                benchmarks = commandConfig.Benchmarks;
+            else
+                benchmarks = benchmarkRunner.listBenchmarks();
+            end
+
+            % Main: run the benchmarks and return the results
             try
-                speedtracker = speedtracker.run(commandConfig);
+                speedtrackerRunner = speedtrackerRunner.run(snapshots, benchmarks);
             catch error
                 throw(this.wrapSpeedtrackerError(error));
             end
-            result = speedtracker.getBenchmarkResults();
+            result = speedtrackerRunner.getBenchmarkResults();
         end
     end
 

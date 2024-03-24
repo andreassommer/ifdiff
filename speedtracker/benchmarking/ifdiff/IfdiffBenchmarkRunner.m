@@ -27,26 +27,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             this.logger = logger;
         end
 
-        function benchmarks = listBenchmarks(this)
-            % List all available benchmarks.
-            % To be precise, all .m files in
-            % <tempDir>/benchmarks that contain functions with no arguments are treated as benchmarks, and their function
-            % names used as benchmark IDs. So make sure there is no garbage lying around in that folder!
-            benchmarks = {};
-            benchmarksDir = this.getBenchmarksDirectory();
-            contents = dir(benchmarksDir);
-            contents = contents(arrayfun(@(file) exist(file.name, 'file')==2, contents));
-            functions = contents(arrayfun(@(file) endsWith(file.name, '.m'), contents));
-            for i=1:length(functions)
-                fileName = functions(i).name;
-                funcName = extractBefore(fileName, strlength(fileName) - 1);
-                if (nargin(str2func(funcName)) == 0)
-                    benchmarks{end+1} = funcName;
-                end
-            end
-        end
-
-
+        %% BenchmarkRunner interface
         function this = init(this, benchmarkIDs)
             % For a list of benchmark IDs, load each one and validate that they are correct and complete
             % Exceptions:
@@ -90,6 +71,27 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             % delegated to IfdiffBenchmarkResult#toTable
             tab = result.toTable();
         end
+
+        %% Querying Benchmarks
+        function benchmarks = listBenchmarks(this)
+            % List all available benchmarks.
+            % To be precise, all .m files in
+            % <tempDir>/benchmarks that contain functions with no arguments are treated as benchmarks, and their function
+            % names used as benchmark IDs. So make sure there is no garbage lying around in that folder!
+            benchmarks = {};
+            benchmarksDir = this.getBenchmarksDirectory();
+            contents = dir(benchmarksDir);
+            contents = contents(arrayfun(@(file) exist(file.name, 'file')==2, contents));
+            functions = contents(arrayfun(@(file) endsWith(file.name, '.m'), contents));
+            for i=1:length(functions)
+                fileName = functions(i).name;
+                funcName = extractBefore(fileName, strlength(fileName) - 1);
+                if (nargin(str2func(funcName)) == 0)
+                    benchmarks{end+1} = funcName;
+                end
+            end
+        end
+
     end
 
     methods (Static)

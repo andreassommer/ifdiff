@@ -1,5 +1,5 @@
 classdef (Abstract) SnapshotLoader
-    %SnapshotManager Abstract class for loading snapshots
+    %SNAPSHOTLOADER interface for loading snapshots, i.e. other versions of a project (think Git commits)
 
     properties (Constant)
         ERROR_COULD_NOT_SAVE_STATE = 'SnapshotLoader:couldNotSaveState';
@@ -44,13 +44,11 @@ classdef (Abstract) SnapshotLoader
         % that, of course.
         % Must guarantee:
         % 1. The snapshot can be restored statelessly, using only the same subclass - not instance - of
-        %     SnapshotManager. This is to minimize the likelihood that restoring the state becomes impossible
+        %     SnapshotLoader. This is to minimize the likelihood that restoring the state becomes impossible
         % Should throw the following exception identifiers in the given cases:
         %     ERROR_NO_SAVED_STATE if there is no saved state to load
         %     ERROR_COULD_NOT_LOAD_STATE if something else went wrong loading the state
         % Implementation-specific errors can be attached as causes.
         this = restoreProjectState(this)
-        % List all available snapshots, returning a cellstring of their IDs
-        snapshots = listSnapshots(this)
     end
 end
