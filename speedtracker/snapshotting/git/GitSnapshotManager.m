@@ -131,17 +131,27 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        function this = loadSnapshot(this, id)
-            % Load the snapshot specified by `id`. The previous state must already have been saved with saveProjectState.
+        function this = loadSnapshot(this, shaOrId)
+            % Load a snapshot, either by commit SHA or by ID of a snapshot created with createSnapshot.
+            % The previous state must already have been saved with saveProjectState.
             % Exceptions:
             %   If the ID is syntactically invalid or no such snapshot exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
             %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
-            if ~this.isValidSnapshotID(id)
-                throw(this.invalidSnapshotIDException(id));
+            if ~this.isValidSnapshotID(shaOrId)
+                throw(this.invalidSnapshotIDException(shaOrId));
             end
+
             snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
-            snapshot = this.getSnapshotById(snapshots, id);
-            sha = snapshot.sha;
+            snapshot = this.getSnapshotById(snapshots, shaOrId);
+            if ~isempty(snapshot)
+                sha = snapshot.sha;
+            elseif this.isCommitSha(shaOrId)
+                sha = shaOrId;
+            else
+                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
+                    '%s is neither the ID of a snapshot nor the SHA of a commit', shaOrId)));
+            end
+
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     'cannot load snapshot without first saving project state'));
@@ -221,6 +231,10 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
+            if this.isCommitSha(id)
+                throw(MException(GitSnapshotManager.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
+                    'cannot create snapshot with ID %s as there is already a commit with the same SHA', id)));
+            end
             if nargin >= 3
                 if ~this.isCommitSha(commitSha)
                     throw(MException(GitSnapshotManager.ERROR_BAD_COMMIT, sprintf( ...
@@ -254,9 +268,14 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
+
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
             snapshotToGo = this.getSnapshotById(snapshots, id);
+            if isempty(snapshotToGo)
+                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no such snapshot: %s', id)));
+            end
             sha = snapshotToGo.sha;
+
             remainingSnapshots = snapshots(arrayfun(@(snapshot) ~strcmp(snapshot.id, id), snapshots));
             this.saveSnapshots(remainingSnapshots, this.getSnapshotsFileName());
         end
@@ -283,13 +302,39 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
+
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
             snapshot = this.getSnapshotById(snapshots, id);
+            if isempty(snapshot)
+                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no such snapshot: %s', id)));
+            end
             sha = snapshot.sha;
 
             % Get description
             info = this.getCommitInfo(sha);
             info = setOption(info, 'CommitSha', sha);
+        end
+
+        function exists = snapshotExists(this, id)
+            % Return true if a snapshot with the supplied ID has been created
+            % (does not work if there is only a Git commit whose SHA equals id)
+            snapshots = this.loadSnapshots(this.getSnapshotsFileName());
+            snapshot = this.getSnapshotById(snapshots, id);
+            exists = ~isempty(snapshot);
+        end
+
+        function isSha = isCommitSha(this, sha)
+            % Verify that a string is the SHA of a commit. Not a ref, but a commit.
+            if ~regexp(sha, '[a-f0-9]+')
+                isSha = 0;
+                return;
+            end
+            if ~this.commitExists(sha)
+                isSha = 0;
+                return;
+            end
+            [status, cmdout] = SystemUtil.safeSystem(sprintf('git rev-parse --verify %s', sha));
+            isSha = status == 0 && strcmp(sha, cmdout); % this check filters out refs, e.g. HEAD
         end
     end
 
@@ -473,20 +518,6 @@ classdef GitSnapshotManager < SnapshotLoader
             exists = (status == 0) && (strcmp(cmdout, 'commit'));
         end
 
-        function isSha = isCommitSha(this, sha)
-            % Verify that a string is the SHA of a commit. Not a ref, but a commit.
-            if ~regexp(sha, '[a-f0-9]+')
-                isSha = 0;
-                return;
-            end
-            if ~this.commitExists(sha)
-                isSha = 0;
-                return;
-            end
-            [status, cmdout] = SystemUtil.safeSystem(sprintf('git rev-parse --verify %s', sha));
-            isSha = status == 0 && strcmp(sha, cmdout); % this check filters out refs, e.g. HEAD
-        end
-
         function sha = getCurrentCommitSha(this)
             % Get the SHA of the commit that HEAD is pointing to.
             [status, cmdout] = SystemUtil.safeSystem('git rev-parse --verify HEAD');
@@ -631,14 +662,16 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function snapshot = getSnapshotById(~, snapshots, id)
+            % Given an array of snapshots, find the one whose ID matches the supplied value.
+            % Return [] if none match. Throw an exception if multiple match.
             indices = arrayfun(@(snapshot) strcmp(snapshot.id, id), snapshots);
             if isempty(indices(indices))
-                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf('no such snapshot: %s', id)));
-            end
-            if length(indices(indices)) ~= 1
+                snapshot = [];
+            elseif length(indices(indices)) ~= 1
                 throw(MException(GitSnapshotManager.ERROR_FS_GENERIC, sprintf('multiple snapshots with ID %s', id)));
+            else
+                snapshot = snapshots(indices);
             end
-            snapshot = snapshots(indices);
         end
 
         %% Miscellaneous

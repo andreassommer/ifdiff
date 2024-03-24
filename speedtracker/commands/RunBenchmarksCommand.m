@@ -108,9 +108,9 @@ classdef RunBenchmarksCommand < UserCommand
                 % Check the snapshots
                 allSnapshots = snapshotManager.listSnapshots();
                 for i = 1:length(snapshots)
-                    if ~ismember(snapshots{i}, allSnapshots)
-                        throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
-                            'no such snapshot: %s', snapshots{i})));
+                    if ~ismember(snapshots{i}, allSnapshots) && ~snapshotManager.isCommitSha(snapshots{i})
+                        throw(MException(UserCommand.ERROR_EXPECTED_EXCEPTION, sprintf( ...
+                            'no such snapshot or commit: %s', snapshots{i})));
                     end
                 end
             else
