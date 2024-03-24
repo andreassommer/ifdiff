@@ -10,11 +10,11 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
     end
 
     properties (Access=private)
-        % dictionary of benchmarks
+        % associative array of benchmarks
         benchmarks;
         % original benchmark IDs passed, in order to keep track of the order
         benchmarkIDList;
-        % dictionary of benchmark results
+        % associative array of benchmark results
         results;
     end
 
@@ -52,12 +52,12 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             % Exceptions:
             % BenchmarkRunner.ERROR_BAD_BENCHMARK if any benchmark is malformed or cannot be found
             this.benchmarkIDList = benchmarkIDs;
-            this.benchmarks = dictionary;
-            this.results = dictionary;
+            this.benchmarks = {};
+            this.results = {};
             for i=1:length(benchmarkIDs)
                 benchmark = this.loadBenchmark(benchmarkIDs{i});
-                this.benchmarks(benchmark.id) = benchmark;
-                this.results(benchmark.id) = IfdiffBenchmarkResult(benchmark.id);
+                this.benchmarks = setOption(this.benchmarks, benchmark.id, benchmark);
+                this.results    = setOption(this.results, benchmark.id, IfdiffBenchmarkResult(benchmark.id));
             end
         end
 
@@ -66,14 +66,14 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             % Exceptions:
             % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
             %     because the benchmark was not in the list or because init() was not called at all.
-            if ~isKey(this.benchmarks, benchmarkID)
+            if ~hasOption(this.benchmarks, benchmarkID)
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
                     'benchmark %s was not loaded with init()', benchmarkID)));
             end
             initPaths();
-            result = this.runBenchmarkInternal(currentSnapshotID, this.benchmarks(benchmarkID));
-            resultsSoFar = this.results(benchmarkID);
-            this.results(benchmarkID) = resultsSoFar.merge(result);
+            result = this.runBenchmarkInternal(currentSnapshotID, getOption(this.benchmarks, benchmarkID));
+            resultsSoFar = getOption(this.results, benchmarkID);
+            this.results = setOption(this.results, benchmarkID, resultsSoFar.merge(result));
         end
 
         function results = getResults(this)
@@ -81,7 +81,7 @@ classdef IfdiffBenchmarkRunner < BenchmarkRunner
             results = cell(1, length(this.benchmarkIDList));
             for i=1:length(this.benchmarkIDList)
                 benchmarkID = this.benchmarkIDList(i);
-                results{i} = this.results(benchmarkID);
+                results{i} = getOption(this.results, benchmarkID);
             end
         end
 

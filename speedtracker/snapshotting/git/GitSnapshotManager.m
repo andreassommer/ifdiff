@@ -242,8 +242,8 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~isempty(sameShaIDs)
                 this.logger.warn(sprintf('commit is already tagged in the snapshots: %s', strjoin(sameShaIDs, ', ')));
             end
-            infoDict = this.getCommitInfo(commit);
-            timestamp = str2double(infoDict('authorDate'));
+            commitInfo = this.getCommitInfo(commit);
+            timestamp = str2double(getOption(commitInfo, 'AuthorDate'));
             newSnapshots = [snapshots this.makeSnapshotStruct(id, commit, timestamp)];
             this.saveSnapshots(newSnapshots, this.getSnapshotsFileName());
         end
@@ -270,16 +270,16 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function info = getSnapshotInfo(this, id)
-            % Get information about a snapshot, returning a dictionary
-            % The dictionary contains the properties:
-            %   commitSha: the snapshot's commit SHA
-            %   author: the commit's author (Name <e@mail.address>)
-            %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
-            %   authorTimeZone: time zone of the author date, in the format +0100
-            %   commitDate: commit date in Unix time (string)
-            %   commitTimeZone: time zone of the commit date, in the format +0100
-            %   subject: the 'subject line', containing the commit message and some other stuff (and not necessarily one
-            %   line long!
+            % Get information about a snapshot, returning an optionlist (see utils/optionlst/isOptionlist.m)
+            % The list contains the properties:
+            %   CommitSha: the snapshot's commit SHA
+            %   Author: the commit's author (Name <e@mail.address>)
+            %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
+            %   AuthorTimeZone: time zone of the author date, in the format +0100
+            %   CommitDate: commit date in Unix time (string)
+            %   CommitTimeZone: time zone of the commit date, in the format +0100
+            %   Subject: the 'subject line', containing the commit message and some other stuff (and not necessarily one
+            %     line long!
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -288,9 +288,8 @@ classdef GitSnapshotManager < SnapshotLoader
             sha = snapshot.sha;
 
             % Get description
-            commitDict = this.getCommitInfo(sha);
-            commitDict('commitSha') = sha;
-            info = commitDict;
+            info = this.getCommitInfo(sha);
+            info = setOption(info, 'CommitSha', sha);
         end
     end
 
@@ -506,16 +505,16 @@ classdef GitSnapshotManager < SnapshotLoader
             err = MException(GitSnapshotManager.ERROR_GIT_GENERIC, sprintf('error in Git command: %s', cmdout));
         end
 
-        function dict = getCommitInfo(this, sha)
-            % Get info about a commit, returning a dictionary
+        function info = getCommitInfo(this, sha)
+            % Get info about a commit, returning an optionlist (see utils/optionlist/isOptionlist.m)
             % Properties:
-            %   author: the commit's author (Firstname Lastname <e@mail.address>)
-            %   authorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
-            %   authorTimeZone: time zone of the author date, in the format +0100
-            %   commitDate: commit date in Unix time (string)
-            %   commitTimeZone: time zone of the commit date, in the format +0100
-            %   subject: the 'subject line', containing the commit message and some other stuff (and not necessarily one
-            %   line long!
+            %   Author: the commit's author (Firstname Lastname <e@mail.address>)
+            %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
+            %   AuthorTimeZone: time zone of the author date, in the format +0100
+            %   CommitDate: commit date in Unix time (string)
+            %   CommitTimeZone: time zone of the commit date, in the format +0100
+            %   Subject: the 'subject line', containing the commit message and some other stuff (and not necessarily one
+            %     line long!
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git cat-file commit %s', sha));
             if (status ~= 0)
                 throw(this.genericGitError(cmdout));
@@ -536,8 +535,14 @@ classdef GitSnapshotManager < SnapshotLoader
             emptyLines = regexp(cmdout, strjoin({SystemUtil.gitOutputLineSep(), SystemUtil.gitOutputLineSep()}, ''));
             subjectStart = emptyLines(1) + 1;
             subject = extractAfter(cmdout, subjectStart);
-            dict = dictionary(["author", "authorDate", "authorTimeZone", "commitDate", "commitTimeZone", "subject"], ...
-                string({author, authorDate, authorTimeZone, commitDate, commitTimeZone, subject}));
+            info = { ...
+                'Author', author, ...
+                'AuthorDate', authorDate, ...
+                'AuthorTimeZone', authorTimeZone, ...
+                'CommitDate', commitDate, ...
+                'CommitTimeZone', commitTimeZone, ...
+                'Subject', subject ...
+            };
         end
 
         %% Snapshot Storage
