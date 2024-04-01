@@ -29,8 +29,8 @@ classdef RunBenchmarksCommand < UserCommand
                 '      order specified. Default is all snapshots in the order their commits were created.', ...
                 '    Benchmarks: a cellstring/string array of benchmark IDs to run. By default, all benchmarks are', ...
                 '      run in an unspecified order.', ...
-                '    OutputType: (NTables | OneTable | Raw) how to print the output: As one struct for each', ...
-                '      benchmark (Raw), one table for each benchmark(NTables), or one table for all benchmarks' ...
+                '    OutputType: (OneTable | Raw) how to print the output: As one struct for each', ...
+                '      benchmark (Raw) or one table for all benchmarks' ...
                 '      (OneTable, default) ', ...
                 '    XEndTol: a 1x1 double describing the relative tolerance for deciding whether the final x', ...
                 '      values of two different snapshots'' benchmark runs are considered the same.', ...
@@ -44,7 +44,7 @@ classdef RunBenchmarksCommand < UserCommand
             % {
             %   [Snapshots: 1xN string]
             %   [Benchmarks: 1xN string]
-            %   [OutputType: ('NTables' | 'OneTable' | 'Raw')]
+            %   [OutputType: ('OneTable' | 'Raw')]
             %   [XEndTol: 1xN double]
             % }
             % where simpleString means either a 1x1 string array or a 1xN character array.
@@ -83,9 +83,9 @@ classdef RunBenchmarksCommand < UserCommand
                             end
                             commandConfig.OutputType = value;
                         case 'xendtol'
-                            if ~IfdiffBenchmarkConfig.checkXEndTol(value)
+                            if ~UserConfig.checkXEndTol(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, sprintf( ...
-                                    'XEndTol: %s', IfdiffBenchmarkConfig.describeBadXEndTol(value))));
+                                    'XEndTol: %s', UserConfig.describeBadXEndTol(value))));
                             end
                             commandConfig.XEndTol = value;
                         otherwise
@@ -95,11 +95,10 @@ classdef RunBenchmarksCommand < UserCommand
         end
 
         function result = execute(this, logger, commandConfig)
-            IfdiffBenchmarkRunner.setConfig(IfdiffBenchmarkConfig());
             this.saveGlobalParameters(commandConfig);
 
             snapshotManager = GitSnapshotManager(logger);
-            benchmarkRunner = IfdiffBenchmarkRunner(logger);
+            benchmarkRunner = SimpleBenchmarkRunner(logger, @compareIfdiffSols);
             speedtrackerRunner = SpeedtrackerRunner(logger, snapshotManager, benchmarkRunner);
 
             % Determine snapshots and benchmarks to run
@@ -123,6 +122,7 @@ classdef RunBenchmarksCommand < UserCommand
             end
 
             % Main: run the benchmarks and return the results
+            initPaths();
             try
                 speedtrackerRunner = speedtrackerRunner.run(snapshots, benchmarks);
             catch error
@@ -137,17 +137,15 @@ classdef RunBenchmarksCommand < UserCommand
         % Store all the user parameters that overwrite global config parameters in the global UserConfig
         function saveGlobalParameters(~, commandConfig)
             userConfig = ConfigProvider.getUserConfig();
-            benchmarkConfig = IfdiffBenchmarkRunner.getConfig();
 
             if isfield(commandConfig, 'OutputType')
                 userConfig.OutputType = commandConfig.OutputType;
             end
             if isfield(commandConfig, 'XEndTol')
-                benchmarkConfig.XEndTol = commandConfig.XEndTol;
+                userConfig.XEndTol = commandConfig.XEndTol;
             end
     
             ConfigProvider.setUserConfig(userConfig);
-            IfdiffBenchmarkRunner.setConfig(benchmarkConfig);
         end
 
         function newError = wrapSpeedtrackerError(~, error)

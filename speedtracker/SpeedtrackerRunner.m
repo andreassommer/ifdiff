@@ -80,15 +80,9 @@ classdef SpeedtrackerRunner
             userConfig = ConfigProvider.getUserConfig();
             outputType = userConfig.OutputType;
             switch lower(outputType)
-                case 'ntables'
-                    prettyResults = cellfun(@(benchmarkResult) this.benchmarkRunner.makeTable(benchmarkResult), ...
-                        results, ...
-                        'UniformOutput', false);
                 case 'onetable'
-                    tables = cellfun(@(benchmarkResult) this.benchmarkRunner.makeTable(benchmarkResult), ...
-                        results, ...
-                        'UniformOutput', false);
-                    prettyResults = vertcat(tables{:});
+                    table = this.benchmarkRunner.makeTable(results);
+                    prettyResults = table;
                 otherwise
                     prettyResults = results;
             end

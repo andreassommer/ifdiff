@@ -25,17 +25,10 @@ classdef (Abstract) BenchmarkRunner
         %     init(), either because it was not among the list passed or because init() was never called.
         this = runBenchmark(this, currentSnapshotID, benchmarkID)
 
-        % Return the results of all benchmarking across all snapshots.
-        % There are three degrees of freedom: Snapshots,
-        % Benchmarks, and metrics. An abstract representation would be a third-order tensor. But tensors are confusing,
-        % so instead this must return a cell array of structs each containing the results for one benchmark.
-        % R1 each element of the returned cell array must be compatible with makeTable()
+        % Return the results of all benchmarking across all snapshots
         results = getResults(this)
 
-        % Make a MATLAB table from a single benchmark's result. Since getResults returns the results of all benchmarks,
-        % you can do something like `cellfun(@(result) this.makeTable(result, this.getResults())`
-        % R1 the tables obtained from each result must have similar enough columns that they can be concatenated
-        % with vertcat, even if not all benchmarks were run with the same set of snapshots
-        tab = makeTable(this, result)
+        % Make a MATLAB table from the results returned by getResults
+        tab = makeTable(this, results)
     end
 end
