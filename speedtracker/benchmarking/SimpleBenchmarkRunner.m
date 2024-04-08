@@ -93,7 +93,7 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
         function benchmarks = listBenchmarks(this)
             %LISTBENCHMARKS List all available benchmarks.
             % To be precise, all .m files that
-            % 1. are located in <tempDir>/benchmarks
+            % 1. are located in <tempDir>/benchmarks (no subfolder)
             % 2. take no arguments 
             % are treated as benchmarks.
             benchmarks = {};
