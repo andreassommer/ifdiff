@@ -1,6 +1,6 @@
 function areEqual = compareIfdiffSols(sol1, sol2)
 %COMPAREIFDIFFSOLS Compare two augmented sol objects from IFDIFF integration on their final y values and switches
-    relTol = ConfigProvider.getUserConfig().XEndTol();
+    relTol = ConfigProvider.getUserConfig().YEndTol();
     areEqual = true;
     if ~all(all(ismembertol(sol1.y(:, end), sol2.y(:, end), relTol)))
         areEqual = false;

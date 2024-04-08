@@ -32,7 +32,7 @@ classdef RunBenchmarksCommand < UserCommand
                 '    OutputType: (OneTable | Raw) how to print the output: As one struct for each', ...
                 '      benchmark (Raw) or one table for all benchmarks' ...
                 '      (OneTable, default) ', ...
-                '    XEndTol: a 1x1 double describing the relative tolerance for deciding whether the final x', ...
+                '    YEndTol: a 1x1 double describing the relative tolerance for deciding whether the final y', ...
                 '      values of two different snapshots'' benchmark runs are considered the same.', ...
                 '    ' ...
             }, SystemUtil.lineSep());
@@ -45,7 +45,7 @@ classdef RunBenchmarksCommand < UserCommand
             %   [Snapshots: 1xN string]
             %   [Benchmarks: 1xN string]
             %   [OutputType: ('OneTable' | 'Raw')]
-            %   [XEndTol: 1xN double]
+            %   [YEndTol: 1xN double]
             % }
             % where simpleString means either a 1x1 string array or a 1xN character array.
             commandConfig = struct();
@@ -82,12 +82,12 @@ classdef RunBenchmarksCommand < UserCommand
                                     'OutputType: %s', UserConfig.describeBadOutputType(value))));
                             end
                             commandConfig.OutputType = value;
-                        case 'xendtol'
-                            if ~UserConfig.checkXEndTol(value)
+                        case 'yendtol'
+                            if ~UserConfig.checkYEndTol(value)
                                 throw(MException(UserCommand.ERROR_BAD_ARGUMENT, sprintf( ...
-                                    'XEndTol: %s', UserConfig.describeBadXEndTol(value))));
+                                    'YEndTol: %s', UserConfig.describeBadYEndTol(value))));
                             end
-                            commandConfig.XEndTol = value;
+                            commandConfig.YEndTol = value;
                         otherwise
                     end
                 end
@@ -141,8 +141,8 @@ classdef RunBenchmarksCommand < UserCommand
             if isfield(commandConfig, 'OutputType')
                 userConfig.OutputType = commandConfig.OutputType;
             end
-            if isfield(commandConfig, 'XEndTol')
-                userConfig.XEndTol = commandConfig.XEndTol;
+            if isfield(commandConfig, 'YEndTol')
+                userConfig.YEndTol = commandConfig.YEndTol;
             end
     
             ConfigProvider.setUserConfig(userConfig);

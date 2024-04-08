@@ -9,10 +9,10 @@ classdef UserConfig
         % Used by RunCommand.
         OutputType = Configuration.OutputType;
         % Relative tolerance for solution values at the end of the time horizon and for switching points.
-        % compareIfdiffSols compares whether the last x values and switching points of two sol objects were the
+        % compareIfdiffSols compares whether the last y values and switching points of two sol objects were the
         % same, using this value as the relative tolerance.
         % See also COMPAREIFDIFFSOLS
-        XEndTol = Configuration.XEndTol;
+        YEndTol = Configuration.YEndTol;
     end
 
     properties (Constant, Access=private)
@@ -28,9 +28,9 @@ classdef UserConfig
             obj.OutputType = value;
         end
 
-        function obj = set.XEndTol(obj, value)
-            assert(UserConfig.checkXEndTol(value));
-            obj.XEndTol = value;
+        function obj = set.YEndTol(obj, value)
+            assert(UserConfig.checkYEndTol(value));
+            obj.YEndTol = value;
         end
     end
 
@@ -52,13 +52,13 @@ classdef UserConfig
             end
         end
 
-        function isValid = checkXEndTol(value)
-            % Check if a value is a valid setting for XEndTol
+        function isValid = checkYEndTol(value)
+            % Check if a value is a valid setting for YEndTol
             isValid = isnumeric(value) && length(value) == 1;
         end
-        function message = describeBadXEndTol(value)
-            % Given an invalid value for XEndTol, describe why it is invalid
-            % Will not work properly if you pass in a valid XEndtol value.
+        function message = describeBadYEndTol(value)
+            % Given an invalid value for YEndTol, describe why it is invalid
+            % Will not work properly if you pass in a valid YEndtol value.
             if isnumeric(value)
                 message = sprintf('expecting scalar, but got dimensions %s', StringUtil.dimStr(value));
             else

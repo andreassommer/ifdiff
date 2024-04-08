@@ -8,8 +8,8 @@ classdef Configuration
         %   'OneTable' (all results in a single table, default)
         %   'Raw' (directly return the internal result objects that the BenchmarkRunner returns)
         OutputType = 'OneTable';
-        % Tolerance for deciding whether the xEnd values of two different snapshots' benchmarking runs are equal.
-        XEndTol = 1e-6;
+        % Tolerance for deciding whether the y values and switching points of two different benchmarking runs are equal.
+        YEndTol = 1e-6;
     end
 end
 
