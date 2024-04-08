@@ -52,6 +52,7 @@ classdef SpeedtrackerRunner
                     this.logger.info(sprintf('loading snapshot %s', snapshots{i}));
                     this.snapshotLoader = this.snapshotLoader.loadSnapshot(snapshots{i});
                     for j=1:length(benchmarks)
+                        this.logger.info(sprintf('running benchmark %s', benchmarks{j}));
                         this.benchmarkRunner = this.benchmarkRunner.runBenchmark(snapshots{i}, benchmarks{j});
                     end
                     this.logger.info('ran all benchmarks');

@@ -34,6 +34,7 @@ classdef RunBenchmarksCommand < UserCommand
                 '      (OneTable, default) ', ...
                 '    YEndTol: a 1x1 double describing the relative tolerance for deciding whether the final y', ...
                 '      values of two different snapshots'' benchmark runs are considered the same.', ...
+                '    NIterations: how many times to run each benchmark, averaging the times', ...
                 '    ' ...
             }, SystemUtil.lineSep());
         end
@@ -46,6 +47,7 @@ classdef RunBenchmarksCommand < UserCommand
             %   [Benchmarks: 1xN string]
             %   [OutputType: ('OneTable' | 'Raw')]
             %   [YEndTol: 1xN double]
+            %   [NIterations: 1x1 double]
             % }
             % where simpleString means either a 1x1 string array or a 1xN character array.
             commandConfig = struct();
@@ -88,6 +90,12 @@ classdef RunBenchmarksCommand < UserCommand
                                     'YEndTol: %s', UserConfig.describeBadYEndTol(value))));
                             end
                             commandConfig.YEndTol = value;
+                        case 'niterations'
+                            if ~UserConfig.checkNIterations(value)
+                                throw(MException(UserCommand.ERROR_BAD_ARGUMENT, sprintf( ...
+                                    'NIterations: %s', UserConfig.describeBadNIterations(value))));
+                            end
+                            commandConfig.NIterations = value;
                         otherwise
                     end
                 end
@@ -144,7 +152,10 @@ classdef RunBenchmarksCommand < UserCommand
             if isfield(commandConfig, 'YEndTol')
                 userConfig.YEndTol = commandConfig.YEndTol;
             end
-    
+            if isfield(commandConfig, 'NIterations')
+                userConfig.NIterations = commandConfig.NIterations;
+            end
+
             ConfigProvider.setUserConfig(userConfig);
         end
 

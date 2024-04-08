@@ -46,28 +46,37 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
 
         function this = runBenchmark(this, currentSnapshotID, benchmarkID)
             %RUNBENCHMARK Run a benchmark and store its results.
+            % The benchmark is run multiple times, defined by UserConfig.NIterations, and the times averaged.
+            % The value field of the result is kept from the first benchmarking run. Unless there were exceptions,
+            % in which case the last errored result is kept.
             % Exceptions:
             % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
             %     either because the benchmark was not in the list or because init() was not called at all.
             %     If the benchmark itself throws an exception, this method will continue and simply save a
             %     "failed" result.
+            % See also USERCONFIG
             if ~hasOption(this.results, benchmarkID)
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
                     'benchmark %s was not loaded with init()', benchmarkID)));
             end
-            benchmarkFunction = str2func(benchmarkID);
+            % run benchmark once to avoid first-time initialization skewing the results for the first snapshots
+            this.runBenchmarkOnce(benchmarkID);
+
             resultsForBenchmark = getOption(this.results, benchmarkID);
-            tic
-            try
-                value = benchmarkFunction();
-                time = toc;
-                result = struct('value', value, 'time', time);
-            catch error
-                time = toc;
-                this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmarkID));
-                result = struct('error', error, 'time', time);
+            n = ConfigProvider.getUserConfig().NIterations;
+            avgTime = 0;
+            for i=1:n
+                result = this.runBenchmarkOnce(benchmarkID);
+                this.logger.debug(sprintf('iteration %3d took %9.6fs', i, result.time));
+                avgTime = avgTime + result.time / n;
+                if isfield(result, 'error') || ~hasOption(resultsForBenchmark, currentSnapshotID)
+                    finalResult = result;
+                else
+                    finalResult = getOption(resultsForBenchmark, currentSnapshotID);
+                end
+                finalResult.time = avgTime;
+                resultsForBenchmark = setOption(resultsForBenchmark, currentSnapshotID, finalResult);
             end
-            resultsForBenchmark = setOption(resultsForBenchmark, currentSnapshotID, result);
             this.results = setOption(this.results, benchmarkID, resultsForBenchmark);
         end
 
@@ -132,6 +141,20 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
                     BenchmarkRunner.ERROR_BAD_BENCHMARK, sprintf( ...
                         'benchmark %s should be parameterless, but actually expects %s arguments', ...
                         benchmarkID, nargin(benchmarkFunction))));
+            end
+        end
+
+        function result = runBenchmarkOnce(this, benchmarkID)
+            benchmarkFunction = str2func(benchmarkID);
+            tic
+            try
+                value = benchmarkFunction();
+                time = toc;
+                result = struct('value', value, 'time', time);
+            catch error
+                time = toc;
+                this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmarkID));
+                result = struct('error', error, 'time', time);
             end
         end
 
