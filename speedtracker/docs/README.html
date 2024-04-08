@@ -1,0 +1,45 @@
+<h1 id="speedtracker-performance-regression-testing">Speedtracker: Performance Regression Testing</h1>
+<h2 id="what-is-speedtracker">What is Speedtracker?</h2>
+<p>Speedtracker is a module within IFDIFF for testing for long-term performance regressions. It tracks versions of the project’s development, as well as performance benchmarks. When invoked, it successively loads each snapshot, runs the benchmarks on that snapshot, and collects the results.</p>
+<h2 id="goals-and-requirements">Goals and Requirements</h2>
+<p>Speedtracker is intended to track long-term deteriorations in the performance due to inefficiencies accidentally introduced into the code. This and the small and fluctuating development team mean that we cannot rely on a pristine, consistent testing environment: Two benchmarking runs six months apart may produce different results solely because the tester’s computer got slowed down by software bloat. Therefore, every benchmarking run must compare all snapshots on the local machine, in the moment it is performed.</p>
+<p>Another requirement is to avoid the use of extra software because there is nobody to manage it. Speedtracker should be callable from within MATLAB :registered: and use only MATLAB, OS commands, and Git.</p>
+<p>Speedtracker aims to be compatible with Windows and Linux.</p>
+<p>Users are assumed to be decently familiar with MATLAB, IFDIFF, and Git.</p>
+<p>TODO: determine how benchmarking results should be collected/visualized.</p>
+<h2 id="use-instructions">Use Instructions</h2>
+<p>Refer to <code>instructions.odt</code> for instructions. These instructions double as a description of the module’s functionality, so reading them (now) may be a good starting point to understanding how it works. The code structure is documented in <code>structure.odt</code>. Read this before you make any changes; the structure and conventions are not self-explanatory.</p>
+<h2 id="development-process">Development Process</h2>
+<p>This is hopefully going to remain a small module, allowing us to stick to the following simple process. When adding or modifying functionality, proceed as follows:</p>
+<ol type="1">
+<li>Add the desired functionality to <code>instructions.odt</code>. This document contains a list of system functions (“SF”) and an example exercise. Each of these system functions comprises:
+<ol type="1">
+<li>Name</li>
+<li>Description</li>
+<li>Inputs/how to perform</li>
+<li>Preconditions</li>
+<li>Output</li>
+<li>Postconditions</li>
+<li>Exceptions (ways it could go wrong and what it does in that case)</li>
+<li>(optional) Notes</li>
+</ol></li>
+<li>Implement the functionality in code. Consult <code>structure.odt</code> if you do not know where to start, it gives a rundown of the basic program flow and structure. Also update this file if you make any changes or extensions to major architectural components.</li>
+<li>Test the functionality. For now, the test procedure is to manually try out</li>
+<li>every correct way of using the SF</li>
+<li>every exception described in the SF</li>
+<li>every set of inputs that does not match what the “Inputs/how to perform” section stipulates. e.g., if it says the first argument is to be a nonempty string, try out what happens when you pass in the empty string and what happens when you pass in a non-string value like a number.</li>
+</ol>
+<h2 id="programming-guidelines">Programming Guidelines</h2>
+<p>For now, our guidelines are small enough to stay here instead of in a separate file. Read <code>structure.odt</code> for more detail on how these goals are implemented; this section is only about general guidelines.</p>
+<p>The most important non-functional requirement is robustness. Git has many features and makes it easy to create confusing repository states that a developer who merely uses it and is not a Git expert may have a hard time figuring out how to get back from. Since we are checking out past versions of the same repo, we must take care not to check out a version where Speedtracker does not exist and cannot restore the program state.<br />
+For these reasons, check the results of every OS call and think of how to ensure that a failed operation can restore the state before it happened. Different exceptions should have well-defined error identifiers which are defined as public class constants.</p>
+<p>Error handling in general: syntax errors/faulty arguments print out a usage message and one line describing which argument is wrong. Semantic errors, e.g. creating a snapshot with a name already taken, print out a one-liner explaining what happened. Truly unexpected exceptions are logged fully, with stack trace.</p>
+<p>All code besides <code>speedtracker.m</code>, benchmark and config files must go in the <code>speedtracker</code> folder, because copying it to a temp location is how the module prevents checking-out of old snapshots from breaking itself.</p>
+<p>The Speedtracker code uses classes for top-level organization, but is largely procedural, not object-oriented. Hide classes behind interfaces if they separate major parts of the application. For example, the class SnapshotLoader, through which the main program manages snapshots, is an abstract class.</p>
+<p>Data Types:<br />
+Use char arrays and cellstrings, not strings. Vectors are row vectors wherever row or column would both work.</p>
+<p>Expected Userbase:<br />
+Users are developers of IFDIFF and can thus be expected to have a high degree of expertise in MATLAB (higher than mine at any rate ^_^“) and maybe even to poke around in the Speedtracker code when it doesn’t work how they like it.</p>
+<p>Expect users to have everyday knowledge of Git: add, commit, push, pull, maybe tag, but no more.</p>
+<p>Git Usage Internally:<br />
+Some Git commands use advanced terminal features like coloring that are implemented with ANSI escape sequences and similar. On Linux, output of Git commands may contain these escape sequences, making handling them very difficult. For this reason, avoid using commands like <code>git tag</code>, <code>git show</code>, and <code>git diff</code>. The commands listed under “Plumbing Commands” in the <a href="https://git-scm.com/docs/">Git docs</a> are intended for scripting and do not use escape sequences. Some commands, like <code>git add</code>, are okay and are used in Speedtracker.</p>
