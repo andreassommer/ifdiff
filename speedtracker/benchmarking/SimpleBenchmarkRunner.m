@@ -1,8 +1,9 @@
 classdef SimpleBenchmarkRunner < BenchmarkRunner
     %SIMPLEBENCHMARKRUNNER BenchmarkRunner whose benchmarks are general functions
     %    A benchmark can be any function that takes no arguments and returns some kind of result. In addition,
-    %    you must supply (pass into the constructor) a binary function compareFunction that says whether two
-    %    results are identical.
+    %    you must supply a function compareFunction that says whether two
+    %    results are identical. The output contains only two metrics for each snapshot: whether the result
+    %    changed, and how long it took.
 
     properties
         logger;
@@ -11,10 +12,10 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
     end
 
     properties (GetAccess=public, SetAccess=private)
-        % Results per benchmark as an associative array.
-        % We are collecting the benchmarks for each combination of benchmark and snapshot, so we store them
-        % as an associative array of associative arrays, with the inner arrays indexed by snapshot ID.
-        % Each element is a struct containing the property 'time' and either 'value' or 'error'.
+        % Results per benchmark as an associative array. A key is a benchmark's ID, a value is another
+        % associative array mapping snapshot IDs to results for that benchmark-snapshot pair.
+        % Each result, finally, is a struct containing the properties 'time', and either 'value' or 'error'.
+        % So, more abstractly, it is a binary map, containing a result for each pair of benchmark and snapshot.
         results;
     end
 
@@ -34,7 +35,8 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
 
         %% BenchmarkRunner Interface
         function this = init(this, benchmarkIDs)
-            %INIT check that all of the specified benchmarks exist and take 0 arguments
+            %INIT check that all of the specified benchmarks exist and take 0 arguments, and initialize an empty
+            %    result list for each benchmark
             this.results = {};
             for i = 1:length(benchmarkIDs)
                 this.checkBenchmark(benchmarkIDs{i});
@@ -46,7 +48,9 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
             %RUNBENCHMARK Run a benchmark and store its results.
             % Exceptions:
             % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
-            %     because the benchmark was not in the list or because init() was not called at all.
+            %     either because the benchmark was not in the list or because init() was not called at all.
+            %     If the benchmark itself throws an exception, this method will continue and simply save a
+            %     "failed" result.
             if ~hasOption(this.results, benchmarkID)
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
                     'benchmark %s was not loaded with init()', benchmarkID)));
@@ -68,7 +72,7 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
         end
 
         function results = getResults(this)
-            %GETRESULTS return the results of benchmarking so far
+            %GETRESULTS return the results of benchmarking
             results = this.results;
         end
 
@@ -77,7 +81,7 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
             % with the columns 'benchmarkID', 'snapshotID', 'time', 'changed', and 'error'.
             % 'error' is true if an error occurred during benchmarking. 'changed' is true if the result
             % is different from the result for the first snapshot, meaning either one errored and the other did not,
-            % or both completed successfully and this.compareFunction returns false.
+            % or both completed successfully, but this.compareFunction returns false.
             % See also COMPAREFUNCTION
             tables = mapOptionlist( ...
                 @(benchmark, resultsForBenchmark) this.makeTableForBenchmark(benchmark, resultsForBenchmark), ...
