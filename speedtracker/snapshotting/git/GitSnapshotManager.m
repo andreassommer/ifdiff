@@ -2,12 +2,17 @@ classdef GitSnapshotManager < SnapshotLoader
     % Snapshot manager that stores snapshots based on Git commits
     % Functions:
     % 1. create, read, update, and delete snapshots (stored in a file that can be committed)
-    %    Committing the snapshots file is a bit awkward, since these snapshots are supposed to describe commits.
-    %    But since we already need the latest revision to use Speedtracker itself, it does not really cause any
-    %    extra damage. The ideal solution would have been using Git refs or Git tagged blobs, but pushing and pulling
-    %    these has been challenging. And replacing Git commands with simple file operations is simpler and more robust.
+    %    Committing the snapshots file is a bit weird, since these snapshots are supposed to describe commits. So
+    %    then the file storing commits is stored in a commit... who manipulates who here?
+    %    However, you can't really run speedtracker while you have an old commit checked out. So we might as well
+    %    make the snapshots file be tied to the latest commit.
+    %    The ideal solution would have been using Git refs or Git tagged blobs, but pushing and pulling
+    %    these has been challenging. The snapshots file also has the advantage that manipulating it just consists
+    %    of reading/writing a file rather than using obscure Git plumbing commands.
     % 2. Save project state and check out snapshots for performance regression testing (implementing the SnapshotLoader
-    %    interface)
+    %    interface). Instead of checking out created snapshots, you can also directly pass a commit SHA to check it out.
+    %    If there are working tree changes, GSM will save these to a temp commit and restore them once it's done, no
+    %    problem. However, if there are staged changes, it will not work.
     % WARNING: do not mix these two functionalities. In a single run of Speedtracker, you may EITHER create, read,
     % update, and delete snapshots (as many as you like), OR load snapshots (as many as you like) - if you modify
     % the existing snapshots, the copy of the snapshot file in the temp dir will not be updated to reflect the
@@ -15,13 +20,21 @@ classdef GitSnapshotManager < SnapshotLoader
 
 
     properties (Constant)
+        % Snapshot ID regex: starts with a letter, contains only letters, digits, dashes, and underscores
         SNAPSHOT_ID_REGEX = '^[a-zA-Z][a-zA-Z0-9-_]*$';
+
+        %% Expected Exception Identifiers
 
         % Cannot save state, because the repo is in detached HEAD mode
         ERROR_DETACHED_HEAD = 'GitSnapshotManager:detachedHead';
+        % Cannot save state, because there are staged changes present
         ERROR_STAGED_CHANGES_PRESENT = 'GitSnapshotManager:stagedChangesPresent';
+        % Tried to create a snapshot from a nonexistent or otherwise invalid commit
         ERROR_BAD_COMMIT = 'GitSnapshotManager:badCommit';
+        % Snapshot name is alreayd taken
         ERROR_NAME_TAKEN = 'GitSnapshotManager:nameTaken';
+
+        %% Unexpected Exception Identifiers
 
         ERROR_FS_GENERIC = 'GitSnapshotManager:fileErrorGeneric';
         ERROR_GIT_GENERIC = 'GitSnapshotManager:gitErrorGeneric';
@@ -41,8 +54,8 @@ classdef GitSnapshotManager < SnapshotLoader
         % Wait time between Snapshot check-outs
         % MATLAB doesn't grok that a file changed unless its timestamp on disk is a full second away from the timestamp
         % inside MATLAB. To ensure that the current snapshot is actually being used, we must wait 1s between checkouts.
-        % Note that this also applies to restoreProjectState, but not to saveProjectState, since the latter does not
-        % actually alter any files. So, here is our wait time in seconds.
+        % Note that this also applies to restoreProjectState, but not to saveProjectState, since the latter only
+        % creates a new commit and does not actually alter any files. So, here is our wait time, in seconds.
         SNAPSHOT_LOAD_WAIT_TIME = 1;
     end
 
@@ -63,21 +76,21 @@ classdef GitSnapshotManager < SnapshotLoader
         %% SnapshotLoader interface
         function this = saveProjectState(this)
             % Save the current state of the working directory.
-            % The saved state is stored in the Git objects database, so it persists across check-outs.
+            % The saved state is stored in a tagged blob in the Git objects database, so it persists across check-outs.
             % If there are any changes
             % in the index, throw an exception, because saving state without destroying the index is too difficult.
             % If there are changes in the working tree, commit them to a temporary commit and store information for
-            % retrieving it in a tagged blob.
+            % retrieving it in the objects DB.
             %
             % Exceptions:
-            %   If there are staged changes, throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a
+            %   E1 If there are staged changes, throw SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a
             %        ERROR_STAGED_CHANGES_PRESENT as a cause.
             %        Since we are saving changed files in the worktree using a temporary commit, it would be very
             %        difficult to reconstruct which changes were staged and which were not.
-            %   The repo must be on a branch. If this is run in detached HEAD mode, throw 
-            %       SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a ERROR_DETACHED_HEAD as a cause
-            %   If there is already a saved state, throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
-            % In all cases, leave the project behind the same state it was in before.
+            %   E2 The repo must be on a branch. If this method is called while the repo is in detached HEAD mode, throw
+            %       SnapshotLoader.ERROR_COULD_NOT_SAVE_STATE with a ERROR_DETACHED_HEAD as a cause.
+            %   E3 If there is already a saved state, throw SnapshotLoader.ERROR_SAVED_STATE_PRESENT
+            % In all cases, leave the repo behind the same state it was in before.
 
             % throws in case of E1, staged changes
             if ~this.isGitIndexClean()
@@ -112,7 +125,7 @@ classdef GitSnapshotManager < SnapshotLoader
             try
                 this.pushMetadata(jsonencode(metadata));
             catch taggingError
-                % here is where E3 is caught
+                % here is where E3 is handled
                 if (taggingError.identifier == GitSnapshotManager.ERROR_METADATA_ALREADY_PRESENT)
                     err = MException(SnapshotLoader.ERROR_SAVED_STATE_PRESENT, ...
                         'cannot save project state, a save is already present');
@@ -132,11 +145,13 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function this = loadSnapshot(this, shaOrId)
-            % Load a snapshot, either by commit SHA or by ID of a snapshot created with createSnapshot.
-            % The previous state must already have been saved with saveProjectState.
+            % Load a snapshot. shaOrId can be either the ID of a snapshot created with createSnapshot or the SHA of
+            % a Git commit.
+            % This method can only be called if saveProjectState was called first to save the current repo state.
             % Exceptions:
             %   If no such snapshot or commit exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
             %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
+            % See also SAVEPROJECTSTATE, RESTOREPROJECTSTATE, CREATESNAPSHOT
             isValidID = this.isValidSnapshotID(shaOrId);
             if ~isValidID
                 snapshot = [];
@@ -170,14 +185,15 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function this = restoreProjectState(this)
-            % Restore the state of the project from the save state created by saveProjectState and delete the save state.
-            % Must guarantee:
-            % 1. The snapshot can be restored statelessly, using only the same subclass - not instance - of
-            %     SnapshotManager.
+            % Restore the state of the project from the save state created by saveProjectState and delete
+            % the metadata of the save state.
+            % You do not need to use the same instance of GitSnapshotManager to restore state; all required information
+            % is stored in the Git database, as per R1 of the SnapshotLoader interface
             % Exceptions:
             % SnapshotLoader.ERROR_NO_SAVED_STATE if there is no saved state to load
             % SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE if the saved state cannot be parsed or if the `git switch` or
-            %    `git reset` commands required to restore fail.
+            %    `git reset` commands required to restore fail for whatever reason.
+            % See also SAVEPROJECTSTATE, SNAPSHOTLOADER
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     'could not restore project state because no saved state present'));
@@ -229,6 +245,8 @@ classdef GitSnapshotManager < SnapshotLoader
             % Create a snapshot with a provided ID.
             % If the third parameter commitSha is passed, create the snapshot from the commit it points to.
             % Otherwise, use the commit pointed to by HEAD.
+            % Throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID if the ID does not match GitSnapshotManager.SNAPSHOT_ID_REGEX
+            % or is already taken. Throw GitSnapshotManager.ERROR_BAD_COMMIT if the commit does not exist.
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -282,7 +300,8 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function snapshotIDs = listSnapshots(this)
-            % return all snapshots' IDs sorted ascendingly by their commit's author date, i.e. when the commit was created.
+            % return all snapshots' IDs sorted ascendingly by their commit's author date
+            % i.e. when the commit was created.
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
             [~, indices] = sort(arrayfun(@(snapshot) snapshot.timestamp, snapshots));
             snapshots = snapshots(indices);
@@ -290,16 +309,21 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function info = getSnapshotInfo(this, id)
-            % Get information about a snapshot, returning an optionlist (see utils/optionlst/isOptionlist.m)
+            % Get information about a snapshot, returning an optionlist (see utils/optionlist/isOptionlist.m)
             % The list contains the properties:
             %   CommitSha: the snapshot's commit SHA
             %   Author: the commit's author (Name <e@mail.address>)
-            %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
+            %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix
+            %     time (string)
             %   AuthorTimeZone: time zone of the author date, in the format +0100
             %   CommitDate: commit date in Unix time (string)
             %   CommitTimeZone: time zone of the commit date, in the format +0100
-            %   Subject: the 'subject line', containing the commit message and some other stuff (and not necessarily one
-            %     line long!
+            %   Subject: the 'subject line', containing the commit message and some other stuff (and not necessarily
+            %     only one line long!)
+            % Throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID if the snapshot ID does not match
+            % GitSnapshotManager.SNAPSHOT_ID_REGEX or if the snapshot does not exist.
+            % This also does not work for raw commit SHAs, unlike loadSnapshot. You can just use `git show` for those,
+            % because this method doesn't do anything more than that either.
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
@@ -319,13 +343,14 @@ classdef GitSnapshotManager < SnapshotLoader
         function exists = snapshotExists(this, id)
             % Return true if a snapshot with the supplied ID has been created
             % (does not work if there is only a Git commit whose SHA equals id)
+            % See also CREATESNAPSHOT
             snapshots = this.loadSnapshots(this.getSnapshotsFileName());
             snapshot = this.getSnapshotById(snapshots, id);
             exists = ~isempty(snapshot);
         end
 
         function isSha = isCommitSha(this, sha)
-            % Verify that a string is the SHA of a commit. Not a ref, but a commit.
+            % Return true if there is a commit whose SHA matches the provided value.
             if ~regexp(sha, '[a-f0-9]+')
                 isSha = 0;
                 return;
@@ -341,6 +366,9 @@ classdef GitSnapshotManager < SnapshotLoader
 
     methods (Access=private)
         %% Metadata Storage for Project State Saving
+        % When we check out snapshots, we are overwriting the entire working tree. So then where can we put the metadata
+        % that describe where (which commit) we were earlier? By storing them in the Git objects database with
+        % a ref pointing to it.
         function isPresent = isMetadataPresent(this)
             % Find out if metadata have been stored.
             % Do this by simply checking for the git ref that points to the metadata blob.
@@ -348,10 +376,12 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function pushMetadata(this, stringData)
-            % Store metadata in the Git object database (so it is safe against getting lost during checkout of snapshots)
-            % Like a browser cookie, there is just one data string for GitSnapshotManager. For now, this is just
-            % intended to be a really minimal 'where was I?' so each method that uses it will just make its own JSON
-            % and hopefully we won't need any more abstractions.
+            % Store metadata in the Git object database.
+            % We store the metadata as a struct. To save it, we convert it to JSON, write it to a file, then
+            % save that in the Git DB using hash-object, and finally set the ref GitSnapshotManager.METADATA_REF_NAME
+            % to point to it.
+            % There can only be one metadata object. This method throws an exception if there are already metadata
+            % present.
             if this.isMetadataPresent()
                 throw(MException(GitSnapshotManager.ERROR_METADATA_ALREADY_PRESENT, 'metadata already present'));
             end
@@ -383,15 +413,9 @@ classdef GitSnapshotManager < SnapshotLoader
             delete(metadataTempFile);
         end
 
-        function filename = getMetadataTempFileName(~)
-            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
-            filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.METADATA_TEMP_FILE_NAME);
-        end
-
         function stringData = popMetadata(this)
-        % Pop the metadata stored by pushMetadata.
-        % If there are metadata present, delete them. If there are none present, throw an exception
-        % with the identifier ERROR_NO_METADATA_PRESENT
+        % Pop the metadata stored by pushMetadata, i.e. read, delete, and return them.
+        % If there are none present, throw an exception with the identifier ERROR_NO_METADATA_PRESENT
             if ~this.isMetadataPresent()
                 throw(MException(GitSnapshotManager.ERROR_NO_METADATA_PRESENT, 'no metadata present'));
             end
@@ -410,9 +434,16 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
+        function filename = getMetadataTempFileName(~)
+            % The metadata have to be written to a temp file and the file then stored with hash-object. This method
+            % gets the temp file's name.
+            speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
+            filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.METADATA_TEMP_FILE_NAME);
+        end
+
         function prevCommitSha = saveWorkdirToTempCommit(this)
             % Save all current changes in the working directory to a temporary commit.
-            % Must not be run if there are staged changes.
+            % Must not be run if there are staged changes - the caller has to ensure this!
             % Returns the SHA of the previous commit, so we know what commit to `git reset --mixed` to when restoring.
 
             % get last commit SHA
@@ -439,14 +470,15 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function message = getTempCommitMessage(~)
+            % The commit message for the temp commit that stores the working tree state
             message = 'speedtracker current state temp commit';
         end
 
-        %% Snapshot ID wrangling
+        %% Snapshot ID format
         function isValid = isValidSnapshotID(~, id)
             % Given a 1xN char or a 1x1 string, determine if it is a valid snapshot name
-            % It must start with
-            % a letter and consist of only letters, digits, dashes, and underscores.
+            % It must match GitSnapshotManager.SNAPSHOT_ID_REGEX.
+            % See also SNAPSHOT_ID_REGEX
             if regexp(id, GitSnapshotManager.SNAPSHOT_ID_REGEX)
                 isValid = 1;
             else
@@ -489,7 +521,7 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function isClean = isGitIndexClean(~)
-            % Return 1 if there are no staged changes, or 0 otherwise.
+            % Return 1 if there are no staged changes and 0 if there are.
             [status, cmdout] = SystemUtil.safeSystem('git diff-index --cached HEAD');
             if (status == 0 && strlength(cmdout) == 0)
                 isClean = 1;
@@ -531,22 +563,23 @@ classdef GitSnapshotManager < SnapshotLoader
         function err = genericGitError(~, cmdout)
             % Return a generic exception for when a Git command went wrong in an unexpected way.
             % This should never be used for actual, expected error conditions. Only in cases where it
-            % should be impossible for anything to go wrong (but you know how it is - we make mistakes,
-            % we don't know when exactly a Git command may return an error...),
-            % include a check for error conditions and throw one of these so the error doesn't disappear silently.
+            % _should_ be impossible for anything to go wrong - but you know how it is: we make mistakes,
+            % we don't know when exactly a Git command may return an error, etc. - include a check for error
+            % conditions and throw one of these so the error doesn't disappear silently.
             err = MException(GitSnapshotManager.ERROR_GIT_GENERIC, sprintf('error in Git command: %s', cmdout));
         end
 
         function info = getCommitInfo(this, sha)
             % Get info about a commit, returning an optionlist (see utils/optionlist/isOptionlist.m)
             % Properties:
-            %   Author: the commit's author (Firstname Lastname <e@mail.address>)
-            %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix time (string)
+            %   Author: the commit's author (Name <e@mail.address>)
+            %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix
+            %     time (string)
             %   AuthorTimeZone: time zone of the author date, in the format +0100
             %   CommitDate: commit date in Unix time (string)
             %   CommitTimeZone: time zone of the commit date, in the format +0100
-            %   Subject: the 'subject line', containing the commit message and some other stuff (and not necessarily one
-            %     line long!
+            %   Subject: the 'subject line', containing the commit message and some other stuff (and not necessarily
+            %     only one line long!)
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git cat-file commit %s', sha));
             if (status ~= 0)
                 throw(this.genericGitError(cmdout));
@@ -581,15 +614,16 @@ classdef GitSnapshotManager < SnapshotLoader
         % Each snapshot is a struct consisting of ID (name given by user), commit SHA, and timestamp, with the keys
         % `id`, `sha`, and `timestamp`, respectively. The latter
         % property is to facilitate sorting them by date, allowing them to be tested in the order their commits were
-        % created, which is the obvious order when we want to see whether IFDIFF's performance has degraded over
-        % time. A set of snapshots is passed around not as an array of structs, but as a struct of arrays
-        % (row vectors), called a _snapshot list_.
+        % created: this is the obvious order, since we want to see whether IFDIFF's performance has degraded _over
+        % time_. A set of snapshots is passed around as a vector array of these structs.
         % For storage, we simply write each snapshot on a line with id, sha, and timestamp separated by spaces.
 
         function filename = getSnapshotsFileName(~)
             % Get the filename for the snapshot file.
             % Note: this is the file in the original
-            % speedtracker directory, not the temp dir! Do not mix snapshot CRUD and snapshot loading.
+            % speedtracker directory, not the temp dir! Only use this file for snapshot CRUD.
+            % loadSnapshot uses getSnapshotsTempFileName instead.
+            % See also GETSNAPSHOTSTEMPFILENAME
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig(); 
             filename = fullfile(speedtrackerConfig.speedtrackerDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
         end
@@ -597,6 +631,8 @@ classdef GitSnapshotManager < SnapshotLoader
         function filename = getSnapshotsTempFileName(~)
             % Get the filename for the temp copy of the snapshot file.
             % Needed when loading snapshots, because the original will be overwritten by loading snapshots.
+            % For snapshot CRUD, only use getSnapshotsFileName.
+            %See also GETSNAPSHOTSFILENAME
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig(); 
             filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.SNAPSHOTS_FILE_NAME);
         end
@@ -631,7 +667,7 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function saveSnapshots(~, snapshots, file)
-            % Save snapshots, given as an array of structs, to a snapshot file. If there are 0 snapshots, delete the file.
+            % Save snapshots, given as an array of structs, to a snapshot file. If the array is empty, delete the file.
             % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the snapshot file cannot be accessed
             if (isempty(snapshots))
                 try
@@ -669,7 +705,7 @@ classdef GitSnapshotManager < SnapshotLoader
             if isempty(indices(indices))
                 snapshot = [];
             elseif length(indices(indices)) ~= 1
-                throw(MException(GitSnapshotManager.ERROR_FS_GENERIC, sprintf('multiple snapshots with ID %s', id)));
+                throw(MException(GitSnapshotManager.ERROR_ILLEGAL_STATE, sprintf('multiple snapshots with ID %s', id)));
             else
                 snapshot = snapshots(indices);
             end
