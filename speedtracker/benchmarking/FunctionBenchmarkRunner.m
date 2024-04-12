@@ -193,10 +193,8 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
                 if isfield(result, 'error')
                     tab(i, {'timeMean', 'timeStd', 'timeMedian'}) = {-1, -1, -1};
                 else
-                    quartiles = quantile(result.time, [1/4 1/2 3/4]);
-                    topThreeQuarters = result.time(result.time >= quartiles(1));
-                    middleHalf = topThreeQuarters(topThreeQuarters < quartiles(3));
-                    tab(i, {'timeMean', 'timeStd', 'timeMedian'}) = {mean(middleHalf), std(middleHalf), quartiles(2)};
+                    [timeMean, timeStd, timeMedian] = this.getTimeStatistics(result.time);
+                    tab(i, {'timeMean', 'timeStd', 'timeMedian'}) = {timeMean, timeStd, timeMedian};
                 end
             end
         end
@@ -215,6 +213,21 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             else
                 areEqual = false;
             end
+        end
+
+        function [meanVal, stdVal, medianVal] = getTimeStatistics(~, timeArray)
+            switch length(timeArray)
+                case {0, 1, 2, 3}
+                    stats = {mean(timeArray), std(timeArray), median(timeArray)};
+                otherwise
+                    quartiles = quantile(timeArray, [1/4 1/2 3/4]);
+                    topThreeQuarters = timeArray(timeArray > quartiles(1));
+                    middleHalf = topThreeQuarters(topThreeQuarters <= quartiles(3));
+                    stats = {mean(middleHalf), std(middleHalf), quartiles(2)};
+            end
+            meanVal = stats{1};
+            stdVal = stats{2};
+            medianVal = stats{3};
         end
     end
 end
