@@ -26,7 +26,7 @@ classdef ListBenchmarksCommand < UserCommand
         end
 
         function message = execute(~, logger, ~)
-            benchmarkRunner = SimpleBenchmarkRunner(logger, @compareIfdiffSols);
+            benchmarkRunner = FunctionBenchmarkRunner(logger, @compareIfdiffSols);
             benchmarks = benchmarkRunner.listBenchmarks();
             if isempty(benchmarks)
                 message = '';

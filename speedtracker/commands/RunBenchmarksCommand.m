@@ -112,7 +112,7 @@ classdef RunBenchmarksCommand < UserCommand
             this.saveGlobalParameters(commandConfig);
 
             snapshotManager = GitSnapshotManager(logger);
-            benchmarkRunner = SimpleBenchmarkRunner(logger, @compareIfdiffSols);
+            benchmarkRunner = FunctionBenchmarkRunner(logger, @compareIfdiffSols);
             speedtrackerRunner = SpeedtrackerRunner(logger, snapshotManager, benchmarkRunner);
 
             % Determine snapshots and benchmarks to run

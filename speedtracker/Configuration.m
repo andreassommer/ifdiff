@@ -11,7 +11,7 @@ classdef Configuration
         % Tolerance for deciding whether the y values and switching points of two different benchmarking runs are equal.
         YEndTol = 1e-6;
         % How many times to run each benchmark, averaging the results
-        NIterations = 50;
+        NIterations = 20;
     end
 end
 

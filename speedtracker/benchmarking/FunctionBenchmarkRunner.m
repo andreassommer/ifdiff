@@ -1,5 +1,5 @@
-classdef SimpleBenchmarkRunner < BenchmarkRunner
-    %SIMPLEBENCHMARKRUNNER BenchmarkRunner whose benchmarks are general functions
+classdef FunctionBenchmarkRunner < BenchmarkRunner
+    %FUNCTIONBENCHMARKRUNNER BenchmarkRunner whose benchmarks are general functions
     %    A benchmark can be any function that takes no arguments and returns some kind of result. In addition,
     %    you must supply a function compareFunction that says whether two
     %    results are identical. The output contains only two metrics for each snapshot: whether the result
@@ -24,8 +24,8 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
     end
 
     methods
-        function this = SimpleBenchmarkRunner(logger, compareFunction)
-            %SIMPLEBENCHMARKRUNNER Construct an instance of this class
+        function this = FunctionBenchmarkRunner(logger, compareFunction)
+            %FUNCTIONBENCHMARKRUNNER Construct an instance of this class
             %    compareFunction is the function used for comparing the results of two benchmarks, returning
             %    true if they are identical and false if not.
             this.logger = logger;
@@ -160,7 +160,7 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
 
         function directory = getBenchmarksDirectory(~)
             speedtrackerConfig = ConfigProvider.getSpeedtrackerConfig();
-            directory = fullfile(speedtrackerConfig.tempDir, SimpleBenchmarkRunner.BENCHMARKS_FOLDER);
+            directory = fullfile(speedtrackerConfig.tempDir, FunctionBenchmarkRunner.BENCHMARKS_FOLDER);
         end
 
         function tab = makeTableForBenchmark(this, benchmarkID, results)

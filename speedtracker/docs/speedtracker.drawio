@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2024-04-08T10:57:16.658Z" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0" etag="olMka-nlzuEbV8i5sC5C" version="24.0.1" type="device">
+<mxfile host="app.diagrams.net" modified="2024-04-12T15:04:19.281Z" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0" etag="JEUSBFxoVlwjkTK6yBvD" version="24.2.2" type="device">
   <diagram name="Page-1" id="Mqpwdbrha0GvBiFKQVdr">
-    <mxGraphModel dx="1434" dy="793" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="600" pageHeight="600" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="766" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="600" pageHeight="600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -93,13 +93,13 @@
         <mxCell id="HlxVnmzwNW5SrRhRET_O-1" value="«interface»&lt;br&gt;&lt;div&gt;&lt;b&gt;UserCommand&lt;/b&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="422" y="10" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="F-67KJXBuZzq1g-ShTII-5" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;uses&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="F-67KJXBuZzq1g-ShTII-2" target="CfA6QvVlH5yapuHg3LWZ-12">
+        <mxCell id="F-67KJXBuZzq1g-ShTII-5" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;uses&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="F-67KJXBuZzq1g-ShTII-2" target="CfA6QvVlH5yapuHg3LWZ-12" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="F-67KJXBuZzq1g-ShTII-2" value="&lt;div&gt;&lt;b&gt;SimpleBenchmarkRunner&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="F-67KJXBuZzq1g-ShTII-2" value="&lt;div&gt;&lt;b&gt;FunctionBenchmarkRunner&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;" style="html=1;whiteSpace=wrap;" parent="1" vertex="1">
           <mxGeometry x="960" y="285" width="190" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="F-67KJXBuZzq1g-ShTII-3" value="&lt;font color=&quot;#ffffff&quot;&gt;+ compareFunction(sol1, sol2)&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/font&gt;" style="html=1;whiteSpace=wrap;fillColor=#B81000;" vertex="1" parent="1">
+        <mxCell id="F-67KJXBuZzq1g-ShTII-3" value="&lt;font color=&quot;#ffffff&quot;&gt;+ compareFunction(sol1, sol2)&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/font&gt;" style="html=1;whiteSpace=wrap;fillColor=#B81000;" parent="1" vertex="1">
           <mxGeometry x="970" y="325" width="170" height="30" as="geometry" />
         </mxCell>
       </root>
