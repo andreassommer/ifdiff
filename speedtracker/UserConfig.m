@@ -81,10 +81,10 @@ classdef UserConfig
         function message = describeBadNIterations(value)
             % Given an invalid value for NIterations, describe why it is invalid.
             % Will not work properly if you pass in a valid NIterations value
-            if length(value) ~= 1
-                message = sprintf('expecting scalar, but got dimensions %s', StringUtil.dimStr(value));
-            elseif ~isnumeric(value)
+            if ~isnumeric(value)
                 message = sprintf('expecting numeric type, but got %s', class(value));
+            elseif length(value) ~= 1
+                message = sprintf('expecting scalar, but got dimensions %s', StringUtil.dimStr(value));
             else
                 message = sprintf('value should not have a fractional part, but is %s', value);
             end
