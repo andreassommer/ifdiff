@@ -2,8 +2,10 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
     %FUNCTIONBENCHMARKRUNNER BenchmarkRunner whose benchmarks are general functions
     %    A benchmark can be any function that takes no arguments and returns some kind of result. In addition,
     %    you must supply a function compareFunction that says whether two
-    %    results are identical. The output contains only two metrics for each snapshot: whether the result
-    %    changed, and how long it took.
+    %    results are identical. For each benchmark and snapshot, the runner runs the benchmark n times, determined
+    %    by UserConfig.NIterations, stores the result of the benchmark (which
+    %    is a function, remember) and a list of how long each run took.
+    % See also USERCONFIG
 
     properties
         logger;
@@ -14,8 +16,12 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
     properties (GetAccess=public, SetAccess=private)
         % Results per benchmark as an associative array. A key is a benchmark's ID, a value is another
         % associative array mapping snapshot IDs to results for that benchmark-snapshot pair.
-        % Each result, finally, is a struct containing the properties 'time', and either 'value' or 'error'.
+        % Each result, finally, is a struct with the results for that pair. It has either the properties
+        % 'error' (if a benchmarking run threw an error) or the properties
+        % 'value' (the output of the benchmark's function) and 'time', an array
+        % of the time each run took with UserConfig.NIterations elements.
         % So, more abstractly, it is a binary map, containing a result for each pair of benchmark and snapshot.
+        % If NIterations is 0, each benchmark's result is an empty cell array.
         results;
     end
 
@@ -44,7 +50,7 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             end
         end
 
-        function this = runBenchmark(this, currentSnapshotID, benchmarkID)
+        function this = runBenchmark(this, snapshotID, benchmarkID)
             %RUNBENCHMARK Run a benchmark and store its results.
             % The benchmark is run multiple times, defined by UserConfig.NIterations, and the times averaged.
             % The value field of the result is kept from the first benchmarking run. Unless there were exceptions,
@@ -59,25 +65,34 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
                     'benchmark %s was not loaded with init()', benchmarkID)));
             end
-            % run benchmark once to avoid first-time initialization skewing the results for the first snapshots
+
+            resultsofBenchmark = getOption(this.results, benchmarkID);
+            n = ConfigProvider.getUserConfig().NIterations;
+            if n == 0
+                return;
+            end
+
+            % run benchmark once to avoid first-time initialization and cache misses skewing the results
             this.runBenchmarkOnce(benchmarkID);
 
-            resultsForBenchmark = getOption(this.results, benchmarkID);
-            n = ConfigProvider.getUserConfig().NIterations;
-            avgTime = 0;
+            time = zeros(1, n);
+            value = [];
             for i=1:n
                 result = this.runBenchmarkOnce(benchmarkID);
-                this.logger.debug(sprintf('iteration %3d took %9.6fs', i, result.time));
-                avgTime = avgTime + result.time / n;
-                if isfield(result, 'error') || ~hasOption(resultsForBenchmark, currentSnapshotID)
-                    finalResult = result;
-                else
-                    finalResult = getOption(resultsForBenchmark, currentSnapshotID);
+                if isfield(result, 'error')
+                    this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmarkID));
+                    resultsofBenchmark = setOption(resultsofBenchmark, snapshotID, result);
+                    this.results = setOption(this.results, benchmarkID, resultsofBenchmark);
+                    return;
                 end
-                finalResult.time = avgTime;
-                resultsForBenchmark = setOption(resultsForBenchmark, currentSnapshotID, finalResult);
+                this.logger.debug(sprintf('iteration %3d took %9.6fs', i, result.time));
+                time(i) = result.time;
+                if isempty(value)
+                    value = result.value;
+                end
             end
-            this.results = setOption(this.results, benchmarkID, resultsForBenchmark);
+            resultsofBenchmark = setOption(resultsofBenchmark, snapshotID, struct('value', value, 'time', time));
+            this.results = setOption(this.results, benchmarkID, resultsofBenchmark);
         end
 
         function results = getResults(this)
@@ -91,6 +106,7 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             % 'error' is true if an error occurred during benchmarking. 'changed' is true if the result
             % is different from the result for the first snapshot, meaning either one errored and the other did not,
             % or both completed successfully, but this.compareFunction returns false.
+            % 'time' is the average time across the runs of a given benchmark-snapshot pair.
             % See also COMPAREFUNCTION
             tables = mapOptionlist( ...
                 @(benchmark, resultsForBenchmark) this.makeTableForBenchmark(benchmark, resultsForBenchmark), ...
@@ -153,7 +169,6 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
                 result = struct('value', value, 'time', time);
             catch error
                 time = toc(ticID);
-                this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmarkID));
                 result = struct('error', error, 'time', time);
             end
         end
@@ -166,12 +181,17 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
         function tab = makeTableForBenchmark(this, benchmarkID, results)
             nSnapshots = length(results) / 2;
             tab = this.makeEmptyTable(nSnapshots);
-            for i = 1:(length(results) / 2)
+            for i = 1:nSnapshots
                 snapshotID = results{2*i - 1};
                 result = results{2*i};
-                tab(i, {'benchmark', 'snapshot', 'time'}) = {benchmarkID, snapshotID, result.time};
+                tab(i, {'benchmark', 'snapshot'}) = {benchmarkID, snapshotID};
                 tab(i, 'error') = {isfield(result, 'error')};
                 tab(i, 'changed') = {~this.compareResults(results{2}, result)};
+                if isfield(result, 'error')
+                    tab(i, 'time') = {-1};
+                else
+                    tab(i, 'time') = {mean(result.time)};
+                end
             end
         end
 
