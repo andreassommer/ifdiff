@@ -102,11 +102,14 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
 
         function tab = makeTable(this, results)
             %MAKETABLE convert benchmarking results (from getResults) to a table
-            % with the columns 'benchmarkID', 'snapshotID', 'time', 'changed', and 'error'.
-            % 'error' is true if an error occurred during benchmarking. 'changed' is true if the result
+            % with the columns 'benchmarkID', 'snapshotID', 'changed', 'error', 'timeMean', 'timeStd', and 'timeMedian'.
+            % 'error' is true if an error occurred during any benchmarking run.
+            % 'changed' is true if the result
             % is different from the result for the first snapshot, meaning either one errored and the other did not,
             % or both completed successfully, but this.compareFunction returns false.
-            % 'time' is the average time across the runs of a given benchmark-snapshot pair.
+            % 'timeMean', 'timeStd', and 'timeMedian' are the mean, standard deviation, and median of the middle
+            % 50% of the times taken. That is, we ignore lowest and highest quarter of the results to avoid
+            % unusually fast or slow runs distorting our average.
             % See also COMPAREFUNCTION
             tables = mapOptionlist( ...
                 @(benchmark, resultsForBenchmark) this.makeTableForBenchmark(benchmark, resultsForBenchmark), ...
@@ -188,17 +191,20 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
                 tab(i, 'error') = {isfield(result, 'error')};
                 tab(i, 'changed') = {~this.compareResults(results{2}, result)};
                 if isfield(result, 'error')
-                    tab(i, 'time') = {-1};
+                    tab(i, {'timeMean', 'timeStd', 'timeMedian'}) = {-1, -1, -1};
                 else
-                    tab(i, 'time') = {mean(result.time)};
+                    quartiles = quantile(result.time, [1/4 1/2 3/4]);
+                    topThreeQuarters = result.time(result.time >= quartiles(1));
+                    middleHalf = topThreeQuarters(topThreeQuarters < quartiles(3));
+                    tab(i, {'timeMean', 'timeStd', 'timeMedian'}) = {mean(middleHalf), std(middleHalf), quartiles(2)};
                 end
             end
         end
 
         function tab = makeEmptyTable(~, nRows)
-            tab = table('Size', [nRows 5], ...
-                'VariableNames', {'benchmark', 'snapshot', 'time', 'changed', 'error'}, ...
-                'VariableTypes', {'cellstr', 'cellstr', 'double', 'logical', 'logical'});
+            tab = table('Size', [nRows 7], ...
+                'VariableNames', {'benchmark', 'snapshot', 'changed', 'error', 'timeMean', 'timeStd', 'timeMedian'}, ...
+                'VariableTypes', {'cellstr', 'cellstr', 'logical', 'logical', 'double', 'double', 'double'});
         end
 
         function areEqual = compareResults(this, result1, result2)
