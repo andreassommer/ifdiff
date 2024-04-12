@@ -146,13 +146,13 @@ classdef SimpleBenchmarkRunner < BenchmarkRunner
 
         function result = runBenchmarkOnce(this, benchmarkID)
             benchmarkFunction = str2func(benchmarkID);
-            tic
+            ticID = tic();
             try
                 value = benchmarkFunction();
-                time = toc;
+                time = toc(ticID);
                 result = struct('value', value, 'time', time);
             catch error
-                time = toc;
+                time = toc(ticID);
                 this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmarkID));
                 result = struct('error', error, 'time', time);
             end
