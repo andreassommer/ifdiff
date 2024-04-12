@@ -135,14 +135,15 @@ classdef GitSnapshotManager < SnapshotLoader
             % Load a snapshot, either by commit SHA or by ID of a snapshot created with createSnapshot.
             % The previous state must already have been saved with saveProjectState.
             % Exceptions:
-            %   If the ID is syntactically invalid or no such snapshot exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
+            %   If no such snapshot or commit exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
             %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
-            if ~this.isValidSnapshotID(shaOrId)
-                throw(this.invalidSnapshotIDException(shaOrId));
+            isValidID = this.isValidSnapshotID(shaOrId);
+            if ~isValidID
+                snapshot = [];
+            else
+                snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
+                snapshot = this.getSnapshotById(snapshots, shaOrId);
             end
-
-            snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
-            snapshot = this.getSnapshotById(snapshots, shaOrId);
             if ~isempty(snapshot)
                 sha = snapshot.sha;
             elseif this.isCommitSha(shaOrId)
