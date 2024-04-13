@@ -3,7 +3,6 @@ function [result, status] = speedtracker(varargin)
     % project, called snapshots.
 
     %% init: set constants
-    DEBUG = 0;
 
     [SRC_BASEDIR, ~, ~] = fileparts(mfilename('fullpath'));
     SRC_ST_DIR = fullfile(SRC_BASEDIR, 'speedtracker');
@@ -44,12 +43,14 @@ function [result, status] = speedtracker(varargin)
     config.speedtrackerDir = SRC_ST_DIR;
     config.tempDir = ST_TEMP_DIR;
     config.userCommands = commands;
+    config.debug = Configuration.Debug;
+    config.hideErrors = Configuration.HideErrors;
     ConfigProvider.setSpeedtrackerConfig(config);
     ConfigProvider.setUserConfig(UserConfig());
 
     % An extra logger to log system commands in debug mode
     systemLogger = makeSystemLogger();
-    if (DEBUG)
+    if (config.debug)
         systemLogger.level = Logger.LEVEL_DEBUG;
     end
     SystemUtil.setGetLogger(systemLogger);
@@ -62,27 +63,41 @@ function [result, status] = speedtracker(varargin)
         command = getCommand(commands, varargin);
         commandConfig = command.handleArgs(varargin);
     catch argError % can be either an unknown command or bad arguments to that command
-        result = sprintf('%s\n\nERROR: %s', help.generalHelp(), argError.message);
         status = 1;
+        helpMessage = sprintf('%s\n\nERROR: %s', help.generalHelp(), argError.message);
         teardown();
-        return;
+        if config.hideErrors
+            result = helpMessage;
+            return;
+        else
+            disp(helpMessage);
+            rethrow(argError);
+        end
     end
 
     %% Business code: execute the selected command
     try
         commandLogger = makeCommandLogger(command.getName());
-        if (DEBUG)
+        if (config.debug)
             commandLogger.level = Logger.LEVEL_DEBUG;
         end
         result = command.execute(commandLogger, commandConfig);
         status = 0;
     catch error
-        if strcmp(error.identifier, UserCommand.ERROR_EXPECTED_EXCEPTION)
-            result = sprintf('ERROR: %s: %s', command.getName(), error.message);
-        else
-            result = sprintf('unexpected error in %s\n\n%s', command.getName(), getReport(error));
-        end
         status = 1;
+        if strcmp(error.identifier, UserCommand.ERROR_EXPECTED_EXCEPTION)
+            helpMessage = sprintf('ERROR: %s: %s', command.getName(), error.message);
+        else
+            helpMessage = sprintf('unexpected error in %s\n\n%s', command.getName(), getReport(error));
+        end
+        teardown();
+        if config.hideErrors
+            result = helpMessage;
+            return;
+        else
+            disp(helpMessage);
+            rethrow(error);
+        end
     end
 
     teardown();

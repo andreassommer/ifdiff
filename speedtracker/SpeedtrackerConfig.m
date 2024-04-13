@@ -14,6 +14,11 @@ classdef SpeedtrackerConfig
         tempDir;
         % Available user commands
         userCommands;
+        % Debug logging
+        debug;
+        % If true, errors only result in a nice help message and a one-liner about what went wrong. If false, the
+        % main script rethrows errors.
+        hideErrors;
     end
 
     methods
