@@ -16,7 +16,7 @@ function preprocessed = preprocess_rhs(preprocessed)
 [preprocessed.rhs{3,1}, preprocessed.ctrlif_index] = preprocess_addCtrlif(preprocessed.rhs{3,1}, 1);
 
 % set function_index into code for each function call
-preprocessed = preprocess_setFunctionIndexInRhs(preprocessed); 
+preprocessed = preprocess_setFunctionIndexInRhs(preprocessed); % Signaturerstellung (kann als Variable vorkommen)
 
 preprocessed = preprocess_changeNameOfRhs(preprocessed); 
 preprocessed.rhs{3,1} = preprocess_rhsAddDatahandleToInput(preprocessed.rhs{3,1});

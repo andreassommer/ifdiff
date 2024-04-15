@@ -23,7 +23,9 @@ toc
 
 
 %%
-mt = mtree('preprocessed_test_fun_1.m', '-file', '-comments');
-mt.dumptree()
-mt = mtree('test_fun_1.m', '-file', '-comments');
-mt.dumptree()
+mt1 = mtree('test_fun_1.m', '-file', '-comments');
+mt1.dumptree()
+mt2 = mtree('soll_test_fun_1.m', '-file', '-comments');
+mt2.dumptree()
+mt3 = mtree('preprocessed_test_fun_1.m', '-file', '-comments');
+mt3.dumptree

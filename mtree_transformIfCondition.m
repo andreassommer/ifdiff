@@ -1,4 +1,4 @@
-function [mtreeobj, Arg1] = preprocess_setUpCtrlif(mtreeobj, index, ctrlif_index, varargin)
+function [obj, Arg1] = mtree_transformIfCondition(mtreeobj_in, index, ctrlif_index, varargin)
 % function for adding crtlfif to mtreeobj at Node of rIndex
 % Input and output depend on the chosen case and are explained there
 % This function tries to generalise the assembling of the ctrlif
@@ -12,6 +12,8 @@ config = makeConfig();
 % a new variable or an index
 % new_index (output) is node of '>=' node, add Arg2 with nextNode to >=
 
+
+mtreeobj = mtreeobj_in;
 condition = varargin{1};
 truepart = varargin{2};
 elsepart = varargin{3};
@@ -26,7 +28,7 @@ elsepart = varargin{3};
     cIndex.indexLeftchild, ...                             % from_type
     {mtreeobj.K.ID, config.ctrlif.ctrlif});
 
-[operator_type, ~] = mtree_checkForComparisonOperator(mtreeobj, condition);
+[operator_type, comparison_operator_node] = mtree_checkForComparisonOperator(mtreeobj, condition);
 name_logical = append(config.ctrlif.prefix, num2str(ctrlif_index), config.ctrlif.logical);
 
 if ischar(condition)
@@ -44,7 +46,7 @@ if ischar(condition)
         cIndex.indexRightchild, ...                       % from_type
         {mtreeobj.K.ID, '0'});
 
-    [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
+    [~, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
         call, ...                                         % from
         cIndex.indexRightchild,...                           % from_type
         {mtreeobj.K.ID, name_logical});
@@ -63,7 +65,7 @@ elseif operator_type == 0
         cIndex.indexRightchild, ...                       % from_type
         {mtreeobj.K.ID, '0'});
     
-    [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
+    [~, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
         call, ...                                         % from
         cIndex.indexRightchild,...                           % from_type
         {mtreeobj.K.ID, name_logical});
@@ -83,10 +85,10 @@ ctrlif_index_Arg4 = num2str(ctrlif_index);
 
 % get condition into 'expression >= 0' shape
 % Arg1 and Arg2 are switched sometimes, therefore do it in the end
-%mtreeobj = normFormExecCtrlif(mtreeobj, Arg1, Arg2, Arg3, Arg4);
+mtreeobj = normFormExecCtrlif(mtreeobj, Arg1, Arg2, Arg3, Arg4);
 
 
-
+obj = mtreeobj.select(comparison_operator_node).Left;
 
 end
 

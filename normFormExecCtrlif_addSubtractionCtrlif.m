@@ -49,8 +49,8 @@ else
         idxRel, ...                     % from
         cIndex.indexRightchild, ....    % from_type
         {mtreeobj.K.INT, '0'});         % new integer
-
+    
 end
-
+    
 obj = mtreeobj; 
 end

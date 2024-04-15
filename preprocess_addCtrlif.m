@@ -35,7 +35,7 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % if cond
 % ...
 % end 
-[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index);
+[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif_new(mtreeobj, ctrlif_index);
 
 
 
