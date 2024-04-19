@@ -1,5 +1,4 @@
 function varargout = solveODE(datahandle, tspan, initialvalues, parameters)
-throw(MException("oh:no", "Oh, no!"));
 % Integrate the rhs with the in prepareDatahandle chosen parameters (typ of
 % solver, toleranz and accuracy of the ODE options etc.) with incorporated
 % switching point detection (SWP_detection).
