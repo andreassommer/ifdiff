@@ -112,18 +112,19 @@ classdef GitSnapshotManager < SnapshotLoader
             end
             metadata = struct();
             metadata.branch = currentBranch;
-
+    
             % If there were staged changes and a temp commit was created, store its SHA. Otherwise,
             % use the value -1 to indicate that no temp commit was created.
             worktreeClean = this.isGitStatusClean();
             if ~worktreeClean
-                prevCommitSha = this.saveWorkdirToTempCommit();
-                metadata.prevCommitSha = prevCommitSha;
+                [headCommitSha, tempCommitSha] = this.saveWorkdirToTempCommit();
+                metadata.headCommitSha = headCommitSha;
+                metadata.tempCommitSha = tempCommitSha;
             else
-                metadata.prevCommitSha = '';
+                metadata.headCommitSha = this.getCurrentCommitSha();
             end
             try
-                this.pushMetadata(jsonencode(metadata));
+                this.writeMetadata(jsonencode(metadata));
             catch taggingError
                 % here is where E3 is handled
                 if (taggingError.identifier == GitSnapshotManager.ERROR_METADATA_ALREADY_PRESENT)
@@ -135,7 +136,7 @@ classdef GitSnapshotManager < SnapshotLoader
                 err = err.addCause(taggingError);
                 if ~worktreeClean
                     this.logger.error('undoing temp commit');
-                    [status, cmdout] = SystemUtil.safeSystem(sprintf('git reset --mixed %s', prevCommitSha));
+                    [status, cmdout] = SystemUtil.safeSystem(sprintf('git reset --mixed %s', headCommitSha));
                     if status ~= 0
                         this.logger.error(sprintf('failed to undo temporary commit: %s', cmdout));
                     end
@@ -144,43 +145,35 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
-        function this = loadSnapshot(this, shaOrId)
-            % Load a snapshot. shaOrId can be either the ID of a snapshot created with createSnapshot or the SHA of
-            % a Git commit.
+        function this = loadSnapshot(this, snapshotSpecifier)
+            % Load a saved snapshot, commit, or the special snapshots 'worktree'/'current'
+            % Commits can also be referenced with refs, HEAD, HEAD~, HEAD^, and any other way that Git accepts.
+            % The special names "worktree" and "current" refer to the state of the worktree, including uncommitted
+            % changes, when speedtracker is invoked.
             % This method can only be called if saveProjectState was called first to save the current repo state.
             % Exceptions:
-            %   If no such snapshot or commit exists, throw SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
+            %   If snapshotSpecifier does not refer to a snapshot in any of the three mentioned ways, throw
+            %     SnapshotLoader.ERROR_BAD_SNAPSHOT_ID
             %   If there is no saved state present, throw SnapshotLoader.ERROR_NO_SAVED_STATE
             % See also SAVEPROJECTSTATE, RESTOREPROJECTSTATE, CREATESNAPSHOT
-            isValidID = this.isValidSnapshotID(shaOrId);
-            if ~isValidID
-                snapshot = [];
-            else
-                snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
-                snapshot = this.getSnapshotById(snapshots, shaOrId);
-            end
-            if ~isempty(snapshot)
-                sha = snapshot.sha;
-            elseif this.isCommitSha(shaOrId)
-                sha = shaOrId;
-            else
-                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
-                    '%s is neither the ID of a snapshot nor the SHA of a commit', shaOrId)));
-            end
 
             if ~this.isMetadataPresent()
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     'cannot load snapshot without first saving project state'));
             end
+
+            sha = this.resolveSnapshotSha(snapshotSpecifier);
+            if strlength(sha) == 0
+                throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
+                    '%s is not a snapshot ID, revision specifier, or special snapshot name', snapshotSpecifier)));
+            end
+            this.logger.info(sprintf('snapshot SHA: %s', sha));
             % Ensure the wait time has already passed to avoid MATLAB using old versions of newly-checked out code
             waitTime = this.getWaitTimeForLoading();
             if (waitTime > 0)
                 java.lang.Thread.sleep(waitTime);
             end
-            [status, cmdout] = SystemUtil.safeSystem(sprintf('git checkout %s', sha));
-            if status ~= 0
-                throw(this.genericGitError(cmdout));
-            end
+            this.checkoutCommit(sha);
             this.lastSnapshotLoadTime = this.getPosixTime();
         end
 
@@ -198,14 +191,16 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(MException(SnapshotLoader.ERROR_NO_SAVED_STATE, ...
                     'could not restore project state because no saved state present'));
             end
-            metadataString = this.popMetadata();
+            metadataString = this.readMetadata();
+            this.deleteMetadata();
             try
                 metadata = jsondecode(metadataString);
                 branchName = metadata.branch;
-                prevCommitSha = metadata.prevCommitSha;
+                headCommitSha = metadata.headCommitSha;
+                tempCommitSha = metadata.tempCommitSha;
             catch parseError
                 this.logger.error('could not parse saved metadata, re-saving saved state');
-                this.pushMetadata(metadataString);
+                this.writeMetadata(metadataString);
                 outerErr = MException(SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE, ...
                     'found save state, but could not parse it');
                 throw(outerErr.addCause(parseError));
@@ -219,18 +214,18 @@ classdef GitSnapshotManager < SnapshotLoader
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git switch %s', branchName));
             if (status ~= 0)
                 % push back the metadata, so we end up in the same state as before calling the procedure
-                this.pushMetadata(metadataString);
+                this.writeMetadata(metadataString);
                 this.logger.error('could not switch to saved branch, re-saving saved state');
                 gitErr = this.genericGitError(cmdout);
                 outerErr = MException(SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE, 'error switching to saved branch');
                 throw(outerErr.addCause(gitErr));
             end
-            if (strlength(prevCommitSha) > 0)
-                [status, cmdout] = SystemUtil.safeSystem(sprintf('git reset --mixed %s', prevCommitSha));
+            if (strlength(tempCommitSha) > 0)
+                [status, cmdout] = SystemUtil.safeSystem(sprintf('git reset --mixed %s', headCommitSha));
                 if (status ~= 0)
                     % would be nice to undo everything in this case too, but it looks to be impossible. 
                     % We can at least re-save the metadata so no information is lost.
-                    this.pushMetadata(metadataString);
+                    this.writeMetadata(metadataString);
                     this.logger.error('could not reset to saved commit, re-saving save state');
                     gitErr = this.genericGitError(cmdout);
                     outerErr = MException(SnapshotLoader.ERROR_COULD_NOT_LOAD_STATE, 'error resetting temp commit');
@@ -250,9 +245,8 @@ classdef GitSnapshotManager < SnapshotLoader
             if ~this.isValidSnapshotID(id)
                 throw(this.invalidSnapshotIDException(id));
             end
-            if this.isCommitSha(id)
-                throw(MException(GitSnapshotManager.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
-                    'cannot create snapshot with ID %s as there is already a commit with the same SHA', id)));
+            if this.isSpecialSnapshotName(id)
+                this.logger.warn('a snapshot named %s cannot be used, as %s is a reserved special snapshot name');
             end
             if nargin >= 3
                 if ~this.isCommitSha(commitSha)
@@ -340,27 +334,33 @@ classdef GitSnapshotManager < SnapshotLoader
             info = setOption(info, 'CommitSha', sha);
         end
 
-        function exists = snapshotExists(this, id)
-            % Return true if a snapshot with the supplied ID has been created
-            % (does not work if there is only a Git commit whose SHA equals id)
-            % See also CREATESNAPSHOT
-            snapshots = this.loadSnapshots(this.getSnapshotsFileName());
-            snapshot = this.getSnapshotById(snapshots, id);
-            exists = ~isempty(snapshot);
-        end
-
-        function isSha = isCommitSha(this, sha)
-            % Return true if there is a commit whose SHA matches the provided value.
-            if ~regexp(sha, '[a-f0-9]+')
-                isSha = 0;
+        function exists = snapshotExists(this, snapshotSpecifier)
+            % Return true if a the provided character string can be interpreted as a snapshot
+            % i.e. if it is the ID of a snapshot, if it is 'current' or 'worktree', or if it is a valid git
+            % revision specifier (tested with `git rev-parse`)
+            if this.isMetadataPresent()
+                exists = ~strcmp(this.resolveSnapshotSha(snapshotSpecifier), '');
                 return;
             end
-            if ~this.commitExists(sha)
-                isSha = 0;
+            if this.isSpecialSnapshotName(snapshotSpecifier)
+                exists = true;
                 return;
             end
-            [status, cmdout] = SystemUtil.safeSystem(sprintf('git rev-parse --verify %s', sha));
-            isSha = status == 0 && strcmp(sha, cmdout); % this check filters out refs, e.g. HEAD
+            if this.isValidSnapshotID(snapshotSpecifier)
+                snapshots = this.loadSnapshots(this.getSnapshotsFileName());
+                snapshot = this.getSnapshotById(snapshots, snapshotSpecifier);
+                if ~isempty(snapshot)
+                    exists = true;
+                    return;
+                end
+            end
+            % attempt to dereference the revision specifier with Git
+            [status, ~] = SystemUtil.safeSystem(sprintf('git rev-parse --verify %s', snapshotSpecifier));
+            if status == 0
+                exists = true;
+                return;
+            end
+            exists = false;
         end
     end
 
@@ -375,7 +375,7 @@ classdef GitSnapshotManager < SnapshotLoader
             isPresent = ~strcmp(this.getShaOfRef(GitSnapshotManager.METADATA_REF_NAME), '');
         end
 
-        function pushMetadata(this, stringData)
+        function writeMetadata(this, stringData)
             % Store metadata in the Git object database.
             % We store the metadata as a struct. To save it, we convert it to JSON, write it to a file, then
             % save that in the Git DB using hash-object, and finally set the ref GitSnapshotManager.METADATA_REF_NAME
@@ -413,8 +413,8 @@ classdef GitSnapshotManager < SnapshotLoader
             delete(metadataTempFile);
         end
 
-        function stringData = popMetadata(this)
-        % Pop the metadata stored by pushMetadata, i.e. read, delete, and return them.
+        function stringData = readMetadata(this)
+        % Read the metadata stored by writeMetadata and return them as raw text.
         % If there are none present, throw an exception with the identifier ERROR_NO_METADATA_PRESENT
             if ~this.isMetadataPresent()
                 throw(MException(GitSnapshotManager.ERROR_NO_METADATA_PRESENT, 'no metadata present'));
@@ -426,8 +426,10 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(this.genericGitError(cmdout));
             end
             stringData = cmdout;
+        end
 
-            % and finally delete the tag. The blob will be garbage collected eventually.
+        function deleteMetadata(this)
+            % Delete the saved state metadata by deleting the tag. The blob will be garbage collected eventually.
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git update-ref -d %s', GitSnapshotManager.METADATA_REF_NAME));
             if (status ~= 0)
                 throw(this.genericGitError(cmdout));
@@ -441,17 +443,13 @@ classdef GitSnapshotManager < SnapshotLoader
             filename = fullfile(speedtrackerConfig.tempDir, GitSnapshotManager.METADATA_TEMP_FILE_NAME);
         end
 
-        function prevCommitSha = saveWorkdirToTempCommit(this)
+        function [headCommitSha, tempCommitSha] = saveWorkdirToTempCommit(this)
             % Save all current changes in the working directory to a temporary commit.
             % Must not be run if there are staged changes - the caller has to ensure this!
             % Returns the SHA of the previous commit, so we know what commit to `git reset --mixed` to when restoring.
 
             % get last commit SHA
-            [status, cmdout] = SystemUtil.safeSystem('git rev-parse HEAD');
-            if (status ~= 0)
-                throw(this.genericGitError(cmdout));
-            end
-            prevCommitSha = cmdout;
+            headCommitSha = this.getCurrentCommitSha();
 
             [status, cmdout] = SystemUtil.safeSystem('git add .');
             if (status ~= 0)
@@ -467,6 +465,9 @@ classdef GitSnapshotManager < SnapshotLoader
                 end
                 throw(this.genericGitError(commitCmdout));
             end
+
+            % get temp commit SHA
+            tempCommitSha = this.getCurrentCommitSha();
         end
 
         function message = getTempCommitMessage(~)
@@ -545,6 +546,20 @@ classdef GitSnapshotManager < SnapshotLoader
             end
         end
 
+        function isSha = isCommitSha(this, sha)
+            % Return true if there is a commit whose SHA matches the provided value.
+            if ~regexp(sha, '[a-f0-9]+')
+                isSha = 0;
+                return;
+            end
+            if ~this.commitExists(sha)
+                isSha = 0;
+                return;
+            end
+            [status, cmdout] = SystemUtil.safeSystem(sprintf('git rev-parse --verify %s', sha));
+            isSha = status == 0 && strcmp(sha, cmdout); % this check filters out refs, e.g. HEAD
+        end
+
         function exists = commitExists(~, str)
             % Check if a string points to a commit (i.e. is a ref or SHA) 
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git cat-file -t %s', str));
@@ -560,6 +575,13 @@ classdef GitSnapshotManager < SnapshotLoader
             sha = cmdout;
         end
 
+        function checkoutCommit(this, commit)
+            % Check out a commit. Works with any string that Git accepts as a revision specifier.
+            [status, cmdout] = SystemUtil.safeSystem(sprintf('git checkout %s', commit));
+            if status ~= 0
+                throw(this.genericGitError(cmdout));
+            end
+        end
         function err = genericGitError(~, cmdout)
             % Return a generic exception for when a Git command went wrong in an unexpected way.
             % This should never be used for actual, expected error conditions. Only in cases where it
@@ -719,6 +741,58 @@ classdef GitSnapshotManager < SnapshotLoader
         end
         function seconds = getPosixTime(~)
             seconds = posixtime(datetime('now', 'TimeZone', '+0000'));
+        end
+
+        function sha = resolveSnapshotSha(this, snapshotSpecifier)
+            % Given a snapshot specifier, determine what commit it refers to.
+            % There are three cases, which are checked in order
+            % 1. the snapshot specifier is 'current' or 'worktree'. The SHA should capture the state of the working
+            %   tree when speedtracker was invoked. If there were uncommitted changes, they were saved in a temp commit
+            %   which we can use. If there were none, we can use the head commit at the time of invocation.
+            % 2. the snapshot specifier is the ID of a snapshot saved with createSnapshot. We can find the commit in
+            %   GSM's snapshots file.
+            % 3. the snapshot specifier refers to a Git revision, either by being a literal commit SHA, a Git ref,
+            %   or another identifier like HEAD, HEAD~, HEAD^, etc.
+            % If none of these apply, return the empty string.
+            %
+            % Can only be called after saveProjectState, because describing the current state
+            % *including uncommitted changes* with a commit is impossible until it is saved with saveProjectState.
+            if this.isSpecialSnapshotName(snapshotSpecifier)
+                metadataString = this.readMetadata();
+                metadata = jsondecode(metadataString);
+                if isfield(metadata, 'tempCommitSha')
+                    sha = metadata.tempCommitSha;
+                else
+                    sha = metadata.headCommitSha;
+                end
+                return;
+            end
+            if this.isValidSnapshotID(snapshotSpecifier)
+                snapshots = this.loadSnapshots(this.getSnapshotsTempFileName());
+                snapshot = this.getSnapshotById(snapshots, snapshotSpecifier);
+                if ~isempty(snapshot)
+                    sha = snapshot.sha;
+                    return;
+                end
+            end
+            currentCommitSha = this.getCurrentCommitSha();
+            metadataString = this.readMetadata();
+            metadata = jsondecode(metadataString);
+            headCommitSha = metadata.headCommitSha;
+            this.checkoutCommit(headCommitSha);
+            % attempt to dereference the revision specifier with Git
+            [status, cmdout] = SystemUtil.safeSystem(sprintf('git rev-parse --verify %s', snapshotSpecifier));
+            sha = cmdout;
+            this.checkoutCommit(currentCommitSha);
+            if status ~= 0
+                sha = '';
+            end
+        end
+        function isit = isSpecialSnapshotName(~, snapshotSpecifier)
+            % Return true if a string/char is a _special snapshot_ name
+            % The special names as of now are 'current' and 'worktree', both meaning "run the benchmarks with the
+            % current state of the working tree (including uncommitted changes)".
+            isit = strcmp(snapshotSpecifier, 'current') || strcmp(snapshotSpecifier, 'worktree');
         end
     end
 end
