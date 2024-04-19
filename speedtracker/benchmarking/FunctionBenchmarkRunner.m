@@ -1,10 +1,13 @@
 classdef FunctionBenchmarkRunner < BenchmarkRunner
     %FUNCTIONBENCHMARKRUNNER BenchmarkRunner whose benchmarks are general functions
-    %    A benchmark can be any function that takes no arguments and returns some kind of result. In addition,
-    %    you must supply a function compareFunction that says whether two
-    %    results are identical. For each benchmark and snapshot, the runner runs the benchmark n times, determined
-    %    by UserConfig.NIterations, stores the result of the benchmark (which
-    %    is a function, remember) and a list of how long each run took.
+    % A benchmark can be any function that takes no arguments and returns some kind of result. The runner only
+    % captures statistics about how long it took and whether the results for a snapshot are different from those
+    % for the first snapshot. For this, it requires a function compareFunction that says whether two
+    % results are identical. This means that this BenchmarkRunner is actually quite general, the only thing
+    % it takes to adapt it to a different library than IFDIFF is a new compareFunction, which can be passed
+    % in the constructor.
+    % For each benchmark and snapshot, the runner runs the benchmark n times, determined
+    % by UserConfig.NIterations, and collects mean, standard deviation, and median of those n runs.
     % See also USERCONFIG
 
     properties
@@ -14,12 +17,12 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
     end
 
     properties (GetAccess=public, SetAccess=private)
-        % Results per benchmark as an associative array. A key is a benchmark's ID, a value is another
-        % associative array mapping snapshot IDs to results for that benchmark-snapshot pair.
+        % Results per benchmark, stored as an associative array. A key is a benchmark's ID, a value is another
+        % associative array mapping snapshot IDs to the result for that benchmark-snapshot pair.
         % Each result, finally, is a struct with the results for that pair. It has either the properties
         % 'error' (if a benchmarking run threw an error) or the properties
         % 'value' (the output of the benchmark's function) and 'time', an array
-        % of the time each run took with UserConfig.NIterations elements.
+        % of the time each run took, with UserConfig.NIterations elements.
         % So, more abstractly, it is a binary map, containing a result for each pair of benchmark and snapshot.
         % If NIterations is 0, each benchmark's result is an empty cell array.
         results;
@@ -32,8 +35,8 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
     methods
         function this = FunctionBenchmarkRunner(logger, compareFunction)
             %FUNCTIONBENCHMARKRUNNER Construct an instance of this class
-            %    compareFunction is the function used for comparing the results of two benchmarks, returning
-            %    true if they are identical and false if not.
+            % compareFunction is the function used for comparing the results of two benchmarks, returning
+            % true if they are identical and false if not.
             this.logger = logger;
             this.compareFunction = compareFunction;
             this.results = {};
@@ -41,8 +44,8 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
 
         %% BenchmarkRunner Interface
         function this = init(this, benchmarkIDs)
-            %INIT check that all of the specified benchmarks exist and take 0 arguments, and initialize an empty
-            %    result list for each benchmark
+            %INIT check that all of the specified benchmarks exist and take 0 arguments
+            % then initialize an empty result list for each benchmark
             this.results = {};
             for i = 1:length(benchmarkIDs)
                 this.checkBenchmark(benchmarkIDs{i});
@@ -52,14 +55,13 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
 
         function this = runBenchmark(this, snapshotID, benchmarkID)
             %RUNBENCHMARK Run a benchmark and store its results.
-            % The benchmark is run multiple times, defined by UserConfig.NIterations, and the times averaged.
-            % The value field of the result is kept from the first benchmarking run. Unless there were exceptions,
-            % in which case the last errored result is kept.
+            % The benchmark is run multiple times, defined by UserConfig.NIterations.
+            % The value field of the result is kept from the first benchmarking run. Unless there was an exception,
+            % in which case the error is stored and the benchmarking run aborted.
             % Exceptions:
             % BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED if the benchmark was not previously loaded with init(), either
-            %     either because the benchmark was not in the list or because init() was not called at all.
-            %     If the benchmark itself throws an exception, this method will continue and simply save a
-            %     "failed" result.
+            %  either because the benchmark was not in the list or because init() was not called at all.
+            % If the benchmark itself throws an exception, this method will continue and simply save a "failed" result.
             % See also USERCONFIG
             if ~hasOption(this.results, benchmarkID)
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
@@ -96,19 +98,21 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
         end
 
         function results = getResults(this)
-            %GETRESULTS return the results of benchmarking
+            %GETRESULTS return the results of benchmarking so far.
+            % The array always contains entries for all benchmarks, but only for snapshots that were actually tested.
             results = this.results;
         end
 
         function tab = makeTable(this, results)
             %MAKETABLE convert benchmarking results (from getResults) to a table
             % with the columns 'benchmarkID', 'snapshotID', 'changed', 'error', 'timeMean', 'timeStd', and 'timeMedian'.
-            % 'error' is true if an error occurred during any benchmarking run.
-            % 'changed' is true if the result
+            % 'error' is true iff an error occurred during any benchmarking run. In this case, the time statistics
+            % are all -1.
+            % 'changed' is true iff the result
             % is different from the result for the first snapshot, meaning either one errored and the other did not,
             % or both completed successfully, but this.compareFunction returns false.
             % 'timeMean', 'timeStd', and 'timeMedian' are the mean, standard deviation, and median of the middle
-            % 50% of the times taken. That is, we ignore lowest and highest quarter of the results to avoid
+            % 50% of the times taken. That is, we ignore lowest and highest quarters of the results to avoid
             % unusually fast or slow runs distorting our average.
             % See also COMPAREFUNCTION
             tables = mapOptionlist( ...
@@ -163,7 +167,7 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             end
         end
 
-        function result = runBenchmarkOnce(this, benchmarkID)
+        function result = runBenchmarkOnce(~, benchmarkID)
             benchmarkFunction = str2func(benchmarkID);
             ticID = tic();
             try
