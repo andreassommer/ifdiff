@@ -1,10 +1,13 @@
 # Speedtracker: Performance Regression Testing
 
 ## What is Speedtracker?
-Speedtracker is a module within IFDIFF for testing for long-term performance
-regressions. It tracks versions of the project's development, as well as
+Speedtracker is a module within IFDIFF to test for performance
+regressions. It tracks versions of the project's development ("snapshots") as well as
 performance benchmarks. When invoked, it successively loads each snapshot,
-runs the benchmarks on that snapshot, and collects the results.
+runs the benchmarks on that snapshot, and collects and displays the results. These
+versions are simply Git commits stored under a name. It is also possible
+to call Speedtracker directly using Git commit SHAs, without creating a
+snapshot beforehand.
 
 ## Goals and Requirements
 Speedtracker is intended to track long-term deteriorations in the performance
@@ -12,35 +15,34 @@ due to inefficiencies accidentally introduced into the code. This and
 the small and fluctuating development team mean that we cannot rely
 on a pristine, consistent testing environment: Two benchmarking runs
 six months apart may produce different results solely because
-the tester's computer got slowed down by software bloat. Therefore,
+the developer's computer got slowed down by software bloat. Therefore,
 every benchmarking run must compare all snapshots on the local
-machine, in the moment it is performed.  
+machine, right at the moment it is performed.  
   
-Another requirement is to avoid the use of extra software because there
-is nobody to manage it. Speedtracker should be callable from within
+Another requirement is to avoid the use of extra software and infrastructure because
+there is nobody to manage it. Speedtracker should be callable from within
 MATLAB :registered: and use only MATLAB, OS commands, and Git.  
   
-Speedtracker aims to be compatible with Windows and Linux.  
+Speedtracker aims to be compatible with Windows and Linux and with MATLAB versions up
+to ten years old (as of 2024).  
   
 Users are assumed to be decently familiar with MATLAB, IFDIFF, and Git.  
   
-TODO: determine how benchmarking results should be collected/visualized.
-
 ## Use Instructions
-Refer to `instructions.odt` for instructions. These instructions double
-as a description of the module's functionality, so reading them (now)
-may be a good starting point to understanding how it works. The code structure is
-documented in `structure.odt`. Read this before you make any changes; the structure
-and conventions are not self-explanatory.
+Refer to `instructions.odt` for a tutorial and more instructions. These instructions double
+as a loose technical specification of the module's functionality, so you should
+also be familiar with them before attempting to change Speedtracker. The code structure is
+documented in `structure.odt`. Read this as well before you make any changes; the structure
+and conventions are not always self-explanatory.
 
 ## Development Process
 This is hopefully going to remain a small module, allowing us to
 stick to the following simple process. When adding or modifying
 functionality, proceed as follows:
 
-1. Add the desired functionality to `instructions.odt`. This document contains
-  a list of system functions ("SF") and an example exercise. Each of these 
-  system functions comprises:
+1. Add the desired functionality to `instructions.odt`. The "loose technical specification"
+  mentioned above consists of the sections "System Functions Reference" and
+  "Configuration Reference". Each of the system functions comprises:
     1. Name
     2. Description
     3. Inputs/how to perform 
@@ -51,13 +53,13 @@ functionality, proceed as follows:
     8. (optional) Notes
 2. Implement the functionality in code. Consult `structure.odt` if you do not
   know where to start, it gives a rundown of the basic program flow and structure.
-  Also update this file if you make any changes or extensions to major architectural
+  Also please update this file if you make any changes or extensions to major architectural
   components.
 3. Test the functionality. For now, the test procedure is to manually try out
   1. every correct way of using the SF
   2. every exception described in the SF
   3. every set of inputs that does not match what the "Inputs/how to perform"
-      section stipulates. e.g., if it says the first argument is to be a
+      section stipulates. e.g., if it says the first argument to a command should be a
       nonempty string, try out what happens when you pass in the empty string
       and what happens when you pass in a non-string value like a number.
 
@@ -74,7 +76,7 @@ Since we are checking out past versions of the same repo, we must
 take care not to check out a version where Speedtracker does not
 exist and cannot restore the program state.  
 For these reasons,
-check the results of every OS call and think of how to ensure
+check the results of every OS/Git call and think of how to ensure
 that a failed operation can restore the state before it happened.
 Different exceptions should have well-defined error identifiers
 which are defined as public class constants.  
@@ -83,16 +85,16 @@ Error handling in general: syntax errors/faulty arguments print out a usage mess
 and one line describing which argument is wrong. Semantic errors, e.g.
 creating a snapshot with a name already taken, print out a one-liner
 explaining what happened. Truly unexpected exceptions are logged fully,
-with stack trace.  
+with stack trace. Setting the configuration option `HideErrors` to false will
+cause all errors to be logged in detail.  
   
 All code besides `speedtracker.m`, benchmark and config files must
 go in the `speedtracker` folder, because copying it to a temp location
 is how the module prevents checking-out of old snapshots from breaking
 itself.  
 
-The Speedtracker code uses classes for top-level organization, but is largely
-procedural, not object-oriented. Hide classes behind interfaces if they
-separate major parts of the application. For example, the class
+The Speedtracker code uses classes and interfaces for top-level organization, but is largely
+procedural, not object-oriented. For example, the class
 SnapshotLoader, through which the main program manages
 snapshots, is an abstract class.  
 
@@ -102,11 +104,12 @@ Vectors are row vectors wherever row or column would both work.
 
 Expected Userbase:  
 Users are developers of IFDIFF and can thus be expected to have a high degree of
-expertise in MATLAB (higher than mine at any rate ^_^") and maybe even to poke around
-in the Speedtracker code when it doesn't work how they like it.  
+expertise in MATLAB. As developers, they will not require Speedtracker to be fully
+user-friendly, but it should be easy to use and understand nonetheless, since it is
+a development tool and not a core part of IFDIFF's code.
 
 Expect users to have everyday knowledge of
-Git: add, commit, push, pull, maybe tag, but no more.  
+Git: add, commit, push, pull, but no more.  
 
 Git Usage Internally:  
 Some Git commands use advanced terminal features like coloring that are
