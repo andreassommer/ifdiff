@@ -63,6 +63,25 @@ functionality, proceed as follows:
       nonempty string, try out what happens when you pass in the empty string
       and what happens when you pass in a non-string value like a number.
 
+## Debugging
+If you find something that does not work, consult the above section "Development Process"
+and `structure.odt` for help making sense of the code. Some additional tips:
+
+1. Since Speedtracker copies its own code to a temp directory, you cannot set breakpoints
+  in source files. There is a workaround, however: The main script `speedtracker.m` runs
+  from the home directory. Put a breakpoint at the statement `command.execute(...)`, then
+  use the "Step in" button to step into the `execute` method. MATLAB will open the temp
+  copy of the class that the method belongs to, and you can set breakpoints there that
+  will work.
+2. If you want to test internal methods or intermediate states, it is tedious to
+  recreate the temp directory and other infrastructure manually. Instead, there is
+  a `UserCommand` subclass `speedtracker/commands/ScrewAroundCommand` that is
+  disabled by default and that you can put any code in. To enable it, locate the
+  line in `speedtracker.m` where the commands (`RunBenchmarksCommand`,
+  `CreateSnapshotCommand`, etc.) are instantiated and add a 
+  `ScrewAroundCommand()` to the array, then you can run it with
+  `speedtracker screw-around`.
+
 ## Programming Guidelines
 For now, our guidelines are small enough to stay here instead of in a
 separate file. Read `structure.odt` for more detail on how these goals
