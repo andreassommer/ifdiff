@@ -167,7 +167,7 @@ classdef GitSnapshotManager < SnapshotLoader
                 throw(MException(SnapshotLoader.ERROR_BAD_SNAPSHOT_ID, sprintf( ...
                     '%s is not a snapshot ID, revision specifier, or special snapshot name', snapshotSpecifier)));
             end
-            this.logger.info(sprintf('snapshot SHA: %s', sha));
+            this.logger.info(sprintf('  snapshot SHA: %s', sha));
             % Ensure the wait time has already passed to avoid MATLAB using old versions of newly-checked out code
             waitTime = this.getWaitTimeForLoading();
             if (waitTime > 0)
