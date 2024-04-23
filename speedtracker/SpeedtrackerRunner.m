@@ -56,6 +56,7 @@ classdef SpeedtrackerRunner
                         this.benchmarkRunner = this.benchmarkRunner.runBenchmark(snapshots{i}, benchmarks{j});
                     end
                     this.logger.info('ran all benchmarks');
+
                 end
             catch error
                 this.logger.error('error while running benchmarks, restoring project state');
@@ -63,8 +64,8 @@ classdef SpeedtrackerRunner
                     this.snapshotLoader = this.snapshotLoader.restoreProjectState();
                     this.logger.info('successfully restored project state');
                 catch restoreError
-                    this.logger.error('failed to restore state. try checking out previous branch and');
-                    this.logger.error('    running restore-state command. If this fails, consult the instructions.');
+                    this.logger.error('failed to restore state. try fixing whatever caused the error and');
+                    this.logger.error('    running the restore-state command. If this fails, consult the instructions.');
                     this.logger.error('    restoring state failed because of:');
                     this.logger.error(restoreError.getReport());
                 end
