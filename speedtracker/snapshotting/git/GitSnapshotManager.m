@@ -387,7 +387,7 @@ classdef GitSnapshotManager < SnapshotLoader
             end
             metadataTempFile = this.getMetadataTempFileName();
             this.logger.debug(sprintf('saving metadata via temp file %s', metadataTempFile));
-            fileID = fopen(metadataTempFile, 'W');
+            fileID = fopen(metadataTempFile, 'w', 'n', 'utf-8');
             if (fileID == -1)
                 throw(MException(GitSnapshotManager.ERROR_FS_GENERIC, ...
                     sprintf('could not open file %s', metadataTempFile)));
@@ -663,18 +663,19 @@ classdef GitSnapshotManager < SnapshotLoader
             % Read a snapshot file and return a snapshot list. If it does not exist, return an empty array.
             % throw GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS if the file cannot be opened/written
             %   and GitSnapshotManager.ERROR_BAD_SNAPSHOTS_FILE if the file cannot be parsed.
-            if ~isfile(file)
+            if ~exist(file, 'file')
                 snapshots = [];
                 return;
             end
-            try
-                text = fileread(file, 'Encoding', 'UTF-8');
-            catch fileError
-                error = MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, ...
-                    sprintf('error opening or reading snapshot file: %s', fileError.message));
-                throw(error.addCause(fileError));
+            fid = fopen(file, 'r', 'n', 'utf-8');
+            if fid == -1
+                throw(MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, sprintf( ...
+                    'snapshot file exists, but could not be read: %s', file)));
             end
-            lines = splitlines(char(text));
+            text = fread(fid, [1 inf], '*char');
+            fclose(fid);
+    
+            lines = splitlines(text);
             lines = lines(~startsWith(lines, '#'));
             lines = lines(strlength(lines) > 0);
             snapshots(length(lines)) = this.makeSnapshotStruct('', '', 0);
@@ -706,14 +707,15 @@ classdef GitSnapshotManager < SnapshotLoader
                 snapshot = snapshots(i);
                 lines{i} = strjoin({snapshot.id, snapshot.sha, sprintf('%d', snapshot.timestamp)}, ' ');
             end
+
             output = strjoin(lines, SystemUtil.lineSep());
-            try
-                writelines(output, file, 'Encoding', 'UTF-8');
-            catch fileError
-                error = MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, ...
-                    sprintf('error opening or writing snapshot file: %s', fileError.message));
-                throw(error.addCause(fileError));
+            fid = fopen(file, 'w', 'n', 'utf-8');
+            if fid == -1
+                throw(MException(GitSnapshotManager.ERROR_SNAPSHOTS_FILE_ACCESS, sprintf( ...
+                    'error opening or writing snapshot file: %s', file)));
             end
+            fprintf(fid, '%s', output);
+            fclose(fid);
         end
 
         function snapshotStruct = makeSnapshotStruct(~, id, sha, timestamp)

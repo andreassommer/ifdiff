@@ -204,9 +204,12 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
         end
 
         function tab = makeEmptyTable(~, nRows)
-            tab = table('Size', [nRows 7], ...
-                'VariableNames', {'benchmark', 'snapshot', 'changed', 'error', 'timeMean', 'timeStd', 'timeMedian'}, ...
-                'VariableTypes', {'cellstr', 'cellstr', 'logical', 'logical', 'double', 'double', 'double'});
+            % Make a table with nRows and the columns described earlier, with all cells filled with dummy values
+            cell0 = repmat({''}, [nRows 1]);
+            logical0 = zeros(nRows, 1) == 1;
+            double0 = zeros(nRows, 1);
+            tab = table(cell0, cell0, logical0, logical0, double0, double0, double0, ...
+                'VariableNames', {'benchmark', 'snapshot', 'changed', 'error', 'timeMean', 'timeStd', 'timeMedian'});
         end
 
         function areEqual = compareResults(this, result1, result2)
