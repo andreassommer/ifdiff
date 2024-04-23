@@ -46,8 +46,8 @@ classdef SpeedtrackerRunner
             % The meat: check out each snapshot, run all benchmarks over it, then proceed to the next snapshot.
             % Everything is in a try block so we can at least call restore project state no matter what goes wrong.
             try
-                this.logger.info(sprintf('running benchmarks %s', strjoin(benchmarks, ', ')));
-                this.logger.info(sprintf('  on snapshots %s', strjoin(snapshots, ', ')));
+                this.logger.info(sprintf('running benchmarks %s', ['{''' strjoin(benchmarks, ''', ''') '''}']));
+                this.logger.info(sprintf('      on snapshots %s', ['{''' strjoin(snapshots, ''', ''') '''}']));
                 for i=1:length(snapshots)
                     this.logger.info(sprintf('loading snapshot %s', snapshots{i}));
                     this.snapshotLoader = this.snapshotLoader.loadSnapshot(snapshots{i});
