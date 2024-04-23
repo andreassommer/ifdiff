@@ -15,7 +15,8 @@ end
 if length(cond1) ~= length(cond2)
     cond = true;
 else
-    cond = any(cond1 ~= cond2, 'all');
+    condMatches = cond1 ~= cond2;
+    cond = any(condMatches(:));
 end
 
 

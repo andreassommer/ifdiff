@@ -12,7 +12,7 @@ for i = 1:l
     export_obj = mtreeplus(switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str); 
     export_obj = deleteUnusedParameters(export_obj); 
     
-    newfile = fopen([switchingFcn.path, '/', name, '.m'], 'w');
+    newfile = fopen(fullfile(switchingFcn.path, [name, '.m']), 'w');
     fprintf(newfile, export_obj.tree2str);
     fclose(newfile);
     

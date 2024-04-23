@@ -37,8 +37,8 @@ for i = 1:length(start_node)
     while mtreeobj.T(z, cIndex.kindOfNode) ~= node_index_to_find
         z = mtreeobj.T(z, cIndex.indexParentNode)';
         
-        
-        if any(z == highest_possible_level, 'all')
+        z_at_highest_possible_level = z == highest_possible_level;
+        if any(z_at_highest_possible_level(:))
             break
         end
         

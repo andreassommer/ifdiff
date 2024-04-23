@@ -18,8 +18,8 @@ connection_possiblities = [cIndex.indexLeftchild, cIndex.indexRightchild];
 for i = 1:length(childs) 
     z = childs(i); 
     childs_new =  mtreeobj.T(z, connection_possiblities);
-    
-    if ~any(childs_new ~= 0, 'all') 
+
+    if ~any(childs_new(:))
         % stop function when node has no childs at all
         return
     end 
