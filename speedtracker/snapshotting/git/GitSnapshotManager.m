@@ -197,7 +197,11 @@ classdef GitSnapshotManager < SnapshotLoader
                 metadata = jsondecode(metadataString);
                 branchName = metadata.branch;
                 headCommitSha = metadata.headCommitSha;
-                tempCommitSha = metadata.tempCommitSha;
+                if isfield(metadata, 'tempCommitSha')
+                    tempCommitSha = metadata.tempCommitSha;
+                else
+                    tempCommitSha = '';
+                end
             catch parseError
                 this.logger.error('could not parse saved metadata, re-saving saved state');
                 this.writeMetadata(metadataString);
