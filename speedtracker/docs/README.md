@@ -23,8 +23,8 @@ Another requirement is to avoid the use of extra software and infrastructure bec
 there is nobody to manage it. Speedtracker should be callable from within
 MATLAB :registered: and use only MATLAB, OS commands, and Git.  
   
-Speedtracker aims to be compatible with Windows and Linux and with MATLAB versions up
-to ten years old (as of 2024).  
+Speedtracker aims to be compatible with Windows and Linux and with MATLAB versions from
+R2017a onward.  
   
 Users are assumed to be decently familiar with MATLAB, IFDIFF, and Git.  
   
