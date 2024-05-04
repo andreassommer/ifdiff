@@ -1,14 +1,8 @@
-
-function [mtreeObj, indexStringArray, indexArray, indexStringArrayCount] = ...
-        deleteUnusedParameters_InsideElseBody(mtreeobj, outerLoopIndex, bodyIndex, indexStringArray, indexArray, indexStringArrayCount)
-    % 
-    %
-    %
-    
+function [mtreeObj, idStringArray] = ...
+        deleteUnusedParameters_InsideElseBody(mtreeobj, outerLoopIndex, bodyIndex, idStringArray)
     
     % create struct for o.T column access
     cIndex = mtree_cIndex(); 
-
     
     % get the last node in the if body
     currentNode = bodyIndex;
@@ -42,27 +36,19 @@ function [mtreeObj, indexStringArray, indexArray, indexStringArrayCount] = ...
                             end
                         end
                         % checking if the index of the stringArr of idNodeIndex is in
-                        % indexStringArray
-                        if sum(ismember(indexStringArray, indexArray(ismember(indexArray(:,1), idNodeIndex), 2)) > 0)
-                            
-                            helpTree = select(mtreeobj, mtreeobj.T(mtreeobj.T(currentNode, cIndex.indexLeftchild), cIndex.indexRightchild));
-                            
-                            % getting all indices of ID nodes in helpTree
-                            % subIdList = helpTree.mtfind('Kind','ID');
-                            % subIdIndexList = subIdList.indices;
-                            
-                            subIdIndexList = mtree_mtfind(helpTree, 'Kind', helpTree.K.ID); 
+                        % idStringArray
+                        if ismember(mtreeobj.C{mtreeobj.T(idNodeIndex, cIndex.stringTableIndex)}, idStringArray)
+                            % the RHS of the assignment statement
+                            assignmentRhs = select(mtreeobj,mtreeobj.T(mtreeobj.T(...
+                                    currentNode, cIndex.indexLeftchild), cIndex.indexLeftchild));
 
-                            
-                            % adding all indices of strArr that are in sbIdIdxLs but not in
-                            % idxStrArr
-                            % getting all indices of all ID nodes that are in sbIdIdxLs
-                            newIndexList = indexArray(ismember(indexArray(:,1), subIdIndexList), 2);
-                            % adding them to idxStrArr
-                            indexStringArray(indexStringArrayCount + 1: indexStringArrayCount + length(newIndexList)) = newIndexList;
-                            
-                            % adjusting  idxStrArrCnt
-                            indexStringArrayCount = indexStringArrayCount + length(newIndexList);
+                            % get the indices of all IDs that are used to define the variable
+                            subIdIndexList = mtree_mtfind(assignmentRhs, 'Kind', assignmentRhs.K.ID);
+
+                            % and append them to idStringArray
+                            newIDArray = mtreeobj.C(mtreeobj.T(subIdIndexList, cIndex.stringTableIndex));
+                            newIDArray = newIDArray(~ismember(newIDArray, idStringArray));
+                            idStringArray = vertcat(idStringArray, newIDArray);
                         else
                             % delete this node
                             if mtreeobj.T(currentNode, cIndex.indexNextNode) ~= 0
@@ -89,7 +75,11 @@ function [mtreeObj, indexStringArray, indexArray, indexStringArrayCount] = ...
                     % get index of the if body
                     ifBodyIndex = mtreeobj.T(mtreeobj.T(currentNode, cIndex.indexLeftchild), cIndex.indexRightchild);
                     % call deleteUnusedParameterInsideIfBody
-                    [mtreeobj, indexStringArray, indexArray, indexStringArrayCount] = deleteUnusedParameters_InsideIfBody(mtreeobj, currentNode, ifBodyIndex, indexStringArray, indexArray, indexStringArrayCount);
+                    [mtreeobj, idStringArray] = deleteUnusedParameters_InsideIfBody( ...
+                            mtreeobj, ...
+                            currentNode, ...
+                            ifBodyIndex, ...
+                            idStringArray);
                     
                     % check if there is a else part
                     if mtreeobj.T(mtreeobj.T(currentNode, cIndex.indexLeftchild), cIndex.indexNextNode) ~= 0
@@ -99,7 +89,11 @@ function [mtreeObj, indexStringArray, indexArray, indexStringArrayCount] = ...
                         elseBodyIndex = mtreeobj.T(mtreeobj.T(mtreeobj.T(currentNode, cIndex.indexLeftchild), cIndex.indexNextNode), cIndex.indexRightchild);
                         
                         % call deleteUnusedParameterInsideElseBody
-                        [mtreeobj, indexStringArray, indexArray, indexStringArrayCount] = deleteUnusedParameters_InsideElseBody(mtreeobj, currentNode, elseBodyIndex, indexStringArray, indexArray, indexStringArrayCount);
+                        [mtreeobj, idStringArray] = deleteUnusedParameters_InsideElseBody( ...
+                                mtreeobj, ...
+                                currentNode, ...
+                                elseBodyIndex, ...
+                                idStringArray);
                     end
                     
                     % check if there is still an else part and if the if part
@@ -118,33 +112,24 @@ function [mtreeObj, indexStringArray, indexArray, indexStringArrayCount] = ...
                             mtreeobj.T(mtreeobj.T(currentNode, cIndex.indexParentNode), cIndex.indexRightchild) = mtreeobj.T(currentNode, cIndex.indexNextNode);
                         end
                     else % add the parameters that are used in the if condition to the string array
-                        helpTree = select(mtreeobj, mtreeobj.T(mtreeobj.T(currentNode, cIndex.indexLeftchild), cIndex.indexLeftchild));
-                        
-                        % getting all indices of ID nodes in helpTree
-                        % subIdList = helpTree.mtfind('Kind','ID');
-                        % subIdIndexList = subIdList.indices;
-                        
-                        subIdIndexList = mtree_mtfind(helpTree, 'Kind', helpTree.K.ID); 
-                        
-                        % adding all indices of strArr that are in sbIdIdxLs but not in
-                        % idxStrArr
-                        % getting all indices of all ID nodes that are in sbIdIdxLs
-                        newIndexList = indexArray(ismember(indexArray(:,1), subIdIndexList), 2);
-                        % adding them to idxStrArr
-                        indexStringArray(indexStringArrayCount + 1: indexStringArrayCount + length(newIndexList)) = newIndexList;
-                        
-                        % adjusting  idxStrArrCnt
-                        indexStringArrayCount = indexStringArrayCount + length(newIndexList);
+                        ifHeadSubtree = select(mtreeobj,mtreeobj.T(mtreeobj.T(...
+                           currentNode, cIndex.indexLeftchild), cIndex.indexLeftchild));
+
+                        % get all IDs that are in the assignment's RHS, and add them to the array of relevant IDs
+                        subIdIndexList = mtree_mtfind(ifHeadSubtree, 'Kind', ifHeadSubtree.K.ID); 
+                        newIDArray = mtreeobj.C(mtreeobj.T(subIdIndexList, cIndex.stringTableIndex));
+                        newIDArray = newIDArray(~ismember(newIDArray, idStringArray));
+                        idStringArray = vertcat(idStringArray, newIDArray);
                     end
                     
                 case mtreeobj.K.FOR
                     % call delete unusedParameterInsideForLoop
-                    % [mtreeobj, indexStringArray, indexArray, indexStringArrayCount] = unusedParameterInsideForLoop(mtreeobj, currentNode, elseBodyIndex, indexStringArray, indexArray, indexStringArrayCount);
+                    % [mtreeobj, idStringArray] = unusedParameterInsideForLoop(mtreeobj, currentNode, elseBodyIndex, idStringArray);
                     
                     
                 case mtreeobj.K.WHILE
                     % call delete unusedParameterInsideWhileLoop
-                    % [mtreeobj, indexStringArray, indexArray, indexStringArrayCount] = unusedParameterInsideWhileLoop(mtreeobj, currentNode, elseBodyIndex, indexStringArray, indexArray, indexStringArrayCount);
+                    % [mtreeobj, idStringArray] = unusedParameterInsideWhileLoop(mtreeobj, currentNode, elseBodyIndex, idStringArray);
                     
                     
                     % catch all other possible code snippets
