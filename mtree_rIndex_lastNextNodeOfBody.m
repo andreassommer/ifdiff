@@ -2,22 +2,17 @@ function index = mtree_rIndex_lastNextNodeOfBody(mtreeobj, index, body)
 cIndex = mtree_cIndex(); 
 
 % Part 2: LastNextNodeofBody
-% if there are nested functions, one needs to know, which next node is the
-% last next node in the body before a nested function. I.e. the nextnode of
-% the lastnextnodeofbody is a function node .
+% Find the last body node of the function that is not a nested function declaration.
 
-% define variable 
-index.lastNextNodeOfBody = body; 
+% first, get the last node without checking for nested functions
+veryLastNextNode = mtree_lastNextNodeIndex(mtreeobj, body);
 
-% prepare while loop 
-z = index.lastNextNodeOfBody;
-% check if the nextNode is a function node (for a function inside the
-% body, or if there exists a nextNode
-while z ~= 0 && ~strcmp(mtreeobj.KK{mtreeobj.T(z,cIndex.kindOfNode)},'FUNCTION')
-    index.lastNextNodeOfBody = z;
-    % calculate next one;  when it is 0 or function node the old one is submitted
-    z = mtreeobj.T(index.lastNextNodeOfBody, cIndex.indexNextNode);
+% this veryLastNextNode may be a nested function. So go backwards until we find a non-function node.
+last = veryLastNextNode;
+while (mtreeobj.T(last, cIndex.indexParentNode) ~= mtreeobj.T(last, cIndex.trueParent)) && ...
+        strcmp(mtreeobj.KK{mtreeobj.T(last, cIndex.kindOfNode)}, 'FUNCTION')
+    last = mtreeobj.T(last, cIndex.indexParentNode);
 end
-
+index.lastNextNodeOfBody = last;
 
 end 
