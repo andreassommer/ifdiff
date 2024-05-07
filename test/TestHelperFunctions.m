@@ -27,12 +27,27 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
                                                          'options', odeoptions);
             tEnd = 20;
             tspan         = [0 tEnd];
-            initialvalues = 0;
-            parameters    = 0;
 
-            sol = solveODE(datahandle, tspan, initialvalues, parameters);
+            sol = solveODE(datahandle, tspan, 0, 0);
             yEnd = sol.y(:, end);
             this.verifyEqual(yEnd, 40, 'RelTol', 1e-6);
+        end
+
+        function manyFunctions(this)
+            %MANYFUNCTIONS the final boss: a function with helper functions in conditions, in if/else bodies, and
+            % helper functions within helper functions.
+            integrator = @ode45;
+            odeoptions = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+
+            datahandle = prepareDatahandleForIntegration('manyFunctions', ...
+                                                         'solver', func2str(integrator), ...
+                                                         'options', odeoptions);
+            tEnd = 30;
+            tspan         = [0 tEnd];
+
+            sol = solveODE(datahandle, tspan, 0, 0);
+            y = deval(sol, [10 20 30]);
+            this.verifyEqual(y, [10, 25, 30],  'RelTol', 1e-6);
         end
     end
 end
