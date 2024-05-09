@@ -10,9 +10,7 @@ switchingFcn.i = i;
 
 
 switchingFcn.mtreeobj = data.mtreeplus; 
-switchingFcn.mtreeobj_switchingFcn = cell(7,1); 
 % sI is the switching index, refered to the vectors in data.SWP_detection, get the ctrlif_index w.r.t. to sI
-% switchingfunction.rhs_new_name = setUpSwitchingFunction_newName(switchingfunction, switchingfunction.sI, i);
 
 % n-th switching functions refers to the n-th switch (n is suffix for switching function name)
 switchingFcn.n = length(data.SWP_detection.switchingpoints) + 1;

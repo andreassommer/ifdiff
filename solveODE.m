@@ -52,6 +52,7 @@ solveODE_firstTime(datahandle)
 
 
 switch_detected = checkForSwitchingIndices(datahandle);
+sliding_switches = [];
 
 while switch_detected
     % cut last step in solution_until_t3 and it becomes solution_until_t1
@@ -71,10 +72,17 @@ while switch_detected
     % signature saved in .SWP_detection
     extendODE_t2_to_tend_with_SWP_detection(datahandle);
     
-    solveODE_recognizeFilippovSwitching(datahandle);
-    %fprintf("Possible Filippov switching detected. Integration stopped.\n");
+    [~, sliding_switches] = solveODE_recognizeFilippovSwitching(datahandle, sliding_switches);
     
     switch_detected = checkForSwitchingIndices(datahandle);
+end
+
+% print sliding information if available
+if ~isempty(sliding_switches)
+    fprintf("A warning/error for possible Filippov-switching has occurred " + ...
+        "during integration.\n" + ...
+        "The following ctrlif's have been involved in possible " + ...
+        "Filippov-switching: [%s].\n", join(string(unique(sliding_switches)), ', '));
 end
 
 varargout = solveODE_assembleOutput(datahandle, nargout);
