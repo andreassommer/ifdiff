@@ -1,15 +1,13 @@
 function [mtreeobj, idStringArray] = ...
         deleteUnusedParameters_walkBodyNodes(mtreeobj, idStringArray, lastNextNode)
     %DELETEUNUSEDPARAMETERS_WALKBODYNODES Walk backwards through an mtree, deleting irrelevant nodes
-    % idStringArray initially contains the return variable.
-    % lastNextNode is the index of the last body node to consider, the ones after it are not treated.
-    % The function
-    % loops over this last node, then its parent, and so on until the trueParent of the nodes - this can be the
-    % head of a function or of an if/else block. When handling an assignment statement, the function checks if the
-    % variable being assigned is in idStringArray. If so, all variables used in the assignment's RHS are added
-    % to idStringArray. If not, the assignment is deleted from the mtree.
-    % When handling a body node that is if, for, or while, the function calls itself recursively to process the
-    % sub-body of the if/for/while.
+    % idStringArray initially contains the return variable(s).
+    % lastNextNode is the index of the last body node to consider, the ones after it are simply left untouched.
+    % The function loops over this last node, then its parent, and so on the head of a function. When handling
+    % an assignment statement, the function checks if the variable being assigned is in idStringArray. If
+    % so, all variables used in the assignment's RHS are added to idStringArray. If not, the assignment
+    % is deleted from the mtree. When handling a body node that is if, for, or while, the function calls
+    % itself recursively to process the body of the if/for/while.
     cIndex = mtree_cIndex();
     trueParent = mtreeobj.T(lastNextNode, cIndex.trueParent);
     while lastNextNode ~= trueParent
@@ -21,19 +19,13 @@ function [mtreeobj, idStringArray] = ...
                     % expression is not an assignment, better not mess with it
                     continue
                 end
-                assignmentLhs = mtreeobj.T(leftChild, cIndex.indexLeftchild);
-                % the LHS may not be a simple variable 'x = 10', but an array assignment like 'x(1,:) = [1 2]`.
-                % Loop over it to get the ID of the variable itself
-                if mtreeobj.T(assignmentLhs, cIndex.indexLeftchild) ~= 0
-                    while mtreeobj.T(assignmentLhs, cIndex.kindOfNode) ~= mtreeobj.K.ID
-                        assignmentLhs = mtreeobj.T(assignmentLhs, cIndex.indexLeftchild);
-                    end
-                end
 
-                
-                % checking if the assigned variable is in our idStringArray of the IDs that contribute
+                assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
+                assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
+
+                % checking if any of the assigned variables are in our idStringArray of the IDs that contribute
                 % to setting the return value
-                if ismember(mtreeobj.C{mtreeobj.T(assignmentLhs, cIndex.stringTableIndex)}, idStringArray)
+                if any(ismember(mtreeobj.C(mtreeobj.T(assignedVars, cIndex.stringTableIndex)), idStringArray))
                     % ... if it is, then we add all variables that appear in its RHS to idStringArray
                     assignmentRhs = subtree(select( ...
                             mtreeobj, ...
