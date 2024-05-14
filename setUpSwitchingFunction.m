@@ -63,7 +63,11 @@ for i = 1:l
     
 end
 
-
+% Remove unused variables (ones that do not contribute to the return value) from each switching function
+for i = 1:size(switchingFcn.mtreeobj_switchingFcn,2)
+    sortedMtree = mtreeplus(switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str);
+    switchingFcn.mtreeobj_switchingFcn{3,i} = deleteUnusedParameters(sortedMtree);
+end
 
 % export Switching Functions as source code
 switchingfunctionhandle = setUpSwitchingFunction_ExportFunctions(switchingFcn);

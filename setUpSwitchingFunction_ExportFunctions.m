@@ -7,16 +7,10 @@ function switchingfunctionhandle = setUpSwitchingFunction_ExportFunctions(switch
 
 l = size(switchingFcn.mtreeobj_switchingFcn,2); 
 for i = 1:l
-    name = switchingFcn.mtreeobj_switchingFcn{1,i};
-    
-    export_obj = mtreeplus(switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str); 
-    export_obj = deleteUnusedParameters(export_obj); 
-    
+    name = switchingFcn.mtreeobj_switchingFcn{1,i};    
     newfile = fopen(fullfile(switchingFcn.path, [name, '.m']), 'w');
-    fprintf(newfile, export_obj.tree2str);
+    fprintf(newfile, switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str);
     fclose(newfile);
-    
-    
 end
 
 % generate function handle
