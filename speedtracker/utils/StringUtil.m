@@ -48,6 +48,8 @@ classdef StringUtil
             % unlikely someone will accidentally put in a matrix where a vector of strings was expected.
             if (isempty(x))
                 str = '[]';
+            elseif StringUtil.isSimpleString(x)
+                str = x;
             else
                 joined = char(strjoin(string(x), ', '));
                 if size(x) == 1

@@ -121,7 +121,7 @@ function command = getCommand(commands, argCell)
     arg1 = argCell{1};
     command = UserCommand.getCommand(commands, arg1);
     if isempty(command)
-        throw(MException('speedtracker:main', ['unknown command: ' strjoin(string(arg1), ', ')]));
+        throw(MException('speedtracker:main', ['unknown command: ' StringUtil.toStr(arg1)]));
     end
 end
 
