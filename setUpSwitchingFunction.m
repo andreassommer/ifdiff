@@ -33,8 +33,17 @@ end
 
 % remove ctrlifs before sI and replace them with their corresponding truepart/falsepart
 for i = 1 : switchingFcn.sI-1
-    for j = 1:length(switchingFcn.function_index_t1{i}) + 1
-        switchingFcn = setUpSwitchingFunction_byFunctionIndex(switchingFcn, i, j);
+    function_index_i = switchingFcn.function_index_t1{i};
+    if function_index_i(1) == 0
+        switchingFcn = setUpSwitchingFunction_removeCtrlifInRhs(switchingFcn,i);
+    else
+        % the ctrlif is in a helper function, we have to export a modified version of it. Since this has
+        % a new name, we also need a modified version of every intermediate helper function that calls the helper
+        % function...
+        for j = 1:length(switchingFcn.function_index_t1{i})
+            switchingFcn = setUpSwitchingFunction_setUpFcnCall(switchingFcn, i, j);
+        end
+        switchingFcn = setUpSwitchingFunction_byFunctionIndex(switchingFcn, i);
     end
 end
 
