@@ -1,4 +1,4 @@
-function switchingFcn = setUpSwitchingFunction_getSwitchingFcn_adaptOutputVariable(switchingFcn, function_index, j, n)
+function switchingFcn = setUpSwitchingFunction_adaptOutputVariable(switchingFcn, function_index, j, n)
 % when there is:
 % y = preprocessed_fun(function_index, datahandle, y);
 % replace it by

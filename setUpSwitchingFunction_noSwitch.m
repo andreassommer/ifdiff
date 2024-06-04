@@ -1,4 +1,4 @@
-function switchingFcn = setUpSwitchingFunction_getSwitchingFcn_noSwitch(switchingFcn, i, j)
+function switchingFcn = setUpSwitchingFunction_noSwitch(switchingFcn, i, j)
 
 cIndex = mtree_cIndex; 
 
@@ -10,7 +10,7 @@ n = switchingFcn.nCurrentFunction;
 % mtree_swichtingFcn
 switchingFcn = setUpSwitchingFunction_setUpFcnCall(switchingFcn, i, j);
 
-switchingFcn = setUpSwitchingFunction_getSwitchingFcn_adaptOutputVariable(switchingFcn, i, j, n);
+switchingFcn = setUpSwitchingFunction_adaptOutputVariable(switchingFcn, i, j, n);
 
 % delete everything after the function call with switch
 switchingFcn.mtreeobj_switchingFcn{3,n}.T(switchingFcn.mtreeobj_switchingFcn{5,n}.Expr(switchingFcn.u), cIndex.indexNextNode) = 0;

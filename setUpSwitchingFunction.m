@@ -37,7 +37,7 @@ for i = 1 : switchingFcn.sI-1
     if function_index_i(1) == 0
         switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, 1);
     else
-        % the ctrlif is in a helper function, we have to export a modified version of it. Since this has
+        % the ctrlif is in a helper function, we have to make a modified version of it. Since this has
         % a new name, we also need a modified version of every intermediate helper function that calls the helper
         % function...
         for j = 1:length(switchingFcn.function_index_t1{i})
@@ -49,7 +49,15 @@ for i = 1 : switchingFcn.sI-1
 end
 
 % replace ctrlif #sI with a return statement
-switchingFcn = setUpSwitchingFunction_getSwitchingFcn(switchingFcn);
+function_index_sI = switchingFcn.function_index_t1{switchingFcn.sI};
+if function_index_sI(1) == 0
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, 1);
+else
+    for j = 1:length(switchingFcn.function_index_t1{switchingFcn.sI})
+        switchingFcn = setUpSwitchingFunction_noSwitch(switchingFcn, switchingFcn.sI, j);
+    end
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, switchingFcn.nCurrentFunction);
+end
 
 % remove unused variables (ones that do not contribute to the return value) from each function
 for i = 1:size(switchingFcn.mtreeobj_switchingFcn,2)

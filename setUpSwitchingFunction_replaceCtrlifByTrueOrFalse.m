@@ -1,5 +1,5 @@
 function switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, ctrlif_i, mtree_i)
-% replace a ctrlif inside a helper function with its truepart/ falsepart.
+% replace a ctrlif with its truepart/ falsepart.
 % ctrlif_i is the index into the ctrlif_index, function_index, and switch_cond arrays.
 % mtree_i is the index into switchingFcn.mtreeobj_switchingFcn, i.e. which function's mtree we want to modify.
 
