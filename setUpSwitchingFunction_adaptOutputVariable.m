@@ -1,18 +1,18 @@
-function [switchingFcn, fcnCallIndex] = setUpSwitchingFunction_adaptOutputVariable(switchingFcn, i, j, n)
+function [switchingFcn, fcnCallIndex] = setUpSwitchingFunction_adaptOutputVariable(switchingFcn, nCurrentFunction, function_index_index)
 % when there is:
 % y = preprocessed_fun(function_index, datahandle, y);
 % replace it by
 % returnvalue = preprocessed_fun(y);
 % and change output variable in the function header to returnvalue
+% Each function call's function_index is an array. function_index_index is the index into that array.
 
 config = makeConfig();
 cIndex = mtree_cIndex();
+n = nCurrentFunction;
 
 rIndex = struct('HEAD', struct(), 'BODY', struct());
 rIndex.HEAD = mtree_rIndex_head(switchingFcn.mtreeobj_switchingFcn{3,n}, rIndex.HEAD);
-function_index_i = switchingFcn.function_index_t1{i};
-function_index_j = function_index_i(j);
-u = (function_index_j == switchingFcn.mtreeobj_switchingFcn{4,n});
+u = (function_index_index == switchingFcn.mtreeobj_switchingFcn{4,n});
 rIndex_fcn = switchingFcn.mtreeobj_switchingFcn{5,n};
 
 % change the name of the function call that contains the switch

@@ -37,14 +37,16 @@ for i = 1 : switchingFcn.sI-1
     if function_index_i(1) == 0
         switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, 1);
     else
+        nCurrentFunction = 1;
         % the ctrlif is in a helper function, we have to make a modified version of it. Since this has
         % a new name, we also need a modified version of every intermediate helper function that calls the helper
         % function...
-        for j = 1:length(switchingFcn.function_index_t1{i})
-            switchingFcn = setUpSwitchingFunction_setUpFcnCall(switchingFcn, i, j);
+        for j = 1:length(function_index_i)
+            function_index_j = function_index_i(j);
+            [switchingFcn, nCurrentFunction] = ...
+                setUpSwitchingFunction_setUpFcnCall(switchingFcn, nCurrentFunction, function_index_j);
         end
-        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, switchingFcn.nCurrentFunction);
-        switchingFcn.nCurrentFunction = 1;
+        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, nCurrentFunction);
     end
 end
 
@@ -53,10 +55,13 @@ function_index_sI = switchingFcn.function_index_t1{switchingFcn.sI};
 if function_index_sI(1) == 0
     switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, 1);
 else
-    for j = 1:length(switchingFcn.function_index_t1{switchingFcn.sI})
-        switchingFcn = setUpSwitchingFunction_noSwitch(switchingFcn, switchingFcn.sI, j);
+    nCurrentFunction = 1;
+    for j = 1:length(function_index_sI)
+        function_index_j = function_index_sI(j);
+        [switchingFcn, nCurrentFunction] = ...
+            setUpSwitchingFunction_noSwitch(switchingFcn, nCurrentFunction, function_index_j);
     end
-    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, switchingFcn.nCurrentFunction);
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, nCurrentFunction);
 end
 
 % remove unused variables (ones that do not contribute to the return value) from each function

@@ -1,18 +1,15 @@
-function switchingFcn = setUpSwitchingFunction_setUpFcnCall(switchingFcn, i, j)
+function [switchingFcn, nextFunction] = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFunction, function_index_index)
 % In creating switching functions, a helper function may also need to be modified, in which case it
 % gets exported under a new name. This function adapts calls of the helper function from other functions
 % to the new name.
+% Each function call's function_index is an array. function_index_index is the index into that array.
 
 cIndex = mtree_cIndex();
 
-n = switchingFcn.nCurrentFunction;
-
-% find function call w.r.t to the function index
-function_index_i = switchingFcn.function_index_t1{i};
-function_index_j = function_index_i(j);
+n = currentFunction;
 
 % get name of the function call that is considered (w.r.t. function_index)
-u = find(function_index_j == switchingFcn.mtreeobj_switchingFcn{4,n});
+u = find(function_index_index == switchingFcn.mtreeobj_switchingFcn{4,n});
 
 rIndex_fcn = switchingFcn.mtreeobj_switchingFcn{5,n};
 cIndex_fcn = switchingFcn.mtreeobj_switchingFcn{3,n}.C;
@@ -20,10 +17,10 @@ cIndex_fcn = switchingFcn.mtreeobj_switchingFcn{3,n}.C;
 % old_name of the function considered
 switchingFcn.name_old = cIndex_fcn{switchingFcn.mtreeobj_switchingFcn{3,n}.T(rIndex_fcn.Fname(u), cIndex.stringTableIndex)};
 
-switchingFcn.name_new = setUpSwitchingFunction_newName(switchingFcn, function_index_j);
+switchingFcn.name_new = setUpSwitchingFunction_newName(switchingFcn, function_index_index);
 
-[switchingFcn, m] = setUpSwitchingFunction_findOrCreateSwitchingFcn(switchingFcn, switchingFcn.name_new, switchingFcn.name_old);
-switchingFcn.nCurrentFunction = m;
+[switchingFcn, nextFunction] = ...
+        setUpSwitchingFunction_findOrCreateSwitchingFcn(switchingFcn, switchingFcn.name_new, switchingFcn.name_old);
 
 [switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
     switchingFcn.mtreeobj_switchingFcn{5,n}.Call(u), ...                     % from
