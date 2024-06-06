@@ -3,6 +3,7 @@ function [switchingFcn, nextFunction] = setUpSwitchingFunction_setUpFcnCall(swit
 % gets exported under a new name. This function adapts calls of the helper function from other functions
 % to the new name.
 % Each function call's function_index is an array. function_index_index is the index into that array.
+% currentFunction is which function (RHS or helper) we are modifying
 
 cIndex = mtree_cIndex();
 

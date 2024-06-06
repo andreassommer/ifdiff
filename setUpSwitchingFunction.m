@@ -37,16 +37,15 @@ for i = 1 : switchingFcn.sI-1
     if function_index_i(1) == 0
         switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, 1);
     else
-        nCurrentFunction = 1;
-        % the ctrlif is in a helper function, we have to make a modified version of it. Since this has
-        % a new name, we also need a modified version of every intermediate helper function that calls the helper
-        % function...
+        currentFcn = 1;
+        % the ctrlif is in a helper function, we have to make a modified version of it. If the helper is called not
+        % directly, but by another helper, then we have to modify that one too because of the new function name
         for j = 1:length(function_index_i)
             function_index_j = function_index_i(j);
-            [switchingFcn, nCurrentFunction] = ...
-                setUpSwitchingFunction_setUpFcnCall(switchingFcn, nCurrentFunction, function_index_j);
+            [switchingFcn, currentFcn] = ...
+                setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
         end
-        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, nCurrentFunction);
+        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, currentFcn);
     end
 end
 
@@ -55,13 +54,19 @@ function_index_sI = switchingFcn.function_index_t1{switchingFcn.sI};
 if function_index_sI(1) == 0
     switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, 1);
 else
-    nCurrentFunction = 1;
+    currentFcn = 1;
+    % again, we may need to modify intermediate function calls. This time, they also need to have their return
+    % statements modified
     for j = 1:length(function_index_sI)
         function_index_j = function_index_sI(j);
-        [switchingFcn, nCurrentFunction] = ...
-            setUpSwitchingFunction_noSwitch(switchingFcn, nCurrentFunction, function_index_j);
+        [switchingFcn, nextFcn]       = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
+        [switchingFcn, fcnCallIndex]  = setUpSwitchingFunction_adaptOutputVariable(switchingFcn, currentFcn, function_index_j);
+        % delete all code after the newly created return statement
+        fcnCallRIndex                 = switchingFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
+        switchingFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
+        currentFcn = nextFcn;
     end
-    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, nCurrentFunction);
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, currentFcn);
 end
 
 % remove unused variables (ones that do not contribute to the return value) from each function
