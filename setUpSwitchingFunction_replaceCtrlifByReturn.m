@@ -16,13 +16,12 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
 % (the ctrlif could be in the RHS or any helper function)
     config = makeConfig();
     cIndex = mtree_cIndex;
-
+    rIndex_ctrlif = switchingFcn.mtreeobj_switchingFcn{7,mtree_i};
     n = mtree_i;
-    % find out which ctrlif (e.g. first, second...) is the considered
-    % ctrlif w.r.t to the function
+
+    % map the global ctrlif index, sI, to the ctrlif index (1st, 2nd, ...) within the considered function
     u = find(switchingFcn.ctrlif_index(switchingFcn.sI) == switchingFcn.mtreeobj_switchingFcn{6,n});
 
-    rIndex_ctrlif = switchingFcn.mtreeobj_switchingFcn{7,n};
     % replace ctrlif by its thenpart/elsepart (resp. to the condition)
 
     ctrlif_cond = switchingFcn.mtreeobj_switchingFcn{3,n}.T(rIndex_ctrlif.ctrlif_Arg(u,1), cIndex.indexLeftchild);
@@ -49,9 +48,12 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
         ctrlif_cond, ...
         cIndex.indexRightchild);
 
-    % delete everything after the ctrlif
+    % delete everything after the return-statement-ex-ctrlif
     switchingFcn.mtreeobj_switchingFcn{3,n}.T(rIndex_ctrlif.ctrlif_expr(u),cIndex.indexNextNode) = 0;
 
-    switchingFcn.mtreeobj_switchingFcn{3,n} = setUpSwitchingFunction_handleIfCondition(...
+    % If the return-statement-ex-ctrlif was inside other if/else blocks, remove these and replace with
+    % the return statement. After all, we replaced all the preceding ctrlifs with true/false, and their values
+    % are such that this return statement does get executed.
+    switchingFcn.mtreeobj_switchingFcn{3,n} = setUpSwitchingFunction_replaceIfElseByBody(...
         switchingFcn.mtreeobj_switchingFcn{3,n}, rIndex_ctrlif.ctrlif_expr(u), rIndex);
 end
