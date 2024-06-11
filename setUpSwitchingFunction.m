@@ -59,10 +59,11 @@ else
     % statements modified
     for j = 1:length(function_index_sI)
         function_index_j = function_index_sI(j);
-        [switchingFcn, nextFcn]       = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
-        [switchingFcn, fcnCallIndex]  = setUpSwitchingFunction_adaptOutputVariable(switchingFcn, currentFcn, function_index_j);
+        [switchingFcn, nextFcn]      = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
+        [switchingFcn, fcnCallIndex] = setUpSwitchingFunction_setFcnCallAsReturnValue(...
+                switchingFcn, currentFcn, function_index_j);
         % delete all code after the newly created return statement
-        fcnCallRIndex                 = switchingFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
+        fcnCallRIndex                = switchingFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
         switchingFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
         currentFcn = nextFcn;
     end

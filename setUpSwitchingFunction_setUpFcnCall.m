@@ -1,4 +1,5 @@
-function [switchingFcn, nextFunction] = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFunction, function_index_index)
+function [switchingFcn, nextFunction] = ...
+    setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFunction, function_index_index)
 % In creating switching functions, a helper function may also need to be modified, in which case it
 % gets exported under a new name. This function adapts calls of the helper function from other functions
 % to the new name.
@@ -16,21 +17,20 @@ rIndex_fcn = switchingFcn.mtreeobj_switchingFcn{5,n};
 cIndex_fcn = switchingFcn.mtreeobj_switchingFcn{3,n}.C;
 
 % old_name of the function considered
-switchingFcn.name_old = cIndex_fcn{switchingFcn.mtreeobj_switchingFcn{3,n}.T(rIndex_fcn.Fname(u), cIndex.stringTableIndex)};
-
-switchingFcn.name_new = setUpSwitchingFunction_newName(switchingFcn, function_index_index);
+oldName = cIndex_fcn{switchingFcn.mtreeobj_switchingFcn{3,n}.T(rIndex_fcn.Fname(u), cIndex.stringTableIndex)};
+newName = setUpSwitchingFunction_newName(switchingFcn, function_index_index);
 
 [switchingFcn, nextFunction] = ...
-        setUpSwitchingFunction_findOrCreateSwitchingFcn(switchingFcn, switchingFcn.name_new, switchingFcn.name_old);
+        setUpSwitchingFunction_findOrCreateSwitchingFcn(switchingFcn, newName, oldName);
 
 [switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
-    switchingFcn.mtreeobj_switchingFcn{5,n}.Call(u), ...                     % from
+    rIndex_fcn.Call(u), ...                     % from
     cIndex.indexLeftchild, ...                                       % from_types
-    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, switchingFcn.name_new});
+    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, newName});
 
 switchingFcn.mtreeobj_switchingFcn{3,n} = mtree_connectNodes(...
     switchingFcn.mtreeobj_switchingFcn{3,n}, ...
-    switchingFcn.mtreeobj_switchingFcn{5,n}.Call(u),...
+    rIndex_fcn.Call(u),...
     switchingFcn.mtreeobj_switchingFcn{5,n}.Arg(u,3),...
     cIndex.indexRightchild);
 end 
