@@ -1,25 +1,22 @@
-function [switchingFcn, n] = setUpSwitchingFunction_checkForExistensOfSwitchingFunction(switchingFcn, fcn_name_new, fcn_name_old)
-% check if mtreeobj with name 'fcn_name' does already exist in
-% .mtreeobj_switchingFcn. If not find the right one
+function [switchingFcn, m] = setUpSwitchingFunction_findOrCreateSwitchingFcn(switchingFcn, fcn_name_new, fcn_name_old)
+% check if mtreeobj with name 'fcn_name_new' exists in .mtreeobj_switchingFcn. If not, create a copy of
+% fcn_name_old and store it in .mtreeobj_switchingFcn with the new name fcn_name_new
 
 cIndex = mtree_cIndex();
 
-
-l1 = size(switchingFcn.mtreeobj_switchingFcn,2);
-for i = 1:l1
+nSwitchingFunctions = size(switchingFcn.mtreeobj_switchingFcn,2);
+for i = 1:nSwitchingFunctions
     if strcmp(fcn_name_new, switchingFcn.mtreeobj_switchingFcn{1,i})
-        n = i;
+        m = i;
         return
     end
 end
 
-% does not exist yet
-
-% find it in .mtreeobj
-l2 = size(switchingFcn.mtreeobj,2);
-for i = 1:l2
+% does not exist yet, time to make a copy
+nFunctions = size(switchingFcn.mtreeobj,2);
+for i = 1:nFunctions
     if strcmp(fcn_name_old, switchingFcn.mtreeobj{2,i})
-        index = l1 + 1;
+        index = nSwitchingFunctions + 1;
         switchingFcn.mtreeobj_switchingFcn(:,index) = switchingFcn.mtreeobj(:,i);
         
         rIndex = struct('HEAD', struct(), 'BODY', struct());
@@ -37,11 +34,8 @@ for i = 1:l2
             cIndex.indexRightchild);
         
         switchingFcn.mtreeobj_switchingFcn{1,index} = fcn_name_new; 
-        n = index; 
+        m = index; 
         return
     end
 end
-
-
-
 end

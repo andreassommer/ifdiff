@@ -37,9 +37,6 @@ switchingFcn.condition = data.SWP_detection.switch_cond_t1;
 switchingFcn.rhs_name = setUpSwitchingFunction_newName(switchingFcn, 0);
 switchingFcn.mtreeobj_switchingFcn = {}; 
 
-% starting value for nCurrentFunction (' = n' -> in next step consider
-% function at mtreeobj_switchingFcn( ,n)). default value is 1 
-switchingFcn.nCurrentFunction = 1;
 switchingFcn.path = data.paths.preprocessed_switchingFunction;
 
 end

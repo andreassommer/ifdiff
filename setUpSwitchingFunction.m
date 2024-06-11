@@ -8,88 +8,74 @@ function switchingfunctionhandle = setUpSwitchingFunction(datahandle, i)
 % OUTPUT: function handle of the corresponding switch
 %
 % 'switchingFunctionHandle': a function handle to the switching function that belongs to i
+% We construct the switching function by stripping down the preprocessed RHS and helper functions: A switching
+% point means that exactly one ctrlif changed from true to false or vice versa. Since the first argument
+% (condition) of a ctrlif is always of the form `<expr> >= 0`, we can directly use <expr> as the switching function.
+% We replace the ctrlif which switched by a statement returning <expr>. All ctrlifs that
+% come before it are replaced with their truepart or falsepart, depending on what their signature was
+% at the switching point. Finally, all code after the relevant ctrlif, and all code and helper functions
+% that do not contribute to its value, are removed, and the result is exported to file(s).
 
-
-% select and generate relavant information for assembling the
-% switchingfunction and store them a struct switchingfunction
 switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, i);
+
+% Assign the function and ctrlif indices to the functions in which they appear
 switchingFcn = setUpSwitchingFunction_getFunctionIndices_wrapper(switchingFcn);
 switchingFcn = setUpSwitchingFunction_getCtrlifIndices(switchingFcn);
 
-
-% set up rhs, either the switch is in the rhs (then function_index = 0) or
-% in a function that is in the rhs (or in a function and that function is
-% in rhs .... etc., the functions may be nested)
-% When switch is in rhs: remove all ctrlif, set new returnvalue, change
-% name of variable and get the switching function from ctrlif with index
-% ctrlif_index(sI) ; remove everthing after the specific ctlrif.
-
-
-% change name if function (i.e. from preprocessed_rhs -> sw_preprocessed_rhs)
+% copy the mtree for modifying, change name of the RHS (e.g. from preprocessed_rhs -> sw_preprocessed_rhs)
+% helper functions will be copied and renamed later, but only if they are actually needed
 if isempty(switchingFcn.mtreeobj_switchingFcn)
-    
     switchingFcn.mtreeobj_switchingFcn = switchingFcn.mtreeobj(:,1);
-    
     switchingFcn.mtreeobj_switchingFcn{3,1} = mtree_changeFcnName(...
         switchingFcn.mtreeobj_switchingFcn{3,1}, switchingFcn.rhs_name);
-    
     switchingFcn.mtreeobj_switchingFcn{1,1} = switchingFcn.rhs_name;
-    
 end
 
-
-% mtree obj for switching fcn is ready, start removing ctrlif etc. 
-% important are how functions that themself contain switches are handled. 
-% approach: map over all function index that exist, handle them consecutively 
-% 
-% assume there are four elements in the ctrlifs/function_index. 
-% and when we want the switching functions of the third element of the ctrlifs/function_index 
-% Then sI = 3; l = 4. 
-% Remove ctrlif element 1 and 2 and replace them with their corresponding truepart/falsepart
-% Remove everything after ctrlif element 3 (i.e. 4 is removed) 
-% Take ctrlif element 3 and form function index
-l = length(switchingFcn.function_index_t1);
-for i = 1:l
-    % sI: SwitchingIndex; index w.r.t. to signature that caused the switch 
-    if i == switchingFcn.sI
-        switchingFcn = setUpSwitchingFunction_getSwitchingFcn(switchingFcn);
-        break
+% remove ctrlifs before sI and replace them with their corresponding truepart/falsepart
+for i = 1 : switchingFcn.sI-1
+    function_index_i = switchingFcn.function_index_t1{i};
+    if function_index_i(1) == 0
+        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, 1);
+    else
+        currentFcn = 1;
+        % the ctrlif is in a helper function, we have to make a modified version of it. If the helper is called not
+        % directly, but by another helper, then we have to modify that one too because of the new function name
+        for j = 1:length(function_index_i)
+            function_index_j = function_index_i(j);
+            [switchingFcn, currentFcn] = ...
+                setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
+        end
+        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, currentFcn);
     end
-
-    % remove ctrlifs before sI and replace them with their corresponding truepart/falsepart
-    for j = 1:length(switchingFcn.function_index_t1{i}) + 1
-        switchingFcn = setUpSwitchingFunction_byFunctionIndex(switchingFcn, i, j);
-    end
-    
 end
 
-% Remove unused variables (ones that do not contribute to the return value) from each switching function
+% replace ctrlif #sI with a return statement
+function_index_sI = switchingFcn.function_index_t1{switchingFcn.sI};
+if function_index_sI(1) == 0
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, 1);
+else
+    currentFcn = 1;
+    % again, we may need to modify intermediate function calls. This time, they also need to have their return
+    % statements modified
+    for j = 1:length(function_index_sI)
+        function_index_j = function_index_sI(j);
+        [switchingFcn, nextFcn]      = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
+        [switchingFcn, fcnCallIndex] = setUpSwitchingFunction_setFcnCallAsReturnValue(...
+                switchingFcn, currentFcn, function_index_j);
+        % delete all code after the newly created return statement
+        fcnCallRIndex                = switchingFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
+        switchingFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
+        currentFcn = nextFcn;
+    end
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, currentFcn);
+end
+
+% remove unused variables (ones that do not contribute to the return value) from each function
 for i = 1:size(switchingFcn.mtreeobj_switchingFcn,2)
     sortedMtree = mtreeplus(switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str);
     switchingFcn.mtreeobj_switchingFcn{3,i} = deleteUnusedParameters(sortedMtree);
 end
 
-% export Switching Functions as source code
+% export Switching Functions as source code and return the handle to the main switching function
 switchingfunctionhandle = setUpSwitchingFunction_ExportFunctions(switchingFcn);
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
