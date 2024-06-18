@@ -67,12 +67,16 @@ while switch_detected
     
     extendODEuntilSwitch(datahandle);
 
+    % check for inconsistent switching
+    [filippov_switching, sliding_switches] = solveODE_recognizeFilippovSwitching(datahandle, sliding_switches);
+    % change the RHS to Filippov-type if needed
+    if filippov_switching
+        solveODE_setFilippovRHS(datahandle, sliding_switches);
+    end
     
     % extend solution object from t2 ongoing until the next switch occurs
     % signature saved in .SWP_detection
     extendODE_t2_to_tend_with_SWP_detection(datahandle);
-    
-    [~, sliding_switches] = solveODE_recognizeFilippovSwitching(datahandle, sliding_switches);
     
     switch_detected = checkForSwitchingIndices(datahandle);
 end

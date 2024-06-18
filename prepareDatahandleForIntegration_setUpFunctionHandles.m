@@ -17,6 +17,8 @@ function datahandle = prepareDatahandleForIntegration_setUpFunctionHandles(datah
 data = datahandle.getData();
 
 data.integratorSettings.preprocessed_rhs = str2func(data.mtreeplus{2,1});
+data.integratorSettings.filippov_rhs = [];
+data.integratorSettings.filippov_ctrlif_index = [];
 
 if isempty(varargin)
     myOptionList = {'',{}};
