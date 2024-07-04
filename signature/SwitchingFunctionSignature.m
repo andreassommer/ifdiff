@@ -38,6 +38,10 @@ classdef SwitchingFunctionSignature
             this.switch_cond = switch_cond;
             this.ctrlif_index = ctrlif_index;
             this.function_index = function_index;
+            % TODO: temporary workaround to deal with function index as array (e.g. just 0)
+            if ~iscell(this.function_index)
+                this.function_index = num2cell(this.function_index);
+            end
         end
         
         % TODO: It might be possible to cache the string representation.
@@ -85,6 +89,7 @@ classdef SwitchingFunctionSignature
         end
         
         function hash = get.hash(this)
+        % Placeholder - Take ASCII encoding of str
             hash = this.charToHash(this.str);
         end
     end

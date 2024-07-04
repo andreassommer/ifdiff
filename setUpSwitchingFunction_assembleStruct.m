@@ -32,8 +32,12 @@ switchingFcn.rhs_name_original = data.mtreeplus{2,1};
 
 % get the function_index w.r.t. to sI
 switchingFcn.function_index = data.SWP_detection.function_index_t1{switchingFcn.sI};
-switchingFcn.ctrlif_index = data.SWP_detection.ctrlif_index_t1;
-switchingFcn.condition = data.SWP_detection.switch_cond_t1;
+switchingFcn.ctrlif_index   = data.SWP_detection.ctrlif_index_t1;
+switchingFcn.condition      = data.SWP_detection.switch_cond_t1;
+switchingFcn.signature      = SwitchingFunctionSignature(...
+                                    switchingFcn.condition, ...
+                                    switchingFcn.ctrlif_index, ...
+                                    switchingFcn.function_index);
 switchingFcn.rhs_name = setUpSwitchingFunction_newName(switchingFcn, 0);
 switchingFcn.mtreeobj_switchingFcn = {}; 
 

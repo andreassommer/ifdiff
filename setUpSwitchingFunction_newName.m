@@ -9,6 +9,8 @@ function new_name = setUpSwitchingFunction_newName(switchingFcn, x)
 % considering the first switch and here where detected 2 or more switches
 % at one integration step. It consideres thereby the 2nd. It is the third
 % function within this switch, i.e. there must exist sw_121_myfunction_name and sw_122_myfunction_name as well.
+new_name = createSwitchingFcnNewName(switchingFcn.signature.hash, switchingFcn.rhs_name_original);
+return
 
 fun_index = num2str(x); 
 

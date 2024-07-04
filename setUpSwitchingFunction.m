@@ -18,6 +18,16 @@ function switchingfunctionhandle = setUpSwitchingFunction(datahandle, i)
 
 switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, i);
 
+% TODO: Use fullfile to construct path independent of OS
+switchingFcnNewPath = fullfile(switchingFcn.path, [switchingFcn.rhs_name, '.m']);
+if isfile(switchingFcnNewPath)
+    fprintf('Existing switching function found at path %s\n', switchingFcnNewPath);
+    switchingfunctionhandle = str2func(switchingFcn.rhs_name);
+    return
+end
+disp('No existing switching function found!')
+
+
 % Assign the function and ctrlif indices to the functions in which they appear
 switchingFcn = setUpSwitchingFunction_getFunctionIndices_wrapper(switchingFcn);
 switchingFcn = setUpSwitchingFunction_getCtrlifIndices(switchingFcn);
