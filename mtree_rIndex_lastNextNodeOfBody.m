@@ -4,6 +4,10 @@ cIndex = mtree_cIndex();
 % Part 2: LastNextNodeofBody
 % Find the last body node of the function that is not a nested function declaration.
 
+if body == 0
+    index.lastNextNodeOfBody = 0;
+    return;
+end
 % first, get the last node without checking for nested functions
 veryLastNextNode = mtree_lastNextNodeIndex(mtreeobj, body);
 
