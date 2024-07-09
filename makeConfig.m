@@ -80,6 +80,9 @@ config.switchingFunctionsDirectoryName    = 'SwitchingFunctions';
 % A condition will be ignored by IFDIFF if it contains at least one of the following strings:
 config.forbiddenConditionStrings = {'nargin', 'nargout', 'isempty', 'isnan', 'isnumeric'};
 
+config.jump.specifyingFunction    = 'ifdiff_jumpif';
+config.jump.internalFunction      = 'ctrljump';
+
 % Used to find certain types of nodes in an mtree.
 % These are derived from MATLABs internal implementation of the mtree and should not be changed!
 config.mtree_rIndex_function.Suffix_expr   = '_expr';
