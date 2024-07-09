@@ -17,27 +17,26 @@ function [mtreeobj, idStringArray] = ...
             case mtreeobj.K.EXPR
                 if mtreeobj.T(leftChild, cIndex.kindOfNode) ~= mtreeobj.K.EQUALS
                     % expression is not an assignment, better not mess with it
-                    continue
-                end
-
-                assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
-                assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
-
-                % checking if any of the assigned variables are in our idStringArray of the IDs that contribute
-                % to setting the return value
-                if any(ismember(mtreeobj.C(mtreeobj.T(assignedVars, cIndex.stringTableIndex)), idStringArray))
-                    % ... if it is, then we add all variables that appear in its RHS to idStringArray
-                    assignmentRhs = subtree(select( ...
-                            mtreeobj, ...
-                            mtreeobj.T(mtreeobj.T(lastNextNode, cIndex.indexLeftchild), cIndex.indexRightchild)) ...
-                    );
-                    subIdIndexList = mtree_mtfind(assignmentRhs, 'Kind', assignmentRhs.K.ID);
-                    newIDArray = mtreeobj.C(mtreeobj.T(subIdIndexList, cIndex.stringTableIndex));
-                    newIDArray(~ismember(newIDArray, idStringArray));
-                    idStringArray = vertcat(idStringArray, newIDArray);
                 else
-                    % ... and if not, we delete this assignment statement:
-                    mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
+                    assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
+                    assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
+    
+                    % checking if any of the assigned variables are in our idStringArray of the IDs that contribute
+                    % to setting the return value
+                    if any(ismember(mtreeobj.C(mtreeobj.T(assignedVars, cIndex.stringTableIndex)), idStringArray))
+                        % ... if it is, then we add all variables that appear in its RHS to idStringArray
+                        assignmentRhs = subtree(select( ...
+                                mtreeobj, ...
+                                mtreeobj.T(mtreeobj.T(lastNextNode, cIndex.indexLeftchild), cIndex.indexRightchild)) ...
+                        );
+                        subIdIndexList = mtree_mtfind(assignmentRhs, 'Kind', assignmentRhs.K.ID);
+                        newIDArray = mtreeobj.C(mtreeobj.T(subIdIndexList, cIndex.stringTableIndex));
+                        newIDArray(~ismember(newIDArray, idStringArray));
+                        idStringArray = vertcat(idStringArray, newIDArray);
+                    else
+                        % ... and if not, we delete this assignment statement:
+                        mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
+                    end
                 end
             case mtreeobj.K.IF
                 currentBranch = mtreeobj.T(lastNextNode, cIndex.indexLeftchild);
