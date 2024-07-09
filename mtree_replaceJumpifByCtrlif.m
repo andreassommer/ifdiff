@@ -16,6 +16,18 @@ function [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif
 
     cIndex = mtree_cIndex();
     for i=1:length(rIndex.BODY.(jumpSpec))
+        if config.jump.disable
+            % if jump treatment is disabled, just remove the jump statement
+            lineStart = mtree_findBeginOfLine(mtreeobj, fcnCallNodes(i), mtreeobj.K.EXPR);
+            parent = mtreeobj.T(lineStart, cIndex.indexParentNode);
+            child = mtreeobj.T(lineStart, cIndex.indexNextNode);
+            if child == 0
+                mtreeobj.T(parent, cIndex.indexNextNode) = 0;
+            else
+                mtreeobj = mtree_connectNodes(mtreeobj, parent, child, cIndex.indexNextNode);
+            end
+            continue;
+        end
         lineStart = mtree_findBeginOfLine(mtreeobj, fcnCallNodes(i), mtreeobj.K.EXPR);
         argSwitchingFunction = argNodes(i, 1);
         argDirectionFlag     = argNodes(i, 2);

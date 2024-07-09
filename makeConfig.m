@@ -82,6 +82,8 @@ config.forbiddenConditionStrings = {'nargin', 'nargout', 'isempty', 'isnan', 'is
 
 config.jump.specifyingFunction    = 'ifdiff_jumpif';
 config.jump.internalFunction      = 'ctrljump';
+% set this to turn off jump handling
+config.jump.disable               = false;
 
 % Used to find certain types of nodes in an mtree.
 % These are derived from MATLABs internal implementation of the mtree and should not be changed!
