@@ -36,6 +36,8 @@ rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'abs');
 rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'max'); 
 rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'min'); 
 rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'sign');
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, config.jump.specifyingFunction);
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, config.jump.internalFunction);
 
 if ~isempty(varargin)
       fcn_names = varargin{1};
