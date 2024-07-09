@@ -2,6 +2,7 @@ function ctrlif_setForcedBranchingSignature(datahandle, t, y)
 % initilize forced branching 
 
 data = datahandle.getData();
+config = makeConfig();
 
 [A,B,C] = ctrlif_getSignature(datahandle,t,y);
 
@@ -17,7 +18,7 @@ data.forcedBranching.function_index = cell(length(data.forcedBranching.function_
 
 % counter from the ctrlif
 data.forcedBranching.ctrlifCounter = 0;
-data.caseCtrlif = 1; % case forced branching
+data.caseCtrlif = config.caseCtrlif.forcedBranching; % case forced branching
 
 datahandle.setData(data);
 

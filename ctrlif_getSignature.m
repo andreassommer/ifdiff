@@ -1,11 +1,12 @@
 function [A1, A2, A3] = ctrlif_getSignature(datahandle, t, x)
 % function that evaluates the rhs function to get the signature at t
 
+config = makeConfig();
 data = datahandle.getData();
 % get data for reading and writing
 % disable switching point detection in ctrlif
 
-data.caseCtrlif = 3; % case 3: getSignature
+data.caseCtrlif = config.caseCtrlif.getSignature;
 data.getSignature.ctrlifCounter = 0;
 
 data.getSignature.switch_cond    = [];

@@ -42,7 +42,8 @@ function Updates = generateGmatrices_Updates(datahandle, amountG, modelNum, Gp_f
    end
 
    % Fix the model and set the model number for which model you want to evaluate the RHS
-   data.caseCtrlif = 4;
+   config = makeConfig();
+   data.caseCtrlif = config.caseCtrlif.computeSensitivities;
    data.computeSensitivity.modelStage = amountG;
    datahandle.setData(data);
    

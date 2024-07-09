@@ -26,6 +26,11 @@ config.updateFunctionIndex = 'setFunctionIndex';
 config.prepareDatahandleForNewFunctionCall = 'prepareDatahandleForNewFunctionCall';
 config.ctrlif_updateSignature_chunk_size = 30;
 
+config.caseCtrlif.default = 0;
+config.caseCtrlif.forcedBranching = 1;
+config.caseCtrlif.extendODEuntilSwitch = 2;
+config.caseCtrlif.getSignature = 3;
+config.caseCtrlif.computeSensitivities = 4;
 
 config.switchingfunction.name                = '_switchingFunction';
 config.switchingfunction.name_outputvariable = 'returnvalue';

@@ -36,7 +36,8 @@ function Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, amountG, modelN
    eval_disturb_y0 = zeros(dim_y);
 
    % Fix the model and set the model number for which model you want to evaluate the RHS
-   data.caseCtrlif = 4;
+   config = makeConfig();
+   data.caseCtrlif = config.caseCtrlif.computeSensitivities;
    data.computeSensitivity.modelStage = amountG;
    datahandle.setData(data);
    

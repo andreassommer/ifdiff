@@ -14,6 +14,7 @@ function solveODE_firstTime(datahandle)
 %               and with the switching signature saved in .SWP_detection (generated in
 %               analyseSignature, the output function within the ode solver
 
+config = makeConfig();
 data = datahandle.getData();
 
 % later one uses odeextend during the switching point detection.
@@ -29,7 +30,7 @@ nIntegrationSteps = 1;
 % get maxStep size by default
 defaultMaxStep = 0.1*abs(data.SWP_detection.tspan(1)-data.SWP_detection.tspan(2));
 data.integratorSettings.optionsForcedBranching.InitialStep = defaultMaxStep; 
-data.caseCtrlif = 1; 
+data.caseCtrlif = config.caseCtrlif.forcedBranching;
 datahandle.setData(data)
 % initialisation of nIntegrationSteps s.th. the first iteration of while is executed
 

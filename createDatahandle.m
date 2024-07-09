@@ -45,7 +45,7 @@ data.mtreeplus(:,2:end) = preprocessed.fcn;
 data.paths.preprocessed_rhs = preprocessed.path;
 data.paths.preprocessed_switchingFunction = preprocessed.SwitchingFunctions_path; 
 
-data.caseCtrlif = 0; 
+data.caseCtrlif = config.caseCtrlif.default; 
 
 
 

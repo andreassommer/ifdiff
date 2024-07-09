@@ -3,6 +3,7 @@ function extendODEuntilSwitch_t1_to_t2(datahandle)
 % t2 is in SWP_detection
 % extends solution_until_t1 to t2
 
+config = makeConfig();
 data = datahandle.getData();
 
 t = data.SWP_detection.solution_until_t1.x(end); 
@@ -14,7 +15,7 @@ end_point = data.SWP_detection.t2;
 options   = data.integratorSettings.options; 
 
 ctrlif_setForcedBranchingSignature(datahandle, t, x);
-data.caseCtrlif = 2; % case forced branching
+data.caseCtrlif = config.caseCtrlif.extendODEuntilSwitch; % case forced branching
 datahandle.setData(data);
 
 z = odextend(solution, [], end_point, [], options);
