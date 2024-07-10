@@ -52,6 +52,7 @@ switch flag
         if cond
             % a switch has occured
             status = 1;
+            data.forcedBranching.switchDetected = 1;
             % disp('A switch has occured');  % ONLY FOR DEBUG
         else
             % t_i becomes t_i+1 however, since no switch occured, remains
@@ -63,7 +64,7 @@ switch flag
         
     case 'done'
         
-        if ~isempty(data.forcedBranching.switch_cond)
+        if data.forcedBranching.switchDetected
             
             data.SWP_detection.switch_cond_t1 = data.forcedBranching.switch_cond_forcedBranching;
             data.SWP_detection.switch_cond_t2 = [];
@@ -79,23 +80,13 @@ switch flag
             
             datahandle.setData(data);
             data.SWP_detection.switchingIndices = getSwitchingIndices(datahandle, 1);
+            data.forcedBranching.switchDetected = 0;
         else
             data.SWP_detection.switchingIndices = {};
         end
-        
+
 end
-
-
 
 datahandle.setData(data);
 
 end
-
-
-
-
-
-
-
-
-

@@ -1,16 +1,22 @@
 function extendODEuntilSwitch_updateSignature_t2(datahandle)
-
+% Get the signature at time point t2 and store it in data.SWP_detection. Note that we must use forced branching
+% to ensure the control flow is the same as at t1 - otherwise switch_cond_t2 may have a different length from
+% switch_cond_t1. Since getSwitchingIndices works by comparing switch_cond_tX element-by-element, the two arrays
+% having different lengths would make it impossible to tell that two entries go together.
 data = datahandle.getData();
+sigT1 = struct( ...
+    'switch_cond',    data.SWP_detection.switch_cond_t1, ...
+    'ctrlif_index',   data.SWP_detection.ctrlif_index_t1, ...
+    'function_index', data.SWP_detection.function_index_t1);
 [switch_cond_t2, ctrlif_index_t2, function_index_all_t2] = ctrlif_getSignature(...
     datahandle, ...
     data.SWP_detection.t2, ...
-    deval(data.SWP_detection.solution_until_t2, data.SWP_detection.t2));
-
+    deval(data.SWP_detection.solution_until_t2, data.SWP_detection.t2), ...
+    sigT1);
 
 data.SWP_detection.switch_cond_t2    = switch_cond_t2;
 data.SWP_detection.ctrlif_index_t2   = ctrlif_index_t2;
 data.SWP_detection.function_index_t2 = function_index_all_t2;
-
 
 datahandle.setData(data);
 end

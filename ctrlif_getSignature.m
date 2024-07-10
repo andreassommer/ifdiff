@@ -1,12 +1,26 @@
-function [A1, A2, A3] = ctrlif_getSignature(datahandle, t, x)
-% function that evaluates the rhs function to get the signature at t
+function [A1, A2, A3] = ctrlif_getSignature(datahandle, t, x, varargin)
+% function that evaluates the rhs function at a point (t, x) to get the signature.
+
+% The optional argument signature can be used to apply forced branching - then the RHS will be forced to branch
+% matching that signature.
 
 config = makeConfig();
 data = datahandle.getData();
+signaturePassed = nargin > 3;
+
 % get data for reading and writing
 % disable switching point detection in ctrlif
 
-data.caseCtrlif = config.caseCtrlif.getSignature;
+if signaturePassed
+    signature = varargin{1};
+    data.caseCtrlif = config.caseCtrlif.getSignatureChange;
+    data.getSignature.switch_cond_forcedBranching = signature.switch_cond;
+    data.getSignature.ctrlif_index_forcedBranching = signature.ctrlif_index;
+    data.getSignature.function_index_forcedBranching = signature.function_index;
+else
+    data.caseCtrlif = config.caseCtrlif.getSignature;
+end
+
 data.getSignature.ctrlifCounter = 0;
 
 data.getSignature.switch_cond    = [];

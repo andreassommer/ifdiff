@@ -30,7 +30,8 @@ config.caseCtrlif.default = 0;
 config.caseCtrlif.forcedBranching = 1;
 config.caseCtrlif.extendODEuntilSwitch = 2;
 config.caseCtrlif.getSignature = 3;
-config.caseCtrlif.computeSensitivities = 4;
+config.caseCtrlif.getSignatureChange = 4;
+config.caseCtrlif.computeSensitivities = 5;
 
 config.switchingfunction.name                = '_switchingFunction';
 config.switchingfunction.name_outputvariable = 'returnvalue';

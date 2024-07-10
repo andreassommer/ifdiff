@@ -64,10 +64,14 @@ end
 data = datahandle.getData();
 data.SWP_detection.switchingpoints{end + 1} = data.SWP_detection.t2;
 
-% signature matrix
-data.SWP_detection.signature.function_index{end+1} = data.SWP_detection.function_index_t2; 
-data.SWP_detection.signature.ctrlif_index{end+1} = data.SWP_detection.ctrlif_index_t2; 
-data.SWP_detection.signature.switch_cond{end+1} = data.SWP_detection.switch_cond_t2;
+% Get the new signature at t2, without forced branching
+[switch_cond, ctrlif_index, function_index] = ctrlif_getSignature(...
+    datahandle, ...
+    data.SWP_detection.t2, ...
+    deval(data.SWP_detection.solution_until_t2, data.SWP_detection.t2));
+data.SWP_detection.signature.switch_cond{end+1} = switch_cond;
+data.SWP_detection.signature.ctrlif_index{end+1} = ctrlif_index;
+data.SWP_detection.signature.function_index{end+1} = function_index; 
 
 datahandle.setData(data)
 end
