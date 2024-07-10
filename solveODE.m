@@ -65,7 +65,10 @@ while switch_detected
     solveODE_computeSwitchingPoint(datahandle);
     
     extendODEuntilSwitch(datahandle);
-    
+
+    % Determine state jump, if any. Set the starting value and signature for the next stage.
+    solveODE_computeStateUpdate(datahandle);
+
     % extend solution object from t2 ongoing until the next switch occurs
     % signature saved in .SWP_detection
     extendODE_t2_to_tend_with_SWP_detection(datahandle);
