@@ -8,9 +8,10 @@ function solveODE_computeStateUpdate(datahandle)
     t = data.SWP_detection.t2;
     xMinus = deval(data.SWP_detection.solution_until_t2, t);
 
-    % State jump stuff goes here
-
+    computeUpdateFunction(datahandle);
     xPlus = xMinus;
+
+    data = datahandle.getData();
     data.SWP_detection.x2 = {xMinus, xPlus};
 
     % Get the new signature at t2, without forced branching
