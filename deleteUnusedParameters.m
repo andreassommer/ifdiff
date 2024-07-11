@@ -1,4 +1,4 @@
-function mtreeobjNew = deleteUnusedParameters(mtreeobj)
+function mtreeobj = deleteUnusedParameters(mtreeobj)
 % walk through an mtree object and delete all variables that are not
 % relevant to generating the function's return value.
 % 'mtreeobj': mtree object that should be simplified
@@ -25,8 +25,6 @@ lastBodyNode = getFunctionBodyNode(mtreeobj, output_variables_indices(end));
 % output_variables contains all IDs that are somehow involved in defining the return value,
 % so we know which nodes not to delete.
 [mtreeobj, ~] = deleteUnusedParameters_walkBodyNodes(mtreeobj, output_variables, lastBodyNode);
-
-mtreeobjNew = mtreeobj;
 
 end %finito
 
