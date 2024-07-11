@@ -65,7 +65,7 @@ for i = 1:length(fields(rIndex.Fcn))
                 {mtreeobj.K.ID, config.datahandleArgumentName});
         end
         
-        function_index_name_of_variable = [config.function_index, num2str(function_index)];
+        function_index_name_of_variable = [config.function_indexVariablePrefix, num2str(function_index)];
         
         % add function_indexX into function call
         [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
@@ -124,7 +124,7 @@ for i = 1:length(fields(rIndex.Fcn))
             [mtreeobj, Arg1] = mtree_createAndAdd_NewNode(mtreeobj, ...
                 call, ...
                 cIndex.indexRightchild, ...
-                {mtreeobj.K.ID, config.function_index});
+                {mtreeobj.K.ID, config.function_indexArgumentName});
             
             [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
                 Arg1, ...  % from

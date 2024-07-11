@@ -24,7 +24,15 @@ end
 % - ctrlifs (see: preprocess_setUpCtrlif)
 % - helper functions (see: preprocess_adjustFcnCallsRhs)
 config.datahandleArgumentName = 'datahandle';
-config.function_index      = 'function_index';
+% Name of the function index argument which is added to the argument list of
+% - preprocessed helper functions (see: preprocess_editFunctionHead)
+% Also used to construct function calls in an mtree for
+% - ctrlifs (see: preprocess_setUpCtrlif)
+% - the function index update function (see: preprocess_adjustFcnCallsRhs)
+config.function_indexArgumentName = 'function_index';
+% Prefix used for generating the name of the variable which stores the updated function index for
+% a helper function call (see: preprocess_adjustFcnCallsRhs)
+config.function_indexVariablePrefix = 'function_index_for_call_';
 config.updateFunctionIndex = 'setFunctionIndex';
 
 % config.path = '/Users/valentinvontrotha/Desktop/Valentin_Masterarbeit_Matlab';
@@ -53,7 +61,6 @@ config.ctrlif.Out    = 'conditionValue';
 config.ctrlif.Arg2   = 'true';      % default value of Arg 2 and 3 of ctrlif
 config.ctrlif.Arg3   = 'false';
 config.ctrlif.Arg4   = 'index';
-config.ctrlif.Arg5   = 'function_index';
 
 config.sign.temp_sign_value       = 'sign_value';
 config.sign.PrefixNewlineVariable = 'sign_arg';
@@ -67,9 +74,7 @@ config.abs.PrefixNewlineFcn       = 'abs_';
 config.preprocess.fcn_name           = 'fcn_name';
 config.preprocess.temporaryfilename  = 'preprocessedRhs';
 config.preprocess.ctrlif_index       = 'ctrlif_index';
-config.preprocess.function_index        = 'function_index';
 config.preprocess.ctrlif_index_in_fcn   = 'ctrlif_index_in_fcn';
-config.preprocess.function_index_in_fcn = 'function_index_in_fcn';
 config.preprocess.prefix_new_fcn_call   = 'preprocessed_';
 config.preprocess.rhsFirstAndLastLines_FirstLinesHardCoded = 'rhsFirstAndLastLines_lastLinesHardCoded.m';
 config.preprocess.rhsFirstAndLastLines_LastLinesHardCoded = 'rhsFirstAndLastLines_firstLinesHardCoded.m';
