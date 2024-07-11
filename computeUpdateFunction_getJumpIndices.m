@@ -1,5 +1,7 @@
 function jumpCtrlifs = computeUpdateFunction_getJumpIndices(datahandle)
-%COMPUTEUPDATEFUNCTION_GETJUMPINDICES Get the ctrlif indices of all jumps that apply to a switch.
+%COMPUTEUPDATEFUNCTION_GETJUMPINDICES Get the switching indices of all jumps that apply to a switch.
+% Just like with switching function computation, switching index is the index into the switch_cond, ctrlif_index,
+% and function_index arrays. A switching index corresponds not to a ctrlif, but to one execution of a ctrlif.
     config = makeConfig();
     data = datahandle.getData();
     cIndex = mtree_cIndex();
@@ -44,7 +46,7 @@ function jumpCtrlifs = computeUpdateFunction_getJumpIndices(datahandle)
         % <expr> >= 0 and the signature before/after the jump was obtained with forced branching, we can identify a
         % negative->positive jump with a transition from 0 to 1 and vice versa
         if jumps(1, jumpIndex) == 0 || jumps(1, jumpIndex) == (switch_cond_t2 - switch_cond_t1)
-            jumpCtrlifs = [jumpCtrlifs ctrlif_index];
+            jumpCtrlifs = [jumpCtrlifs sI];
         end
     end
 end
