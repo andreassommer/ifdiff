@@ -12,14 +12,14 @@ function solveODE_computeSwitchingPoint(datahandle)
 % occured
 % compute/build switching functions corresponding to switching indices
 
-
+config = makeConfig();
 data = datahandle.getData();
 
 
 % preallocate for switchingIntervals
 numberofswitchingfunctions = length(data.SWP_detection.switchingIndices);
 switchingpoints = zeros(1, numberofswitchingfunctions);
-data.caseCtrlif = 0; % default case
+data.caseCtrlif = config.caseCtrlif.default;
 % find zero crossing of the switching function in the time interval
 datahandle.setData(data); 
 for ii = 1:numberofswitchingfunctions
