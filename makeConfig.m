@@ -42,7 +42,9 @@ config.function_indexUpdateFunctionName = 'setFunctionIndex';
 % config.path = '/Users/valentinvontrotha/Desktop/Valentin_Masterarbeit_Matlab';
 
 config.prepareDatahandleForNewFunctionCall = 'prepareDatahandleForNewFunctionCall';
-config.ctrlif_updateSignature_chunk_size = 30;
+% Chunk size used for preallocation when updating the signature in a ctrlif to avoid frequent resizing of arrays
+% (see: ctrlif_getSignaturePreallocation)
+config.ctrlif_signaturePreallocationChunkSize = 30;
 
 config.caseCtrlif.default = 0;
 config.caseCtrlif.forcedBranching = 1;
@@ -58,7 +60,6 @@ config.switchingfunction.prefix_name         = 'sw';
 config.newFcnCall.newVariable = 'new_value';
 
 config.prepareDatahandleForNewFunctionCall = 'prepareDatahandleForNewFunctionCall';
-config.ctrlif_updateSignature_chunk_size = 30;
 
 config.ctrlif.ctrlif = 'ctrlif';
 config.ctrlif.Out    = 'conditionValue';
