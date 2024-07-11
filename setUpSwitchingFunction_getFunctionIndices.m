@@ -4,7 +4,7 @@ function [out, out_rIndex] = setUpSwitchingFunction_getFunctionIndices(mtreeobj)
 % occurs in the function
 config = makeConfig();
 cIndex = mtree_cIndex(); 
-fname_subtree = mtreeobj.mtfind('String', config.updateFunctionIndex); 
+fname_subtree = mtreeobj.mtfind('String', config.function_indexUpdateFunctionName);
 fname = fname_subtree.indices; 
 
 if isempty(fname) 

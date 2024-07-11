@@ -33,7 +33,11 @@ config.function_indexArgumentName = 'function_index';
 % Prefix used for generating the name of the variable which stores the updated function index for
 % a helper function call (see: preprocess_adjustFcnCallsRhs)
 config.function_indexVariablePrefix = 'function_index_for_call_';
-config.updateFunctionIndex = 'setFunctionIndex';
+% Name of the function used to update the function index before calling a helper function. Used to
+% - construct function index update function calls in an mtree (see: preprocess_adjustFcnCallsRhs)
+% - find function indices in an mtree (see: setUpSwitchingFunction_getFunctionIndices)
+% WARNING: Ensure that the name of the update function matches this parameter.
+config.function_indexUpdateFunctionName = 'setFunctionIndex';
 
 % config.path = '/Users/valentinvontrotha/Desktop/Valentin_Masterarbeit_Matlab';
 
