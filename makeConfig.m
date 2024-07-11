@@ -17,7 +17,13 @@ end
 
 % config not yet initialized, so build it
 
-config.datahandle          = 'datahandle';
+% Name of the datahandle argument which is added to the argument list of
+% - the preprocessed RHS function (see: preprocess_rhsAddDatahandleToInput)
+% - preprocessed helper functions (see: preprocess_editFunctionHead)
+% Also used to construct function calls in an mtree for
+% - ctrlifs (see: preprocess_setUpCtrlif)
+% - helper functions (see: preprocess_adjustFcnCallsRhs)
+config.datahandleArgumentName = 'datahandle';
 config.function_index      = 'function_index';
 config.updateFunctionIndex = 'setFunctionIndex';
 
@@ -48,7 +54,6 @@ config.ctrlif.Arg2   = 'true';      % default value of Arg 2 and 3 of ctrlif
 config.ctrlif.Arg3   = 'false';
 config.ctrlif.Arg4   = 'index';
 config.ctrlif.Arg5   = 'function_index';
-config.ctrlif.Arg6   = 'datahandle';
 
 config.sign.temp_sign_value       = 'sign_value';
 config.sign.PrefixNewlineVariable = 'sign_arg';
