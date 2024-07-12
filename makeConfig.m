@@ -58,7 +58,8 @@ config.caseCtrlif.computeSensitivities = 5;
 % - helper functions (see: setUpSwitchingFunction_setFcnCallAsReturnValue)
 % when building a switching function in an mtree.
 config.switchingFunctionOutputName = 'switching_value';
-config.switchingfunction.prefix_name         = 'sw';
+% Prefix used to construct the name of a generated switching function (see: setUpSwitchingFunction_newName)
+config.switchingFunctionNamePrefix = 'sw_';
 
 config.newFcnCall.newVariable = 'new_value';
 
