@@ -53,8 +53,11 @@ config.caseCtrlif.getSignature = 3;
 config.caseCtrlif.getSignatureChange = 4;
 config.caseCtrlif.computeSensitivities = 5;
 
-config.switchingfunction.name                = '_switchingFunction';
-config.switchingfunction.name_outputvariable = 'returnvalue';
+% Name of the output of generated switching functions. Used as the variable name for the output of
+% - ctrlifs (see: setUpSwitchingFunction_replaceCtrlifByReturn)
+% - helper functions (see: setUpSwitchingFunction_setFcnCallAsReturnValue)
+% when building a switching function in an mtree.
+config.switchingFunctionOutputName = 'switching_value';
 config.switchingfunction.prefix_name         = 'sw';
 
 config.newFcnCall.newVariable = 'new_value';

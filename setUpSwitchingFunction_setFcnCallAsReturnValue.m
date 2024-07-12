@@ -15,13 +15,13 @@ rIndex_fcn = switchingFcn.mtreeobj_switchingFcn{5,n};
 [switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
     rIndex_fcn.Equals(u), ...                 % from
     cIndex.indexLeftchild, ...                % from_type
-    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingfunction.name_outputvariable});
+    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingFunctionOutputName});
 
 % new output for function in mtree_switchingFcn
 [switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
     rIndex.HEAD.HEAD, ...             % from
     cIndex.indexLeftchild, ...        % from_type
-    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID,config.switchingfunction.name_outputvariable}); 
+    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingFunctionOutputName});
 
 fcnCallIndex = u; 
 end
