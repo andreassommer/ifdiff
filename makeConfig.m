@@ -60,8 +60,10 @@ config.caseCtrlif.computeSensitivities = 5;
 config.switchingFunctionOutputName = 'switching_value';
 % Prefix used to construct the name of a generated switching function (see: setUpSwitchingFunction_newName)
 config.switchingFunctionNamePrefix = 'sw_';
-
-config.newFcnCall.newVariable = 'new_value';
+% Infix used to construct the name of a variable that will hold the output of a function call
+% that induces control flow (e.g. helper functions, min, max, abs, sign)
+% Used when extracting a function call into a new line (see: mtree_createSeparateFunctionCallInNewLine)
+config.newLineFunctionCallOutputNameInfix = 'value_for_call_';
 
 config.prepareDatahandleForNewFunctionCall = 'prepareDatahandleForNewFunctionCall';
 
