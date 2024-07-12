@@ -24,7 +24,7 @@ elsepart = varargin{3};
 [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
     call, ...                                              % from
     cIndex.indexLeftchild, ...                             % from_type
-    {mtreeobj.K.ID, config.ctrlif.ctrlif});
+    {mtreeobj.K.ID, config.ctrlif.functionName});
 
 [operator_type, ~] = mtree_checkForComparisonOperator(mtreeobj, condition);
 

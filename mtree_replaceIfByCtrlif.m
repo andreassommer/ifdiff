@@ -77,7 +77,7 @@ for i = 1:length(rIndex.BODY.IF)
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj,...
         ctrlif_Equals, ...                                    % from
         cIndex.indexLeftchild, ...                            % from_type
-        {mtreeobj.K.ID, config.ctrlif.Out});                  % kind of new node
+        {mtreeobj.K.ID, config.ctrlif.outputName});           % kind of new node
     
     
     % add call node for ctrlif function call with connection to condition
@@ -101,7 +101,7 @@ for i = 1:length(rIndex.BODY.IF)
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
         rIndex.BODY.IFHEAD(i), ...                            % from
         cIndex.indexLeftchild, ...                            % from_type
-        {mtreeobj.K.ID, config.ctrlif.Out});                  % kind of new node
+        {mtreeobj.K.ID, config.ctrlif.outputName});           % kind of new node
     
 end
 

@@ -67,8 +67,10 @@ config.newLineFunctionCallOutputNameInfix = 'value_for_call_';
 
 config.prepareDatahandleForNewFunctionCall = 'prepareDatahandleForNewFunctionCall';
 
-config.ctrlif.ctrlif = 'ctrlif';
-config.ctrlif.Out    = 'conditionValue';
+% Name of the ctrlif function. Used in multiple places for mtree manipulation.
+config.ctrlif.functionName = 'ctrlif';
+% Name of the variable that will store the output of a ctrlif call (see: mtree_replaceIfByCtrlif).
+config.ctrlif.outputName = 'condition_value';
 config.ctrlif.Arg2   = 'true';      % default value of Arg 2 and 3 of ctrlif
 config.ctrlif.Arg3   = 'false';
 config.ctrlif.Arg4   = 'index';
