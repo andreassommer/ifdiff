@@ -75,18 +75,6 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index);
 
 
-
-% If a IIf function call exists, rename IIf with ctrlif and set index
-% datahandle input,
-% e.g.
-% c = IIf(a-b >= 0,a,b)
-% 
-% is changed to
-% 
-% c = ctrlif(a-b >= 0, a, b, ...) 
-[mtreeobj, ctrlif_index] = mtree_replaceIifByCtrlif(mtreeobj, ctrlif_index);
-
-
 end 
 
 
