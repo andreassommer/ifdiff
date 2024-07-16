@@ -83,13 +83,15 @@ config.preprocessedFunctionNamePrefix = 'preprocessed_';
 config.preprocessedFunctionsDirectoryName = 'PreprocessedFunctions';
 config.switchingFunctionsDirectoryName = 'SwitchingFunctions';
 
+% Used to find certain types of nodes in an mtree.
 config.mtree_rIndex_function.Suffix_expr   = '_expr';
 config.mtree_rIndex_function.Suffix_call   = '_call';
 config.mtree_rIndex_function.Suffix_equals = '_Equals';
 config.mtree_rIndex_function.Suffix_out    = '_Out';
 config.mtree_rIndex_function.Suffix_fname  = '_Fname';
 
-config.forbidden_strings_in_condition = {'nargin', 'nargout', 'isempty', 'isnan', 'isnumeric'};
+% Condition will be ignored by IFDIFF if it contains at least one of the following strings:
+config.forbiddenConditionStrings = {'nargin', 'nargout', 'isempty', 'isnan', 'isnumeric'};
 
 
 
