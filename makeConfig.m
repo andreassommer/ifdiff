@@ -57,23 +57,25 @@ config.caseCtrlif.computeSensitivities = 5;
 config.switchingFunctionOutputName = 'switching_value';
 % Prefix used to construct the name of a generated switching function (see: setUpSwitchingFunction_newName)
 config.switchingFunctionNamePrefix = 'sw_';
-% Infix used to construct the name of a variable that will hold the output of a function call
-% that induces control flow (e.g. helper functions, min, max, abs, sign)
-% Used when extracting a function call into a new line (see: mtree_createSeparateFunctionCallInNewLine)
-config.newLineFunctionCallOutputNameInfix = 'value_for_call_';
 
 % Name of the ctrlif function. Used in multiple places for mtree manipulation.
 config.ctrlif.functionName = 'ctrlif';
 % Name of the variable that will store the output of a ctrlif call (see: mtree_replaceIfByCtrlif).
 config.ctrlif.outputName = 'condition_value';
 
-config.sign.temp_sign_value       = 'sign_value';
-config.sign.PrefixNewlineVariable = 'sign_arg';
-config.sign.PrefixNewlineFcn      = 'sign_';
+% Infix used to construct the name of a variable that will hold the output/argument of a function call
+% that induces control flow (e.g. helper functions, min, max, abs, sign)
+% Used when extracting a function call into a new line (see: mtree_createSeparateFunctionCallInNewLine)
+config.functionCallOutputNameInfix = '_output_for_call_';
+config.functionCallArgumentNameInfix = '_arg_for_call_';
+config.functionCallArgument1NameInfix = '_arg1_for_call_';
+config.functionCallArgument2NameInfix = '_arg2_for_call_';
 
-config.abs.temp_abs_value         = 'abs_value';
-config.abs.PrefixNewlineVariable  = 'abs_arg';
-config.abs.PrefixNewlineFcn       = 'abs_';
+% Prefix for variables used when transforming an abs/max/min/sign function call.
+config.absCallPrefix = 'abs';
+config.maxCallPrefix = 'max';
+config.minCallPrefix = 'min';
+config.signCallPrefix = 'sign';
 
 % name of the file of rhs when processed
 config.preprocess.fcn_name           = 'fcn_name';

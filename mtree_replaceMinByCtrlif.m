@@ -22,6 +22,7 @@ function [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_in
 
 % History: June 2020 --> created
 
+config = makeConfig();
 % notation:
 % cIndex -> column index; refers to a property type
 % rIndex -> row index of some object; refers to the entire row.
@@ -36,7 +37,7 @@ if ~isfield(rIndex.BODY, 'min')
     return
 end
 
-mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj,rIndex.BODY.min_call, 'min_'); 
+mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj,rIndex.BODY.min_call, config.minCallPrefix);
 
 rIndex = mtree_rIndex(mtreeobj);
 
@@ -48,10 +49,10 @@ for i = 1:length(rIndex.BODY.min)
     % Procedure: w.l.o.g (without loss of generality) let's consider a min functon call
     %
     % Start: c = min(a,b);
-    temp_min_arg1 = ['min' num2str(i) '_arg1'];
+    temp_min_arg1 = [config.minCallPrefix, config.functionCallArgument1NameInfix, num2str(i)];
     [mtreeobj, newArg1] = mtree_extractArgIntoNewLineAbove(mtreeobj, rIndex.BODY.min_Arg(i,1), temp_min_arg1);
     
-    temp_min_arg2 = ['min' num2str(i) '_arg2'];
+    temp_min_arg2 = [config.minCallPrefix, config.functionCallArgument2NameInfix, num2str(i)];
     [mtreeobj, newArg2] = mtree_extractArgIntoNewLineAbove(mtreeobj, rIndex.BODY.min_Arg(i,2), temp_min_arg2);
     
     

@@ -23,7 +23,7 @@ warning('sign() function found, sign(0) = 0 is modified to sign(0) = 1')
 
 config = makeConfig();
 
-mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.sign_call, config.sign.PrefixNewlineFcn);
+mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.sign_call, config.signCallPrefix);
 
 rIndex = mtree_rIndex(mtreeobj);
 

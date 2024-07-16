@@ -41,7 +41,7 @@ for i = 1:length(call_node)
         continue
     end
     
-    name_of_new_variable = [unique_char_string, config.newLineFunctionCallOutputNameInfix, num2str(i)];
+    name_of_new_variable = [unique_char_string, config.functionCallOutputNameInfix, num2str(i)];
     
     [mtreeobj, ~] = mtree_extractArgIntoNewLineAbove(mtreeobj,call_node(i), name_of_new_variable); 
 end
