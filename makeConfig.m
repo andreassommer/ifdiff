@@ -77,17 +77,11 @@ config.maxCallPrefix = 'max';
 config.minCallPrefix = 'min';
 config.signCallPrefix = 'sign';
 
-% name of the file of rhs when processed
-config.preprocess.fcn_name           = 'fcn_name';
-config.preprocess.temporaryfilename  = 'preprocessedRhs';
-config.preprocess.ctrlif_index       = 'ctrlif_index';
-config.preprocess.ctrlif_index_in_fcn   = 'ctrlif_index_in_fcn';
-config.preprocess.prefix_new_fcn_call   = 'preprocessed_';
-config.preprocess.rhsFirstAndLastLines_FirstLinesHardCoded = 'rhsFirstAndLastLines_lastLinesHardCoded.m';
-config.preprocess.rhsFirstAndLastLines_LastLinesHardCoded = 'rhsFirstAndLastLines_firstLinesHardCoded.m';
-config.preprocess.folderFileName = 'PreprocessedFunctions';
-config.preprocess.SwitchingFunctionsName = 'SwitchingFunctions';
-config.preprocess.rhs_name_prefix = 'preprocessed_';
+% Naming of preprocessed functions and directories where they are stored.
+config.preprocessedRhsNamePrefix = 'rhs_preprocessed_';
+config.preprocessedFunctionNamePrefix = 'preprocessed_';
+config.preprocessedFunctionsDirectoryName = 'PreprocessedFunctions';
+config.switchingFunctionsDirectoryName = 'SwitchingFunctions';
 
 config.mtree_rIndex_function.Suffix_expr   = '_expr';
 config.mtree_rIndex_function.Suffix_call   = '_call';
