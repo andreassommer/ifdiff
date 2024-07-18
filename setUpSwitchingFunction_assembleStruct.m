@@ -11,9 +11,6 @@ switchingFcn.function_index_t1 = data.SWP_detection.function_index_t1;
 switchingFcn.ctrlif_index_t1   = data.SWP_detection.ctrlif_index_t1;
 switchingFcn.switch_cond_t1    = data.SWP_detection.switch_cond_t1;
 
-% every switching point gets a unique index, used for naming switching functions
-data.SWP_detection.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration + 1; 
-datahandle.setData(data); 
 switchingFcn.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration;
 
 switchingFcn.rhs_name_original = data.mtreeplus{2,1}; 

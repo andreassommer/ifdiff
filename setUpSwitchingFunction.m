@@ -16,6 +16,11 @@ function switchingfunctionhandle = setUpSwitchingFunction(datahandle, i)
 % at the switching point. Finally, all code after the relevant ctrlif, and all code and helper functions
 % that do not contribute to its value, are removed, and the result is exported to file(s).
 
+% every switching function gets a unique index
+data = datahandle.getData();
+data.SWP_detection.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration + 1;
+datahandle.setData(data);
+
 switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, i);
 
 % Assign the function and ctrlif indices to the functions in which they appear
