@@ -23,13 +23,10 @@ switchingFcn = setUpSwitchingFunction_getFunctionIndices_wrapper(switchingFcn);
 switchingFcn = setUpSwitchingFunction_getCtrlifIndices(switchingFcn);
 
 % copy the mtree for modifying, change name of the RHS (e.g. from preprocessed_rhs -> sw_preprocessed_rhs)
-% helper functions will be copied and renamed later, but only if they are actually needed
-if isempty(switchingFcn.mtreeobj_switchingFcn)
-    switchingFcn.mtreeobj_switchingFcn = switchingFcn.mtreeobj(:,1);
-    switchingFcn.mtreeobj_switchingFcn{3,1} = mtree_changeFcnName(...
-        switchingFcn.mtreeobj_switchingFcn{3,1}, switchingFcn.rhs_name);
-    switchingFcn.mtreeobj_switchingFcn{1,1} = switchingFcn.rhs_name;
-end
+% helper functions will be copied and renamed later only if they are actually needed
+switchingFcn.mtreeobj_switchingFcn = switchingFcn.mtreeobj(:,1);
+switchingFcn.mtreeobj_switchingFcn{3,1} = mtree_changeFcnName(switchingFcn.mtreeobj_switchingFcn{3,1}, switchingFcn.rhs_name);
+switchingFcn.mtreeobj_switchingFcn{1,1} = switchingFcn.rhs_name;
 
 % remove ctrlifs before sI and replace them with their corresponding truepart/falsepart
 for i = 1 : switchingFcn.sI-1
