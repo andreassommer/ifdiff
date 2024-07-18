@@ -35,7 +35,7 @@ end
 for i = 1 : switchingFcn.sI-1
     function_index_i = switchingFcn.function_index_t1{i};
     if function_index_i(1) == 0
-        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, 1);
+        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, 1, i);
     else
         currentFcn = 1;
         % the ctrlif is in a helper function, we have to make a modified version of it. If the helper is called not
@@ -45,14 +45,14 @@ for i = 1 : switchingFcn.sI-1
             [switchingFcn, currentFcn] = ...
                 setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
         end
-        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, i, currentFcn);
+        switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, currentFcn, i);
     end
 end
 
 % replace ctrlif #sI with a return statement
 function_index_sI = switchingFcn.function_index_t1{switchingFcn.sI};
 if function_index_sI(1) == 0
-    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, 1);
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, 1, switchingFcn.sI);
 else
     currentFcn = 1;
     % again, we may need to modify intermediate function calls. This time, they also need to have their return
@@ -67,7 +67,7 @@ else
         switchingFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
         currentFcn = nextFcn;
     end
-    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, currentFcn);
+    switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, currentFcn, switchingFcn.sI);
 end
 
 % remove unused variables (ones that do not contribute to the return value) from each function
