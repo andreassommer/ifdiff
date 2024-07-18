@@ -5,8 +5,7 @@ data = datahandle.getData();
 
 switchingFcn.sI = data.SWP_detection.switchingIndices(i);
 
-switchingFcn.mtreeobj = data.mtreeplus; 
-switchingFcn.mtreeobj_switchingFcn = cell(7,1); 
+switchingFcn.mtreeobj = data.mtreeplus;
 
 switchingFcn.function_index_t1 = data.SWP_detection.function_index_t1;
 switchingFcn.ctrlif_index_t1   = data.SWP_detection.ctrlif_index_t1;
@@ -19,7 +18,6 @@ switchingFcn.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration;
 
 switchingFcn.rhs_name_original = data.mtreeplus{2,1}; 
 switchingFcn.rhs_name = setUpSwitchingFunction_newName(switchingFcn, 0);
-switchingFcn.mtreeobj_switchingFcn = {}; 
 
 switchingFcn.path = data.paths.preprocessed_switchingFunction;
 
