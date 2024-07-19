@@ -35,12 +35,7 @@ function jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, mtree_i, c
         jumpIncrement_rIndex, ...
         cIndex.indexRightchild);
 
-    % delete all code after the newly created return statement, and unnecessary if/elses
-    returnStmtIndex = new_expr;
-    mtreeobj.T(returnStmtIndex,cIndex.indexNextNode) = 0;
-    mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, returnStmtIndex);
-    sortedMtree = mtreeplus(mtreeobj.tree2str);
-    mtreeobj = deleteUnusedParameters(sortedMtree);
+    mtreeobj = setUpSwitchingFunction_traceReturnStatementToInputs(mtreeobj, new_expr);
 
     jumpFcn.mtreeobj_switchingFcn{3, mtree_i} = mtreeobj;
 end

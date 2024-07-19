@@ -3,7 +3,7 @@ function switchingfunctionhandle = setUpSwitchingFunction(datahandle, sI)
 %
 % INPUT:
 % 'mtreeobj': mtree object of the rhs function
-% 'i': the index of the ctrlif call of the desired switching function
+% 'sI':
 %
 % OUTPUT: function handle of the corresponding switch
 %
@@ -17,9 +17,9 @@ function switchingfunctionhandle = setUpSwitchingFunction(datahandle, sI)
 % that do not contribute to its value, are removed, and the result is exported to file(s).
 
 config = makeConfig();
+data = datahandle.getData();
 
 % every switching function gets a unique index
-data = datahandle.getData();
 data.SWP_detection.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration + 1;
 datahandle.setData(data);
 
@@ -28,16 +28,6 @@ switchingFcn = setUpSwitchingFunction_assembleStruct( ...
     sI, ...
     config.switchingFunctionNamePrefix, ...
     data.paths.preprocessed_switchingFunction);
-
-% Assign the function and ctrlif indices to the functions in which they appear
-switchingFcn = setUpSwitchingFunction_getFunctionIndices_wrapper(switchingFcn);
-switchingFcn = setUpSwitchingFunction_getCtrlifIndices(switchingFcn);
-
-% copy the mtree for modifying, change name of the RHS (e.g. from preprocessed_rhs -> sw_preprocessed_rhs)
-% helper functions will be copied and renamed later only if they are actually needed
-switchingFcn.mtreeobj_switchingFcn = switchingFcn.mtreeobj(:,1);
-switchingFcn.mtreeobj_switchingFcn{3,1} = mtree_changeFcnName(switchingFcn.mtreeobj_switchingFcn{3,1}, switchingFcn.rhs_name);
-switchingFcn.mtreeobj_switchingFcn{1,1} = switchingFcn.rhs_name;
 
 % remove ctrlifs before sI and replace them with their corresponding truepart/falsepart
 for i = 1 : switchingFcn.sI-1
@@ -50,8 +40,7 @@ for i = 1 : switchingFcn.sI-1
         % directly, but by another helper, then we have to modify that one too because of the new function name
         for j = 1:length(function_index_i)
             function_index_j = function_index_i(j);
-            [switchingFcn, currentFcn] = ...
-                setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
+            [switchingFcn, currentFcn] = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
         end
         switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, currentFcn, i);
     end
@@ -68,12 +57,12 @@ else
     for j = 1:length(function_index_sI)
         function_index_j = function_index_sI(j);
         [switchingFcn, nextFcn] = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
-        switchingFcn            = setUpSwitchingFunction_setFcnCallAsReturnValue(switchingFcn, currentFcn, function_index_j);
+        switchingFcn = setUpSwitchingFunction_setFcnCallAsReturnValue(switchingFcn, currentFcn, function_index_j);
         currentFcn = nextFcn;
     end
     switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFcn, currentFcn, switchingFcn.sI);
 end
 
-% export Switching Functions as source code and return the handle to the main switching function
+% export switching functions as source code and return the handle to the main switching function
 switchingfunctionhandle = setUpSwitchingFunction_ExportFunctions(switchingFcn);
 end

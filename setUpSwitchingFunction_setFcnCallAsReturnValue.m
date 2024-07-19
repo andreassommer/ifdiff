@@ -21,12 +21,7 @@ function switchingFcn = setUpSwitchingFunction_setFcnCallAsReturnValue(switching
         cIndex.indexLeftchild, ...        % from_type
         {mtreeobj.K.ID, config.switchingFunctionOutputName});
 
-    % delete all code after the newly created return statement, and unnecessary if/elses
-    returnStmtIndex = rIndex_fcn.Expr(u);
-    mtreeobj.T(returnStmtIndex, mtree_cIndex().indexNextNode) = 0;
-    mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, returnStmtIndex);
-    sortedMtree = mtreeplus(mtreeobj.tree2str);
-    mtreeobj = deleteUnusedParameters(sortedMtree);
+    mtreeobj = setUpSwitchingFunction_traceReturnStatementToInputs(mtreeobj, rIndex_fcn.Expr(u));
 
     switchingFcn.mtreeobj_switchingFcn{3,mtree_i} = mtreeobj;
 end
