@@ -51,21 +51,11 @@ else
     % statements modified
     for j = 1:length(function_index_sI)
         function_index_j = function_index_sI(j);
-        [jumpFcn, nextFcn]      = setUpSwitchingFunction_setUpFcnCall(jumpFcn, currentFcn, function_index_j);
-        [jumpFcn, fcnCallIndex] = setUpSwitchingFunction_setFcnCallAsReturnValue(...
-                jumpFcn, currentFcn, function_index_j);
-        % delete all code after the newly created return statement
-        fcnCallRIndex                = jumpFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
-        jumpFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
+        [jumpFcn, nextFcn] = setUpSwitchingFunction_setUpFcnCall(jumpFcn, currentFcn, function_index_j);
+        jumpFcn            = setUpSwitchingFunction_setFcnCallAsReturnValue(jumpFcn, currentFcn, function_index_j);
         currentFcn = nextFcn;
     end
     jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, currentFcn, jumpFcn.sI);
-end
-
-% remove unused variables (ones that do not contribute to the return value) from each function
-for i = 1:size(jumpFcn.mtreeobj_switchingFcn,2)
-    sortedMtree = mtreeplus(jumpFcn.mtreeobj_switchingFcn{3,i}.tree2str);
-    jumpFcn.mtreeobj_switchingFcn{3,i} = deleteUnusedParameters(sortedMtree);
 end
 
 % export Switching Functions as source code and return the handle to the main switching function

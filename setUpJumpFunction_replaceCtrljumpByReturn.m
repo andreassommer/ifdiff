@@ -34,8 +34,13 @@ function jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, mtree_i, c
         new_equal, ...
         jumpIncrement_rIndex, ...
         cIndex.indexRightchild);
-    % cut off the ctrljump
-    mtreeobj.T(new_expr, cIndex.indexNextNode) = 0;
+
+    % delete all code after the newly created return statement, and unnecessary if/elses
+    returnStmtIndex = new_expr;
+    mtreeobj.T(returnStmtIndex,cIndex.indexNextNode) = 0;
+    mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, returnStmtIndex);
+    sortedMtree = mtreeplus(mtreeobj.tree2str);
+    mtreeobj = deleteUnusedParameters(sortedMtree);
 
     jumpFcn.mtreeobj_switchingFcn{3, mtree_i} = mtreeobj;
 end
