@@ -43,12 +43,7 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
         ctrlif_cond, ...
         cIndex.indexRightchild);
 
-    % delete all code after the newly created return statement, and unnecessary if/elses
-    returnStmtIndex = rIndex_ctrlif.ctrlif_expr(u);
-    mtreeobj.T(returnStmtIndex,cIndex.indexNextNode) = 0;
-    mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, returnStmtIndex);
-    sortedMtree = mtreeplus(mtreeobj.tree2str);
-    mtreeobj = deleteUnusedParameters(sortedMtree);
+    mtreeobj = setUpSwitchingFunction_traceReturnStatementToInputs(mtreeobj, rIndex_ctrlif.ctrlif_expr(u));
 
     switchingFcn.mtreeobj_switchingFcn{3,mtree_i} = mtreeobj;
 end
