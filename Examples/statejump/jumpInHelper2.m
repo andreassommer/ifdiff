@@ -4,6 +4,7 @@ function dx = jumpInHelper2(~, x, ~)
     else
         dx = 1;
     end
-    ifdiff_jumpif(x(1) - 25, 1, [5]);
+    jmp = x(1) - 20;
+    ifdiff_jumpif(x(1) - 25, 1, jmp);
 end
 
