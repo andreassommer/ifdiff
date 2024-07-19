@@ -3,10 +3,12 @@ function dx = fullSwitchRHS(~, x, ~)
 % with the ifdiff_jumpif formulation, this would mean two ctrlifs with identical SWFs.
 % IFDIFF can handle this so far, but identifying the jump and creating the jump function
 % could be challenging.
+    y = x / 2;
+    z = x * 2;
     if x < 10
         dx = 2;
     else
         dx = 1;
     end
-    ifdiff_jumpif(x(1) - 10, 1, [5]);
+    ifdiff_jumpif(z - 20, 1, y);
 end
