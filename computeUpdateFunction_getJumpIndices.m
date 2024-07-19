@@ -12,14 +12,14 @@ function jumpCtrlifs = computeUpdateFunction_getJumpIndices(datahandle)
     jumps = [];
     for i=1:length(mtrees)
         mtreeobj = mtrees{i};
-        rIndex = rIndices{i};
+        rIndex   = rIndices{i};
         if ~isfield(rIndex.BODY, config.jump.internalFunction)
             continue
         end
-        ctrljumpArgs = rIndex.BODY.([config.jump.internalFunction '_Arg']);
+        ctrljumpArgs  = rIndex.BODY.([config.jump.internalFunction '_Arg']);
         directionFlag = computeUpdateFunction_parseDirectionFlags(mtreeobj, ctrljumpArgs(:, 2));
         ctrlif_index  = str2double(mtreeobj.C(mtreeobj.T(ctrljumpArgs(:,3), cIndex.stringTableIndex)))';
-        jumps = [jumps [directionFlag; ctrlif_index]];
+        jumps         = [jumps [directionFlag; ctrlif_index]];
     end
 
     jumpCtrlifs = [];
