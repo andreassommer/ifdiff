@@ -1,4 +1,4 @@
-function switchingfunctionhandle = setUpSwitchingFunction(datahandle, i)
+function switchingfunctionhandle = setUpSwitchingFunction(datahandle, sI)
 % set up and export to file the switching function corresponding to an index of an ctrlif call
 %
 % INPUT:
@@ -21,7 +21,7 @@ data = datahandle.getData();
 data.SWP_detection.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration + 1;
 datahandle.setData(data);
 
-switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, i);
+switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, sI);
 
 % Assign the function and ctrlif indices to the functions in which they appear
 switchingFcn = setUpSwitchingFunction_getFunctionIndices_wrapper(switchingFcn);

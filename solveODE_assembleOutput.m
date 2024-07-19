@@ -23,11 +23,11 @@ end
 
 
 ode_output.solver = data.SWP_detection.solution_until_t3.solver;
-ode_output.extdata = data.SWP_detection.solution_until_t3.extdata;   % [1×1 struct]
-ode_output.x = data.SWP_detection.solution_until_t3.x;          % [1×10743 double]
-ode_output.y = data.SWP_detection.solution_until_t3.y;          % [2×10743 double]
-ode_output.stats = data.SWP_detection.solution_until_t3.stats;       % [1×1 struct]
-ode_output.idata = data.SWP_detection.solution_until_t3.idata;      % [1×1 struct]
+ode_output.extdata = data.SWP_detection.solution_until_t3.extdata;
+ode_output.x = data.SWP_detection.solution_until_t3.x;
+ode_output.y = data.SWP_detection.solution_until_t3.y;
+ode_output.stats = data.SWP_detection.solution_until_t3.stats;
+ode_output.idata = data.SWP_detection.solution_until_t3.idata;
 ode_output.switches = switches;
 ode_output.switchingFunction = data.SWP_detection.switchingFunction;
 ode_output.signature = data.SWP_detection.signature;

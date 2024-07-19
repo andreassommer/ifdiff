@@ -1,9 +1,9 @@
-function switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, i)
+function switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, sI)
 % create a struct for building the switching function and set a few properties in it, as well as
 % incrementing the uniqueSwEnumeration property of data.SWP_detection
 data = datahandle.getData();
 
-switchingFcn.sI = data.SWP_detection.switchingIndices(i);
+switchingFcn.sI = sI;
 
 switchingFcn.mtreeobj = data.mtreeplus;
 

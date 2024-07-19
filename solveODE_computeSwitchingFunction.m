@@ -14,14 +14,12 @@ data = datahandle.getData();
 % amount of switching functions
 numberOfSwitchingIndices = length(data.SWP_detection.switchingIndices);
 switchingfunctionhandles = cell(numberOfSwitchingIndices, 1);
-datahandle.setData(data); 
-
-
 for i = 1:numberOfSwitchingIndices
     % create switchingfunctions
     % export them as source code 
     % return function handle
-    switchingfunctionhandles{i} = setUpSwitchingFunction(datahandle, i);
+    sI = data.SWP_detection.switchingIndices(i);
+    switchingfunctionhandles{i} = setUpSwitchingFunction(datahandle, sI);
 end
 
 % store function handle in datahandle
