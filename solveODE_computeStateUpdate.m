@@ -9,7 +9,14 @@ function solveODE_computeStateUpdate(datahandle)
     xMinus = deval(data.SWP_detection.solution_until_t2, t);
 
     computeUpdateFunction(datahandle);
-    xPlus = xMinus;
+    data = datahandle.getData();
+
+    if isempty(data.SWP_detection.jumpFunction{end})
+        xPlus = xMinus;
+    else
+        incrementFunction = data.SWP_detection.jumpFunction{end};
+        xPlus = xMinus + incrementFunction(datahandle, t, xMinus, data.SWP_detection.parameters);
+    end
 
     data = datahandle.getData();
     data.SWP_detection.x2 = {xMinus, xPlus};
