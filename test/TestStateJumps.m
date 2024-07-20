@@ -69,6 +69,24 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(deval(sol, 4), 0, 'AbsTol', 1e-8);
         end
 
+        function testTwoJumpsSameDirection(testCase)
+            % Test an RHS that has two jumps that overlap - this should throw an error
+            integrator = TestStateJumps.defaultIntegrator;
+            options = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+
+            t0 = 0;
+            tF = 10;
+            p = 0;
+            x0 = 4;
+
+            datahandle = prepareDatahandleForIntegration( ...
+                'twoJumpsBadRHS', ...
+                'integrator', func2str(integrator), ...
+                'options', options);
+
+            testCase.verifyError(@() solveODE(datahandle, [t0 tF], x0, p), '');
+        end
+
         function testJumpChangesModel(testCase)
             % Test an RHS that enters one model and then performs a jump into yet another model
             integrator = TestStateJumps.defaultIntegrator;
