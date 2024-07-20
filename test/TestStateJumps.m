@@ -1,5 +1,9 @@
 classdef TestStateJumps < matlab.unittest.TestCase
 
+    properties (Constant)
+        defaultIntegrator = @ode45;
+    end
+
     methods(TestClassSetup)
         % Shared setup for the entire test class
         function setup(~)
@@ -18,7 +22,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
         function testIdenticalIfs(testCase)
             % Test a RHS with two ifs that have the same SWF.
-            integrator = @ode45;
+            integrator = TestStateJumps.defaultIntegrator;
             options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
             datahandle = prepareDatahandleForIntegration( ...
                 'identicalIfRHS', ...
@@ -47,7 +51,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
         function testTwoJumpsOppositeDirections(testCase)
             % Test an RHS that has two jumps with the same switching function, but opposite direction
             % flags.
-            integrator = @ode45;
+            integrator = TestStateJumps.defaultIntegrator;
             options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
             datahandle = prepareDatahandleForIntegration( ...
                 'twoJumpsGoodRHS', ...
@@ -67,7 +71,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
         function testJumpChangesModel(testCase)
             % Test an RHS that enters one model and then performs a jump into yet another model
-            integrator = @ode45;
+            integrator = TestStateJumps.defaultIntegrator;
             options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
             datahandle = prepareDatahandleForIntegration( ...
                 'jumpChangesModelRHS', ...
@@ -85,7 +89,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
         function testJumpInHelper(testCase)
             % Test an RHS where there are jumps in helper functions
-            integrator = @ode45;
+            integrator = TestStateJumps.defaultIntegrator;
             options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
             datahandle = prepareDatahandleForIntegration( ...
                 'jumpInHelperRHS', ...
@@ -103,7 +107,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
         function testBounceball(testCase)
             % Test the bouncing ball example. See RHS file for explanation on where these expected values come from
-            integrator = @ode45;
+            integrator = TestStateJumps.defaultIntegrator;
             options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
             datahandle = prepareDatahandleForIntegration( ...
                 'bounceballRHS', ...
