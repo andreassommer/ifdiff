@@ -10,6 +10,9 @@ t0 = 0;
 tEnd = 10;
 x0 = [0; v0];
 
+datahandle = prepareDatahandleForIntegration('bounceballRHS', ...
+    'integrator', func2str(integrator), ...
+    'options', options);
 sol = solveODE(datahandle, [t0 tEnd], x0, p);
 
 T = t0:0.01:tEnd;
