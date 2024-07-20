@@ -68,14 +68,13 @@ while switch_detected
 
     % Determine state jump, if any
     jumpCtrlifIndices = solveODE_getJumpIndices(datahandle);
+    data = datahandle.getData();
     if length(jumpCtrlifIndices) > 1
         error('Multiple jumps apply to the switch at t=%16.16f\n', data.SWP_detection.switchingpoints{end});
     elseif isempty(jumpCtrlifIndices)
-        data = datahandle.getData();
         data.SWP_detection.jumpFunction{end + 1} = [];
         datahandle.setData(data);
     else
-        data = datahandle.getData();
         data.SWP_detection.jumpFunction{end + 1} = setUpJumpFunction(datahandle, jumpCtrlifIndices);
         datahandle.setData(data);
     end
