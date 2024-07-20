@@ -4,7 +4,7 @@ function dx = bounceballZenoRHS(~, x, p)
 % p = [g, gamma, eByMassMin]
 % with gravitational force g (in m/s^2), bounce restitution constant gamma, and minimum
 % energy/mass eByMassMin below which the ball is treated as lying flat.
-% After each bounce, the new velocity `vNew is -gamma * vOld`.
+% After each bounce, the new velocity `vNew` is `-gamma * vOld`.
 % Once the ball's total energy divided by its mass dips below eMin, the ball lies flat.
 % x = [h; v] height and velocity of the ball.
 
@@ -18,6 +18,6 @@ function dx = bounceballZenoRHS(~, x, p)
         dx = [x(2); -p(1)];
         % state jump: if the height goes from positive to negative, jump to [+eps, -v].
         % The eps is to avoid another immediate switching event being detected.
-        ifdiff_jumpif(x(1), -1, [eps(x(2)) - x(1); -p(2)*x(2)]);
+        ifdiff_jumpif(x(1), -1, [eps(x(2)) - x(1); -(1+p(2))*x(2)]);
     end
 end
