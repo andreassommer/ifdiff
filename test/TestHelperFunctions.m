@@ -1,11 +1,15 @@
 classdef TestHelperFunctions < matlab.unittest.TestCase
-%TESTHELPERFUNCTIONS tests that various ways of using helper functions in RHSes work
+    %TESTHELPERFUNCTIONS tests that various ways of using helper functions in RHSes work
     methods(TestClassSetup)
-        % Shared setup for the entire test class
-        function setup(~)
-            cd("..");
+        function setPath(testCase)
+            originalPath = path;
+            testCase.addTeardown(@path, originalPath);
+            if ~exist('initPaths', 'file')
+                % We are probably in the test directory, so check parent directory
+                cd('..');
+            end
             initPaths();
-            addpath(genpath("test/TestHelperFunctions"))
+            addpath(fullfile('test', 'TestHelperFunctions'));
         end
     end
 
@@ -22,9 +26,10 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
             integrator = @ode45;
             odeoptions = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
 
-            datahandle = prepareDatahandleForIntegration('funinelse_RHS', ...
-                                                         'solver', func2str(integrator), ...
-                                                         'options', odeoptions);
+            datahandle = prepareDatahandleForIntegration( ...
+                'funinelse_RHS', ...
+                'solver', func2str(integrator), ...
+                'options', odeoptions);
             tEnd = 20;
             tspan         = [0 tEnd];
 
@@ -39,9 +44,10 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
             integrator = @ode45;
             odeoptions = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
 
-            datahandle = prepareDatahandleForIntegration('manyFunctions', ...
-                                                         'solver', func2str(integrator), ...
-                                                         'options', odeoptions);
+            datahandle = prepareDatahandleForIntegration( ...
+                'manyFunctions', ...
+                'solver', func2str(integrator), ...
+                'options', odeoptions);
             tEnd = 30;
             tspan         = [0 tEnd];
 

@@ -32,25 +32,28 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         expected_SWPs
 
         subway_p
+
+        totalTime
     end
 
     methods (TestClassSetup)
-        function setup(testCase)
-            % is this a terrible hack or ok?
-            cd("..");
+        function setPath(testCase)
+            originalPath = path;
+            testCase.addTeardown(@path, originalPath);
+            if ~exist('initPaths', 'file')
+                % We are probably in the test directory, so check parent directory
+                cd('..');
+            end
             initPaths();
+            addpath(fullfile('Examples', 'subway'));
+        end
+        function setParameters(testCase)
             testCase.subway_p = nysscc_getPhysicsParameters();
-            tic
         end
-    end
-    
-    methods (TestClassTeardown)
-        function teardown(~)
-            toc
+        function setTimer(testCase)
+            testCase.totalTime = tic;
+            testCase.addTeardown(@toc, testCase.totalTime);
         end
-    end
-
-    methods (TestMethodSetup)
     end
 
     methods (Test)
@@ -70,7 +73,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         end
 
         function testOde45Canonex(testCase)
-            setCanonexParameters(testCase);;
+            setCanonexParameters(testCase);
             [~, sol] = solveWith(testCase, @ode45);
 
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-5);
@@ -216,7 +219,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
                 func2str(integrator), ...
                 'options', ...
                 testCase.odeoptions ...
-            );
+                );
             sol = solveODE(datahandle, testCase.tspan, testCase.x0, testCase.p);
             data = datahandle.getData();
         end
