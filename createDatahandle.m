@@ -5,14 +5,14 @@ function datahandle = createDatahandle(preprocessed)
 config = makeConfig();
 preprocessed.path = cd; 
 
-preprocessed.path = fullfile(preprocessed.path, config.preprocess.folderFileName);
+preprocessed.path = fullfile(preprocessed.path, config.preprocessedFunctionsDirectoryName);
 if ~exist(preprocessed.path, 'dir')
-    mkdir(preprocessed.rhs_path, config.preprocess.folderFileName)
+    mkdir(preprocessed.rhs_path, config.preprocessedFunctionsDirectoryName)
 end
 
-preprocessed.SwitchingFunctions_path = fullfile(preprocessed.path, config.preprocess.SwitchingFunctionsName);
+preprocessed.SwitchingFunctions_path = fullfile(preprocessed.path, config.switchingFunctionsDirectoryName);
 if ~exist(preprocessed.SwitchingFunctions_path, 'dir')
-    mkdir(preprocessed.path, config.preprocess.SwitchingFunctionsName);
+    mkdir(preprocessed.path, config.switchingFunctionsDirectoryName);
 end
 addpath(genpath(preprocessed.path));
 

@@ -24,7 +24,7 @@ function [mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_in
 % Author:
 % Valentin von Trotha, 2020
 
-
+config = makeConfig();
 % notation:
 % cIndex -> column index; refers to a property type
 % rIndex -> row index of some object; refers to the entire row.
@@ -39,7 +39,7 @@ if ~isfield(rIndex.BODY, 'max')
     return
 end
 
-mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj,rIndex.BODY.max_call, 'max_'); 
+mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj,rIndex.BODY.max_call, config.maxCallPrefix);
 
 rIndex = mtree_rIndex(mtreeobj);
 
@@ -51,10 +51,10 @@ for i = 1:length(rIndex.BODY.max)
     % Procedure: w.l.o.g (without loss of generality) let's consider a max functon call
     %
     % Start: c = max(a,b);
-    temp_max_arg1 = ['max' num2str(i) '_arg1'];
+    temp_max_arg1 = [config.maxCallPrefix, config.functionCallArgument1NameInfix, num2str(i)];
     [mtreeobj, newArg1] = mtree_extractArgIntoNewLineAbove(mtreeobj, rIndex.BODY.max_Arg(i,1), temp_max_arg1);
     
-    temp_max_arg2 = ['max' num2str(i) '_arg2'];
+    temp_max_arg2 = [config.maxCallPrefix, config.functionCallArgument2NameInfix, num2str(i)];
     [mtreeobj, newArg2] = mtree_extractArgIntoNewLineAbove(mtreeobj, rIndex.BODY.max_Arg(i,2), temp_max_arg2);
     
     

@@ -24,7 +24,7 @@ elsepart = varargin{3};
 [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
     call, ...                                              % from
     cIndex.indexLeftchild, ...                             % from_type
-    {mtreeobj.K.ID, config.ctrlif.ctrlif});
+    {mtreeobj.K.ID, config.ctrlif.functionName});
 
 [operator_type, ~] = mtree_checkForComparisonOperator(mtreeobj, condition);
 
@@ -66,8 +66,8 @@ ctrlif_index_Arg4 = num2str(ctrlif_index);
 [mtreeobj, Arg2] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg1, truepart, cIndex.indexNextNode);
 [mtreeobj, Arg3] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg2, elsepart, cIndex.indexNextNode);
 [mtreeobj, Arg4] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg3, ctrlif_index_Arg4, cIndex.indexNextNode);
-[mtreeobj, Arg5] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg4, config.ctrlif.Arg5, cIndex.indexNextNode);
-[mtreeobj, ~] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg5, config.ctrlif.Arg6, cIndex.indexNextNode);
+[mtreeobj, Arg5] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg4, config.function_indexArgumentName, cIndex.indexNextNode);
+[mtreeobj, ~] = preprocess_setUpCtrlif_addArgument(mtreeobj, Arg5, config.datahandleArgumentName, cIndex.indexNextNode);
 
 
 % get condition into 'expression >= 0' shape

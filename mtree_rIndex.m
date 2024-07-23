@@ -30,7 +30,7 @@ rIndex.BODY = mtree_rIndex_lastNextNodeOfBody(mtreeobj, rIndex.BODY, rIndex.HEAD
 %rIndex.BODY = mtree_rIndex_Ctrlif(mtreeobj, rIndex.BODY); 
 rIndex.BODY = mtree_rIndex_If(mtreeobj, rIndex.BODY); 
 
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, config.ctrlif.ctrlif); 
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, config.ctrlif.functionName);
 rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'IIf'); 
 rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'abs'); 
 rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'max'); 

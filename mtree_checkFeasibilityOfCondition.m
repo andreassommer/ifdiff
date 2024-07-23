@@ -13,8 +13,8 @@ if any(active_mtree == mtreeobj.K.EQ) || any(active_mtree == mtreeobj.K.NE)
     return
 end
 
-for i = 1:length(config.forbidden_strings_in_condition) 
-    if anystring(mtreeobj_condition, config.forbidden_strings_in_condition{i})
+for i = 1:length(config.forbiddenConditionStrings)
+    if anystring(mtreeobj_condition, config.forbiddenConditionStrings{i})
         cond_feasible = false; 
         return 
     else 

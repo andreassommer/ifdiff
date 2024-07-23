@@ -30,7 +30,7 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
     [switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
         rIndex_ctrlif.ctrlif_Equals(u), ...              % from
         cIndex.indexLeftchild, ...                       % from_type
-        {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingfunction.name_outputvariable});
+        {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingFunctionOutputName});
     
     rIndex = struct('HEAD', struct(), 'BODY', struct());
     rIndex.HEAD = mtree_rIndex_head(switchingFcn.mtreeobj_switchingFcn{3,n}, rIndex.HEAD);
@@ -39,7 +39,7 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
     [switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
         rIndex.HEAD.HEAD, ...                     % from
         cIndex.indexLeftchild, ...                % from_type
-        {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingfunction.name_outputvariable});      % new variable
+        {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingFunctionOutputName});      % new variable
 
     % receive switching function from condition of ctrlif
     switchingFcn.mtreeobj_switchingFcn{3,n} = mtree_connectNodes(...

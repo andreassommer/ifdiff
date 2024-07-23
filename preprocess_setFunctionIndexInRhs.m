@@ -3,9 +3,9 @@ function preprocessed = preprocess_setFunctionIndexInRhs(preprocessed)
 rIndex = struct('HEAD', struct(), 'BODY', struct()); 
 config = makeConfig(); 
 cIndex = mtree_cIndex; 
-rIndex.BODY = mtree_rIndex_function(preprocessed.rhs{3,1}, rIndex.BODY, config.ctrlif.ctrlif); 
+rIndex.BODY = mtree_rIndex_function(preprocessed.rhs{3,1}, rIndex.BODY, config.ctrlif.functionName);
 
-if ~isfield(rIndex.BODY, 'ctrlif') 
+if ~isfield(rIndex.BODY, config.ctrlif.functionName)
     return 
 end 
 

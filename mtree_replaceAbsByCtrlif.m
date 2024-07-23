@@ -24,7 +24,7 @@ end
 config = makeConfig();
 
 % when no '=' before 'abs', extract abs function into new line above
-mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.abs_call, config.abs.PrefixNewlineFcn);
+mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.abs_call, config.absCallPrefix);
 
 
 
@@ -43,7 +43,7 @@ for i = 1:length(rIndex.BODY.abs)
         mtreeobj.K.EQUALS);                  % kind of Node
     
     % output arg of new line
-    abs_argument_character_string = [config.abs.temp_abs_value, num2str(i)];
+    abs_argument_character_string = [config.absCallPrefix, config.functionCallArgumentNameInfix, num2str(i)];
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
         new_equal, ...                                         % from
         cIndex.indexLeftchild, ...                             % from_type
