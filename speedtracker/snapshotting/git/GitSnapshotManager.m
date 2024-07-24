@@ -172,9 +172,9 @@ classdef GitSnapshotManager < SnapshotLoader
             waitTime = this.getWaitTimeForLoading();
             if (waitTime > 0)
                 pause(waitTime);
-                rehash;
             end
             this.checkoutCommit(sha);
+            rehash;
             this.lastSnapshotLoadTime = this.getPosixTime();
         end
 
@@ -214,10 +214,10 @@ classdef GitSnapshotManager < SnapshotLoader
             waitTime = this.getWaitTimeForLoading();
             if (waitTime > 0)
                 pause(waitTime);
-                rehash;
             end
 
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git switch %s', branchName));
+            rehash;
             if (status ~= 0)
                 % push back the metadata, so we end up in the same state as before calling the procedure
                 this.writeMetadata(metadataString);
