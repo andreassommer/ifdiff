@@ -66,11 +66,24 @@ while switch_detected
     
     extendODEuntilSwitch(datahandle);
 
-    % Determine state jump, if any. Set the starting value and signature for the next stage.
-    solveODE_computeStateUpdate(datahandle);
+    % Determine state jump, if any
+    jumpCtrlifIndices = solveODE_getJumpIndices(datahandle);
+    if length(jumpCtrlifIndices) > 1
+        error('Multiple jumps apply to the switch at t=%16.16f\n', data.SWP_detection.switchingpoints{end});
+    elseif isempty(jumpCtrlifIndices)
+        data = datahandle.getData();
+        data.SWP_detection.jumpFunction{end + 1} = [];
+        datahandle.setData(data);
+    else
+        data = datahandle.getData();
+        data.SWP_detection.jumpFunction{end + 1} = setUpJumpFunction(datahandle, jumpCtrlifIndices);
+        datahandle.setData(data);
+    end
+
+    % Set the starting value and signature for the next stage
+    solveODE_prepareNextStage(datahandle);
 
     % extend solution object from t2 ongoing until the next switch occurs
-    % signature saved in .SWP_detection
     extendODE_t2_to_tend_with_SWP_detection(datahandle);
         
     switch_detected = checkForSwitchingIndices(datahandle);

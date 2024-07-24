@@ -1,6 +1,7 @@
-function flags = computeUpdateFunction_parseDirectionFlags(mtreeobj, indices)
-%COMPUTEUPDATEFUNCTION_PARSEDIRECTIONFLAGS Given an mtreeplus and the T-row indices of ctrljump direction
-% flags (-1, 0, 1) convert these into the actual values -1, 0, 1
+function flags = getJumpIndices_parseDirectionFlags(mtreeobj, indices)
+%GETJUMPINDICES_PARSEDIRECTIONFLAGS Parse direction flags (-1, 0, 1) from an mtree
+% Given an mtreeplus and the T-row indices of ctrljump direction
+% flags (-1, 0, 1) convert these into the actual numeric values -1, 0, 1
     cIndex = mtree_cIndex();
     flags = zeros(1, length(indices));
     for i=1:length(indices)

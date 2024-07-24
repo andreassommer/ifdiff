@@ -1,5 +1,5 @@
-function jumpCtrlifs = computeUpdateFunction_getJumpIndices(datahandle)
-%COMPUTEUPDATEFUNCTION_GETJUMPINDICES Get the switching indices of all jumps that apply to a switch.
+function jumpCtrlifs = solveODE_getJumpIndices(datahandle)
+%SOLVEODE_GETJUMPINDICES Get the switching indices of all jumps that apply to a switch.
 % Just like with switching function computation, switching index is the index into the switch_cond, ctrlif_index,
 % and function_index arrays. A switching index corresponds not to a ctrlif, but to one execution of a ctrlif.
     config = makeConfig();
@@ -17,7 +17,7 @@ function jumpCtrlifs = computeUpdateFunction_getJumpIndices(datahandle)
             continue
         end
         ctrljumpArgs  = rIndex.BODY.([config.jump.internalFunction '_Arg']);
-        directionFlag = computeUpdateFunction_parseDirectionFlags(mtreeobj, ctrljumpArgs(:, 2));
+        directionFlag = getJumpIndices_parseDirectionFlags(mtreeobj, ctrljumpArgs(:, 2));
         ctrlif_index  = str2double(mtreeobj.C(mtreeobj.T(ctrljumpArgs(:,3), cIndex.stringTableIndex)))';
         jumps         = [jumps [directionFlag; ctrlif_index]];
     end
