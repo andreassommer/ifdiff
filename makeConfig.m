@@ -21,6 +21,12 @@ end
 % ============================== USER CONFIGURATION ==============================
 % NOTE: These values may be adjusted depending on the problem you're trying to solve.
 
+% Flag to set debug mode which may display additional information and warnings among other things.
+config.debugMode = false;
+
+% Maximum number of iterations which will increase step size when determining the switching point.
+config.switchingPointMaxIter = 13;
+
 % Chunk size used for preallocation when updating the signature in a ctrlif to avoid frequent resizing of arrays.
 config.ctrlif_signaturePreallocationChunkSize = 30;
 
