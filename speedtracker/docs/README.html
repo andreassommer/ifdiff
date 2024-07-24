@@ -3,7 +3,7 @@
 <p>Speedtracker is a module within IFDIFF to test for performance regressions. It tracks versions of the project’s development (“snapshots”) as well as performance benchmarks. When invoked, it successively loads each snapshot, runs the benchmarks on that snapshot, and collects and displays the results. These versions are simply Git commits stored under a name. It is also possible to call Speedtracker directly using Git commit SHAs, without creating a snapshot beforehand.</p>
 <h2 id="goals-and-requirements">Goals and Requirements</h2>
 <p>Speedtracker is intended to track long-term deteriorations in the performance due to inefficiencies accidentally introduced into the code. This and the small and fluctuating development team mean that we cannot rely on a pristine, consistent testing environment: Two benchmarking runs six months apart may produce different results solely because the developer’s computer got slowed down by software bloat. Therefore, every benchmarking run must compare all snapshots on the local machine, right at the moment it is performed.</p>
-<p>Another requirement is to avoid the use of extra software and infrastructure because there is nobody to manage it. Speedtracker should be callable from within MATLAB :registered: and use only MATLAB, OS commands, and Git.</p>
+<p>Another requirement is to avoid the use of extra software and infrastructure because there is nobody to manage it. Speedtracker should be callable from within MATLAB &reg; and use only MATLAB, OS commands, and Git.</p>
 <p>Speedtracker aims to be compatible with Windows and Linux and with MATLAB versions from R2017a onward.</p>
 <p>Users are assumed to be decently familiar with MATLAB, IFDIFF, and Git.</p>
 <h2 id="use-instructions">Use Instructions</h2>

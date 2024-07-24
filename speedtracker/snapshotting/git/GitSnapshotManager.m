@@ -171,9 +171,10 @@ classdef GitSnapshotManager < SnapshotLoader
             % Ensure the wait time has already passed to avoid MATLAB using old versions of newly-checked out code
             waitTime = this.getWaitTimeForLoading();
             if (waitTime > 0)
-                java.lang.Thread.sleep(waitTime);
+                pause(waitTime);
             end
             this.checkoutCommit(sha);
+            rehash;
             this.lastSnapshotLoadTime = this.getPosixTime();
         end
 
@@ -212,10 +213,11 @@ classdef GitSnapshotManager < SnapshotLoader
             % Ensure the wait time has already passed to avoid MATLAB using old versions of newly-checked out code
             waitTime = this.getWaitTimeForLoading();
             if (waitTime > 0)
-                java.lang.Thread.sleep(waitTime);
+                pause(waitTime);
             end
 
             [status, cmdout] = SystemUtil.safeSystem(sprintf('git switch %s', branchName));
+            rehash;
             if (status ~= 0)
                 % push back the metadata, so we end up in the same state as before calling the procedure
                 this.writeMetadata(metadataString);
@@ -740,10 +742,10 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         %% Miscellaneous
-        function milliseconds = getWaitTimeForLoading(this)
-            % How long we must wait before the next snapshot loading operation, in milliseconds
-            secondsSinceLastLoad = (this.getPosixTime() - this.lastSnapshotLoadTime);
-            milliseconds = (GitSnapshotManager.SNAPSHOT_LOAD_WAIT_TIME - secondsSinceLastLoad) * 1000;
+        function seconds = getWaitTimeForLoading(this)
+            % How long we must wait before the next snapshot loading operation, in seconds
+            secondsSinceLastLoad = this.getPosixTime() - this.lastSnapshotLoadTime;
+            seconds = GitSnapshotManager.SNAPSHOT_LOAD_WAIT_TIME - secondsSinceLastLoad;
         end
         function seconds = getPosixTime(~)
             seconds = posixtime(datetime('now', 'TimeZone', '+0000'));
