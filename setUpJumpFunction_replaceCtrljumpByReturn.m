@@ -18,7 +18,7 @@ function jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, mtree_i, c
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
         rIndex.HEAD.HEAD, ...                     % from
         cIndex.indexLeftchild, ...                % from_type
-        {mtreeobj.K.ID, config.jump.jumpFunctionOutputName});      % new variable
+        {mtreeobj.K.ID, jumpFcn.outputVariable});      % new variable
 
     % create assignment statement that assigns the increment to the return value
     [mtreeobj, new_expr] = mtree_addNewExprNode(mtreeobj, expr_rIndex);
@@ -27,9 +27,9 @@ function jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, mtree_i, c
         cIndex.indexLeftchild, ...           % from_type
         mtreeobj.K.EQUALS);                  % kind of Node
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
-        new_equal, ...                                         % from
-        cIndex.indexLeftchild, ...                             % from_type
-        {mtreeobj.K.ID, config.jump.jumpFunctionOutputName});  % kind of Node; character string of new var
+        new_equal, ...                             % from
+        cIndex.indexLeftchild, ...                 % from_type
+        {mtreeobj.K.ID, jumpFcn.outputVariable});  % kind of Node; character string of new var
     mtreeobj = mtree_connectNodes(mtreeobj, ...
         new_equal, ...
         jumpIncrement_rIndex, ...

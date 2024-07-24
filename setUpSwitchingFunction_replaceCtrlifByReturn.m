@@ -16,7 +16,6 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
 % (the ctrlif could be in the RHS or any helper function)
 % ctrlif_i is the index into the ctrlif_index, function_index, and switch_cond arrays.
     mtreeobj = switchingFcn.mtreeobj_switchingFcn{3,mtree_i};
-    config = makeConfig();
     cIndex = mtree_cIndex;
     rIndex = struct('HEAD', struct(), 'BODY', struct());
     rIndex.HEAD = mtree_rIndex_head(mtreeobj, rIndex.HEAD);
@@ -27,15 +26,15 @@ function switchingFcn = setUpSwitchingFunction_replaceCtrlifByReturn(switchingFc
 
     % rename the function's output variable to better reflect its purpose
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
-        rIndex.HEAD.HEAD, ...                     % from
-        cIndex.indexLeftchild, ...                % from_type
-        {mtreeobj.K.ID, config.switchingFunctionOutputName});      % new variable
+        rIndex.HEAD.HEAD, ...                          % from
+        cIndex.indexLeftchild, ...                     % from_type
+        {mtreeobj.K.ID, switchingFcn.outputVariable}); % new variable
 
     % return the expression the ctrlif is monitoring for zero crossings
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
         rIndex_ctrlif.ctrlif_Equals(u), ...              % from
         cIndex.indexLeftchild, ...                       % from_type
-        {mtreeobj.K.ID, config.switchingFunctionOutputName});
+        {mtreeobj.K.ID, switchingFcn.outputVariable});
     ctrlif_cond = mtreeobj.T(rIndex_ctrlif.ctrlif_Arg(u,1), cIndex.indexLeftchild);
     mtreeobj = mtree_connectNodes(...
         mtreeobj, ...

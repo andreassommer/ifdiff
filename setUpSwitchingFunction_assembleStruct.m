@@ -1,4 +1,4 @@
-function switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, sI, namePrefix, folder)
+function switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, sI, namePrefix, outputVariable, folder)
 % create a struct for building the switching function and set a few properties in it, as well as
 % incrementing the uniqueSwEnumeration property of data.SWP_detection
 data = datahandle.getData();
@@ -15,6 +15,7 @@ switchingFcn.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration;
 
 switchingFcn.rhs_name_original = data.mtreeplus{2,1}; 
 switchingFcn.namePrefix = namePrefix;
+switchingFcn.outputVariable = outputVariable;
 switchingFcn.rhs_name = setUpSwitchingFunction_newName(switchingFcn, 0);
 
 switchingFcn.path = folder;
