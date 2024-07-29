@@ -5,7 +5,7 @@ initValues = [0.0, 0.0, 0.0].';
 parameters = nysscc_getPhysicsParameters_vector();
 odeoptionssubwaymodel = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-10);
 
-datahandle = prepareDatahandleForIntegration('newYorkCitySubwayModelRhs_wrapped', 'solver', func2str(integrator), 'options', odeoptionssubwaymodel);
+datahandle = prepareDatahandleForIntegration('newYorkCitySubwayModelRhs_wrapped', 'integrator', func2str(integrator), 'options', odeoptionssubwaymodel);
 sol = solveODE(datahandle, tspan, initValues, parameters);
 
 sol_ode45 = ode45(@(t,x) newYorkCitySubwayModelRhs(t,x, nysscc_getPhysicsParameters()),tspan, initValues,odeoptionssubwaymodel);

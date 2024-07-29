@@ -10,7 +10,7 @@ fprintf('Preprocessing...\n  ');
 odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12);
 filename = 'canonicalExampleRHS';
 tic
-hdlrhs_test = prepareDatahandleForIntegration(filename, 'solver', func2str(integrator), 'options', odeoptions);
+hdlrhs_test = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', odeoptions);
 toc
 
 %%

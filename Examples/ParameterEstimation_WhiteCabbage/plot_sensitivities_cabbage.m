@@ -2,7 +2,7 @@
 initPaths();
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-datahandle    = prepareDatahandleForIntegration('whiteCabbageRHS','solver', func2str(integrator), 'options', odeoptionsrhs_test);
+datahandle    = prepareDatahandleForIntegration('whiteCabbageRHS', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);
 
 tspan         = [0 118];
 initialvalues = [2.48252;0;0];

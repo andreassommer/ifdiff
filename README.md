@@ -46,7 +46,7 @@ We set ODE solver and its options as usual. If not set, default values are used.
       initPaths();  % Initialise the paths for ifdiff
       integrator = @ode45; 
       odeoptions = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
-      datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'solver', func2str(integrator), 'options', odeoptions);
+      datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptions);
    ```
 
 

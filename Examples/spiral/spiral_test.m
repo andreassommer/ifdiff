@@ -9,7 +9,7 @@ fprintf('Preprocessing...\n  ');
 odeoptions = odeset( 'AbsTol', 1e-8, 'RelTol', 1e-6, 'MaxStep', 10000);
 filename = 'spiral_rhs';
 tic
-handlerhs_test = prepareDatahandleForIntegration(filename, 'solver', func2str(integrator), 'options', odeoptions);
+handlerhs_test = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', odeoptions);
 toc
 
 % solution

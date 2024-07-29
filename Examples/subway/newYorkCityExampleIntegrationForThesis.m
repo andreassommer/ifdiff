@@ -9,7 +9,7 @@ odeoptionssubwaymodel = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-10);
 
 tic
 hdlnyc = prepareDatahandleForIntegration('newYorkCitySubwayModelRhs', ...
-    'solver', func2str(integrator), 'options', odeoptionssubwaymodel);
+    'integrator', func2str(integrator), 'options', odeoptionssubwaymodel);
 toc
 
 %%
