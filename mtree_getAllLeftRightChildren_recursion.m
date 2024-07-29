@@ -28,7 +28,7 @@ for i = 1:length(childs)
     mtreeobj.IX(set) = 1; 
     
     % call the same function again
-    mtreeobj = mtree_getAllLeftRightChildren_recursion(mtreeobj, childs_new); 
+    mtreeobj = mtree_getAllLeftRightChildren_recursion(mtreeobj, set); 
 end 
  
 end 
