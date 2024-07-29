@@ -6,12 +6,9 @@ function initPaths()
    % INPUT:   none
    % OUTPUT:  none
    %
-
+   addpath('./');
    addpath('./Tools');
    addpath(genpath('./Examples'));  % include subdirs
    addpath(genpath('./PreprocessedFunctions'))
    addpath('./ComputeSensitivities');
-   addpath('./speedtracker');
-   addpath('./test');
-   % addpath(genpath('./tinevez-matlab-tree-3d13d15'))
 end
