@@ -39,9 +39,10 @@ end
 for i = 1:length(rIndex.BODY.IF)
     
     
-    cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond);
+    cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond); % TODO: There should be an index: rIndex.BODY.cond --> rIndex.BODY.cond(i)
     if ~cond_feasible
         continue
+        % TODO: Warn about skipping the if when the condition is not feasible. 
     end
     % add ctrlif before the if
     
