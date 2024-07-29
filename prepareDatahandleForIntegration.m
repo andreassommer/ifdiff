@@ -14,56 +14,12 @@ function datahandle = prepareDatahandleForIntegration(filename, varargin)
 preprocessed = preprocess(filename);
 
 % Prepare integration, initilize struct
-datahandle = createDatahandle(preprocessed); 
+datahandle = createDatahandle(preprocessed);
 
+% Set function handles for RHS and OutputFcn and handle varargin (odeOptions, integrator).
+prepareDatahandleForIntegration_setUpIntegrator(datahandle, varargin{:});
 
-% set up the function handles for the right hand side and the output
-% function (function that stops the integration process if a switch is
-% detected)
-if isempty(varargin)
-    prepareDatahandleForIntegration_setUpFunctionHandles(datahandle);
-else
-    prepareDatahandleForIntegration_setUpFunctionHandles(datahandle, varargin);
+% check whether rhs has parameter.
+% if not just add "~" to the rhs as third arguemnt (this is not done automatically)
+prepareDatahandleForIntegration_checkRhs(datahandle)
 end
-
-% check whether rhs has parameter. 
-% if not just add "~" to the rhs as third arguemnt (this is not done automatically) 
-prepareDatahandleForIntegration_checkRhs(datahandle) 
-
-% store ode options in the datahandle: either as default or the ones given by the user
-if isempty(varargin)
-    prepareDatahandleForIntegration_setUpOdeOptions(datahandle);
-else
-    prepareDatahandleForIntegration_setUpOdeOptions(datahandle, varargin);
-end
-
-
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
