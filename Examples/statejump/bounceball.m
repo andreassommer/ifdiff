@@ -1,4 +1,6 @@
-integrator = @ode45;
+initPaths();
+
+solver = @ode15s;
 options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
 
 g     = 9.807;
@@ -11,7 +13,7 @@ tEnd = 10;
 x0 = [0; v0];
 
 datahandle = prepareDatahandleForIntegration('bounceballRHS', ...
-    'integrator', func2str(integrator), ...
+    'solver', func2str(solver), ...
     'options', options);
 sol = solveODE(datahandle, [t0 tEnd], x0, p);
 
