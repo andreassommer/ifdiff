@@ -4,12 +4,16 @@ classdef TestPreprocessing < matlab.unittest.TestCase
         function setPath(testCase)
             originalPath = path;
             testCase.addTeardown(@path, originalPath);
+
             if ~exist('initPaths', 'file')
                 % We are probably in the test directory, so check parent directory
                 cd('..');
             end
             initPaths();
-            addpath(fullfile('test', 'TestPreprocessing'));
+
+            % Get absolute path to directory in which this file resides.
+            [filePath, ~, ~] = fileparts(mfilename('fullpath'));
+            addpath(fullfile(filePath, 'TestPreprocessing'));
         end
     end
 

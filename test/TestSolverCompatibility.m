@@ -40,12 +40,17 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         function setPath(testCase)
             originalPath = path;
             testCase.addTeardown(@path, originalPath);
+
             if ~exist('initPaths', 'file')
                 % We are probably in the test directory, so check parent directory
                 cd('..');
             end
             initPaths();
-            addpath(fullfile('Examples', 'subway'));
+
+            % Get absolute path to directory in which initPaths resides.
+            % This should be the IFDIFF project root directory.
+            [filePath, ~, ~] = fileparts(which('initPaths'));
+            addpath(fullfile(filePath, 'Examples', 'subway'));
         end
         function setParameters(testCase)
             testCase.subway_p = nysscc_getPhysicsParameters();
