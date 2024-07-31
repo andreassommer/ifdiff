@@ -9,7 +9,13 @@ function solveODE_prepareNextStage(datahandle)
         xPlus = xMinus;
     else
         incrementFunction = data.SWP_detection.jumpFunction{end};
-        xPlus = xMinus + incrementFunction(datahandle, t, xMinus, data.SWP_detection.parameters);
+        increment = incrementFunction(datahandle, t, xMinus, data.SWP_detection.parameters);
+        xSize = size(xMinus);
+        incSize = size(increment);
+        if length(xSize) ~= length(incSize) || any(xSize ~= incSize)
+            error('switch at %f: dimensions of state increment do not match dimensions of state', t);
+        end
+        xPlus = xMinus + increment;
     end
 
     data.SWP_detection.x2 = {xMinus, xPlus};
