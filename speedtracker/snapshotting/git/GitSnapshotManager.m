@@ -276,7 +276,7 @@ classdef GitSnapshotManager < SnapshotLoader
                 this.logger.warn(sprintf('commit is already tagged in the snapshots: %s', strjoin(sameShaIDs, ', ')));
             end
             commitInfo = this.getCommitInfo(commit);
-            timestamp = str2double(getOption(commitInfo, 'AuthorDate'));
+            timestamp = str2double(olGetOption(commitInfo, 'AuthorDate'));
             newSnapshots = [snapshots this.makeSnapshotStruct(id, commit, timestamp)];
             this.saveSnapshots(newSnapshots, this.getSnapshotsFileName());
         end
@@ -309,7 +309,7 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function info = getSnapshotInfo(this, id)
-            % Get information about a snapshot, returning an optionlist (see utils/optionlist/isOptionlist.m)
+            % Get information about a snapshot, returning an optionlist (see utils/optionlist/olIsOptionlist.m)
             % The list contains the properties:
             %   CommitSha: the snapshot's commit SHA
             %   Author: the commit's author (Name <e@mail.address>)
@@ -337,7 +337,7 @@ classdef GitSnapshotManager < SnapshotLoader
 
             % Get description
             info = this.getCommitInfo(sha);
-            info = setOption(info, 'CommitSha', sha);
+            info = olSetOption(info, 'CommitSha', sha);
         end
 
         function exists = snapshotExists(this, snapshotSpecifier)
@@ -598,7 +598,7 @@ classdef GitSnapshotManager < SnapshotLoader
         end
 
         function info = getCommitInfo(this, sha)
-            % Get info about a commit, returning an optionlist (see utils/optionlist/isOptionlist.m)
+            % Get info about a commit, returning an optionlist (see utils/optionlist/olIsOptionlist.m)
             % Properties:
             %   Author: the commit's author (Name <e@mail.address>)
             %   AuthorDate: author date (the one that governs which order snapshots are returned in) in Unix

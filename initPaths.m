@@ -7,7 +7,7 @@ function initPaths()
    % OUTPUT:  none
    %
    addpath('./');
-   addpath('./Tools');
+   addpath(genpath('./Tools'));
    addpath(genpath('./Examples'));  % include subdirs
    addpath(genpath('./PreprocessedFunctions'))
    addpath('./ComputeSensitivities');

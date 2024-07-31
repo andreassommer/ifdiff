@@ -22,16 +22,16 @@ data.integratorSettings.options = odeset('AbsTol', 1e-12, 'RelTol', 1e-4);
 data.integratorSettings.numericIntegrator = @ode45;
 
 % Optional arguments
-if hasOption(varargin, 'options')
-    data.integratorSettings.options = getOption(varargin, 'options');
+if olHasOption(varargin, 'options')
+    data.integratorSettings.options = olGetOption(varargin, 'options');
 else
     fprintf( ...
         'INFO: Parameter ''options'' not specified. Using default value: AbsTol=%.2e, RelTol=%.2e\n', ...
         data.integratorSettings.options.AbsTol, data.integratorSettings.options.RelTol);
 end
 
-if hasOption(varargin, 'integrator')
-    integrator = getOption(varargin, 'integrator');
+if olHasOption(varargin, 'integrator')
+    integrator = olGetOption(varargin, 'integrator');
     % Integrator may be passed as function handle or char array.
     if ~isa(integrator, 'function_handle')
         try

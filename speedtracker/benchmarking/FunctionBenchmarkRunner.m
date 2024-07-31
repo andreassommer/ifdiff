@@ -49,7 +49,7 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             this.results = {};
             for i = 1:length(benchmarkIDs)
                 this.checkBenchmark(benchmarkIDs{i});
-                this.results = setOption(this.results, benchmarkIDs{i}, {});
+                this.results = olSetOption(this.results, benchmarkIDs{i}, {});
             end
         end
 
@@ -63,12 +63,12 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             %  either because the benchmark was not in the list or because init() was not called at all.
             % If the benchmark itself throws an exception, this method will continue and simply save a "failed" result.
             % See also USERCONFIG
-            if ~hasOption(this.results, benchmarkID)
+            if ~olHasOption(this.results, benchmarkID)
                 throw(MException(BenchmarkRunner.ERROR_BENCHMARK_NOT_LOADED, sprintf( ...
                     'benchmark %s was not loaded with init()', benchmarkID)));
             end
 
-            resultsofBenchmark = getOption(this.results, benchmarkID);
+            resultsofBenchmark = olGetOption(this.results, benchmarkID);
             n = ConfigProvider.getUserConfig().NIterations;
             if n == 0
                 return;
@@ -83,8 +83,8 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
                 result = this.runBenchmarkOnce(benchmarkID);
                 if isfield(result, 'error')
                     this.logger.error(sprintf('exception in benchmark %s, continuing with other benchmarks', benchmarkID));
-                    resultsofBenchmark = setOption(resultsofBenchmark, snapshotID, result);
-                    this.results = setOption(this.results, benchmarkID, resultsofBenchmark);
+                    resultsofBenchmark = olSetOption(resultsofBenchmark, snapshotID, result);
+                    this.results = olSetOption(this.results, benchmarkID, resultsofBenchmark);
                     return;
                 end
                 this.logger.debug(sprintf('iteration %3d took %9.6fs', i, result.time));
@@ -93,8 +93,8 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
                     value = result.value;
                 end
             end
-            resultsofBenchmark = setOption(resultsofBenchmark, snapshotID, struct('value', value, 'time', time));
-            this.results = setOption(this.results, benchmarkID, resultsofBenchmark);
+            resultsofBenchmark = olSetOption(resultsofBenchmark, snapshotID, struct('value', value, 'time', time));
+            this.results = olSetOption(this.results, benchmarkID, resultsofBenchmark);
         end
 
         function results = getResults(this)
@@ -115,7 +115,7 @@ classdef FunctionBenchmarkRunner < BenchmarkRunner
             % 50% of the times taken. That is, we ignore lowest and highest quarters of the results to avoid
             % unusually fast or slow runs distorting our average.
             % See also COMPAREFUNCTION
-            tables = mapOptionlist( ...
+            tables = olMapOptionlist( ...
                 @(benchmark, resultsForBenchmark) this.makeTableForBenchmark(benchmark, resultsForBenchmark), ...
                 results);
             tab = vertcat(this.makeEmptyTable(0), tables{:}); % that empty table covers the case where there are no benchmarks

@@ -41,12 +41,12 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    method                      = 'VDE';
    save_intermediates          = true;
    
-   if hasOption(varargin, 'integrator'),                 integrator = getOption(varargin, 'integrator'); end
-   if hasOption(varargin, 'integrator_options'), integrator_options = getOption(varargin, 'integrator_options'); end
-   if hasOption(varargin, 'calcGy'),                        Gy_flag = getOption(varargin, 'calcGy'); end
-   if hasOption(varargin, 'calcGp'),                        Gp_flag = getOption(varargin, 'calcGp'); end
-   if hasOption(varargin, 'method'),                         method = getOption(varargin, 'method'); end
-   if hasOption(varargin, 'save_intermediates'), save_intermediates = getOption(varargin, 'save_intermediates'); end
+   if olHasOption(varargin, 'integrator'),                 integrator = olGetOption(varargin, 'integrator'); end
+   if olHasOption(varargin, 'integrator_options'), integrator_options = olGetOption(varargin, 'integrator_options'); end
+   if olHasOption(varargin, 'calcGy'),                        Gy_flag = olGetOption(varargin, 'calcGy'); end
+   if olHasOption(varargin, 'calcGp'),                        Gp_flag = olGetOption(varargin, 'calcGp'); end
+   if olHasOption(varargin, 'method'),                         method = olGetOption(varargin, 'method'); end
+   if olHasOption(varargin, 'save_intermediates'), save_intermediates = olGetOption(varargin, 'save_intermediates'); end
    
    
    methodCoded.END_piecewise = 1;
@@ -60,7 +60,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    % As for the calculation with END_full no intermediate matrices are generated, the flag for the output for the intermediates 
    % can only be set to true if another method is chosen (END_piecewise or VDE)
    if ~(method == methodCoded.END_full)
-      if hasOption(varargin, 'Gmatrices_intermediate'), Gmatrices_intermediate_flag = getOption(varargin, 'Gmatrices_intermediate'); end
+      if olHasOption(varargin, 'Gmatrices_intermediate'), Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate'); end
    end
    
    % switches includes tspan(1) and tspan(end)
@@ -113,16 +113,16 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
          
          if Gy_flag
             directions_y = 0;
-            if hasOption(varargin, 'directions_y')
-               directions_y = getOption(varargin, 'directions_y');
+            if olHasOption(varargin, 'directions_y')
+               directions_y = olGetOption(varargin, 'directions_y');
             end
             sensData.Gy = compute_sensitivity_ENDfull_y(datahandle, sol, t_sort_unique, FDstep, directions_y);
          end
          
          if Gp_flag
             directions_p = 0;
-            if hasOption(varargin, 'directions_p')
-               directions_p = getOption(varargin, 'directions_p');
+            if olHasOption(varargin, 'directions_p')
+               directions_p = olGetOption(varargin, 'directions_p');
             end
             sensData.Gp = compute_sensitivity_ENDfull_p(datahandle, sol, t_sort_unique, FDstep, directions_p);
          end
