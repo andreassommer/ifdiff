@@ -1,7 +1,7 @@
 classdef TestStateJumps < matlab.unittest.TestCase
 
     properties (Constant)
-        defaultIntegrator = @ode15s;
+        defaultIntegrator = @ode15i;
     end
 
     methods(TestClassSetup)
@@ -170,7 +170,11 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             expectedSwitches = (2*v0/g)*[1 (1+gamma) (1+gamma+gamma^2) (1+gamma+gamma^2+gamma^3)];
             for i=1:length(expectedSwitches)
-                ts=expectedSwitches(i);
+                ts = sol.switches(i);
+                % Since the solution is discontinuous at the switching points, an imperfect calculation of
+                % the SWP can cause deval(sol, expectedSwitches(i)) to be way wrong. Instead, we deval
+                % at the actual switch, and compare the switching _time_ to the expected time.
+                testCase.verifyEqual(ts, expectedSwitches(i), 'RelTol', 1e-6);
                 testCase.verifyEqual(deval(sol, ts, 1), 0, 'AbsTol', 1e-6);
                 testCase.verifyEqual(deval(sol, ts, 2), gamma^i*v0, 'RelTol', 1e-6);
             end
