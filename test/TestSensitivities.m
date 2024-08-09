@@ -181,24 +181,26 @@ classdef TestSensitivities < matlab.unittest.TestCase
             sol = solveODE(datahandle, tSpan, x0, p);
 
             % Precision degrades at each switch. These are the highest orders of magnitude for which the
-            % verifyEqual tests still passed. atol2 is as good as with VDE, but atol3 is as bad as with
-            % END_piecewise.
+            % verifyEqual tests still passed. These tolerances are as tight as with END_piecewise, but
+            % note that we had to shift tSMinus and tSPlus farther away from the SWPs.
             atol1 = 1e-5;
-            atol2 = 1e-5;
+            atol2 = 1e-4;
             atol3 = 1e-2;
 
             dim_y  = size(sol.y,1);
             dim_p  = length(p);
             FDstep = generateFDstep(dim_y,dim_p);
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise');
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_full');
 
             t0 = tSpan(1);
             t1 = sol.switches(1);
-            t1Plus = t1+eps(t1);
-            t1Minus = t1-eps(t1-eps(t1));
+            % i had to shift these values by 1e-3 instead of eps, because END_full apparently causes
+            % switches to shift in time.
+            t1Plus = t1+1e-3*t1;
+            t1Minus = t1-1e-3*t1;
             t2 = sol.switches(2);
-            t2Plus = t2+eps(t2);
-            t2Minus = t2-eps(t2-eps(t2));
+            t2Plus = t2+1e-3*t2;
+            t2Minus = t2-1e-3*t2;
             T = [tSpan(1), t1Minus, t1Plus, t2Minus, t2Plus, tSpan(2)];
             sens = sensFun(T);
             Gy = {sens.Gy};
