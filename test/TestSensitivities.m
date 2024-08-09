@@ -44,26 +44,27 @@ classdef TestSensitivities < matlab.unittest.TestCase
 
             % model 1
             atol1 = 1e-6;
-            xt0 = x0(2);
-            Gy_1 = @(t) [1 3*xt0^3*(t-t0); 0 1];
+            x2t0 = x0(2);
+            Gy_1 = @(t) [1 3*x2t0^2*(t-t0); 0 1];
             testCase.verifyEqual(Gy{1}, Gy_1(t0), 'AbsTol', atol1);
             testCase.verifyEqual(Gy{2}, Gy_1(t1Minus), 'AbsTol', atol1);
             % update matrix at t1
-            Uy_1 = [1 0; 5/(0.01*t1^2) 1];
+            x2t1 = deval(sol, t1, 2);
+            Uy_1 = [1 0; 5/(0.01*t1^2 + x2t1^3) 1];
             testCase.verifyEqual(Gy{3}, Uy_1 * Gy_1(t1), 'AbsTol', atol1);
 
             % model 2
             atol2 = 1e-5;
-            Gy_2 = @(t) [1, 25*(t-t1)^3; 0 1] * Uy_1 * Gy_1(t1);
+            Gy_2 = @(t) [1, 25*(t-t1)^3 + 15*x2t0*(t-t1)^2 + 3*x2t0^2*(t-t1); 0 1] * Uy_1 * Gy_1(t1);
             testCase.verifyEqual(Gy{4}, Gy_2(t2Minus), 'AbsTol', atol2);
-
-            xt2 = deval(sol,t2,2);
-            Uy_2 = [1 0; -5/(0.01*t2^2 + xt2^3) 1];
+            % update matrix at t2
+            x2t2 = deval(sol,t2,2);
+            Uy_2 = [1 0; -5/(0.01*t2^2 + x2t2^3) 1];
             testCase.verifyEqual(Gy{5}, Uy_2 * Gy_2(t2), 'AbsTol', atol2);
 
             % model 3
             atol3 = 1e-3;
-            Gy_3 = @(t) [1 3*xt2^2*(t-t2); 0 1] * Uy_2 * Gy_2(t2);
+            Gy_3 = @(t) [1 3*x2t2^2*(t-t2); 0 1] * Uy_2 * Gy_2(t2);
             testCase.verifyEqual(Gy{6}, Gy_3(tSpan(2)), 'AbsTol', atol3);
         end
     end
