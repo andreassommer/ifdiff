@@ -1,16 +1,7 @@
 function solveODE_computeSwitchingPoint(datahandle)
 % function to compute the first occuring exact switching
-
-% 'solution': the solution up to timeInterval(2)
-% 'datahandle': data handle that contains all signature related data
-% 'switchingindices': the indices of the IIf nodes we check for switches
-% 'parameters': some additional parameters of the ode
-
-% 'switchinginterval': the time interval  which contains the switching
-% point - as small as the machine precision allows
-% 'switchingindices': the indices of the IIf calls at which switches
-% occured
-% compute/build switching functions corresponding to switching indices
+% After switching functions have been computed for every ctrlif that switched, compute the
+% root of each switching function and store the first (minimal in t) in the datahandle as THE switching point
 
 config = makeConfig();
 data = datahandle.getData();
