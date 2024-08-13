@@ -3,7 +3,7 @@ function SWP_detection = preModifyDataHandle_SWP_detection(tspan, initialvalues,
 
 
 SWP_detection.switchingpoints = {};
-SWP_detection.switchingindices = {};
+SWP_detection.switchingIndices = {};
 SWP_detection.switchingFunction = {};
 SWP_detection.jumpFunction = {};
 
