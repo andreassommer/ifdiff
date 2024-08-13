@@ -21,27 +21,10 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
    modelNum = sensData.modelNum;
    
    dim_y = data.computeSensitivity.dim_y;
-   length_t = length(timepoints);
+   tspan_new = [switches(modelNum), timepoints(end)];
    unit_y = eye(dim_y);
    
-   Gy_t_ts = cell(1, length_t);
-   
-   % To be able to calculate the sensitivities at a switch we consider the function y(t) to be cadlag ("right continuous with left limits").
-   % That means each switch is the starting time of a new model interval and the sensitivity at that point is identity matrix.
-   % The same holds for the starting point t0. Then the sensitivities at a switch can be calculated as usual using the update formulas.
-   save = 1;
-   if timepoints(1) == switches(modelNum)
-      Gy_t_ts{1} = unit_y;
-      length_t = length_t - 1;
-      if length_t == 0
-         return
-      else
-         timepoints = timepoints(2:end);
-         save = 2;
-      end
-   end
-
-   tspan_new = [switches(modelNum), timepoints(end)];
+   Gy_t_ts = cell(1, length(timepoints));
 
    if options.method == options.methodCoded.END_piecewise
       FDstep = options.FDstep;
@@ -59,20 +42,22 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
       difference = reshape((cell2mat(eval_disturb_y0) - y), [], dim_y);
       
       count = 1 : dim_y : size(difference, 1);
-      for i = 1:length_t
-         Gy_t_ts{save} = difference(count(i):i*dim_y, 1:dim_y)./reshape(h_y, 1, []);
-         save = save + 1;
+      for i = 1:length(timepoints)
+         Gy_t_ts{i} = difference(count(i):i*dim_y, 1:dim_y)./reshape(h_y, 1, []);
       end
-      
+      if timepoints(1) == switches(modelNum)
+         % at the switch, the sensitivity is eye. Since we applied our h-disturbance to y, though,
+         % our END solution will not reflect this. So, correct the first time point's value.
+         Gy_t_ts{1} = unit_y;
+      end
    else
       
       % Calculate the G-matrix Gy_t_ts for the update formula using variational differential equations
       solVDE = solveVDE_Gy(datahandle, sol, tspan_new, modelNum, options);      
       diff_y_y0_sol = deval(solVDE, timepoints);
       
-      for i = 1:length_t
-         Gy_t_ts{save} = reshape(diff_y_y0_sol(:,i), dim_y, []);
-         save = save + 1;
+      for i = 1:length(timepoints)
+         Gy_t_ts{i} = reshape(diff_y_y0_sol(:,i), dim_y, []);
       end   
    end
    
