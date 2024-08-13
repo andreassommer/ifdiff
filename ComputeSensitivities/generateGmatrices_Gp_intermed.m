@@ -37,8 +37,6 @@ function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_inter
    Gp_intermediate = [Gmatrices_intermediate.Gp, cell(1, length(amountG : (modelNum-1)))];
    
    % Fix the model and set the model number for which model you want to evaluate the RHS
-   config = makeConfig();
-   data.caseCtrlif = config.caseCtrlif.computeSensitivities;
    data.computeSensitivity.modelStage = amountG;
    datahandle.setData(data);
    

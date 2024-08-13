@@ -41,12 +41,8 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
       end
    end
 
-   config = makeConfig();
-   data.caseCtrlif = config.caseCtrlif.computeSensitivities;
-   datahandle.setData(data);
-   
    tspan_new = [switches(modelNum), timepoints(end)];
-   
+
    if options.method == options.methodCoded.END_piecewise
       y_start = y_to_switches(:, modelNum);
       FDstep = options.FDstep;

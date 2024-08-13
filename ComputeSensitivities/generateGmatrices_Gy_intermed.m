@@ -22,10 +22,6 @@ function Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, startModel, end
 
    Gy_new = cell(1, endModel - startModel);
 
-   config = makeConfig();
-   data.caseCtrlif = config.caseCtrlif.computeSensitivities;
-   datahandle.setData(data);
-
    % Calculate the remaining intermediate G-matrices for the update formula until endModel.
    % Here ts1 and ts2 stand for two consequtive switching points and the matrix Gy_ts2_ts1 contains
    % the sensitvities at the point ts2 with the starting time ts1.
