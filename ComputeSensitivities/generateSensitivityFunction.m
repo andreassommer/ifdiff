@@ -107,93 +107,168 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
       if method == methodCoded.END_full
           sensitivities = compute_sensitivity_ENDfull(datahandle, t_sort_unique, sol, FDstep, Gy_flag, Gp_flag, directions_y, directions_p, Gmatrices_intermediate);
           sensitivities = sensitivities(unique_indices);
-          return;
       elseif method == methodCoded.END_piecewise
-
-      else
-          
-      end
-
-      % The unique timepoints are separated into groups according to their model number, that means all time points that are between the same
-      % two switching points are in one group. If one group is empty (so no timepoint is given between two switching points), 
-      % the group is left empty and will be skipped in the calculations later. 
-      switches_temp = switches;
-      switches_temp(end) = switches_temp(end) + eps(switches_temp(end));
-      amountGroups = length(switches) - 1;
-      timeGroups = cell(1, amountGroups);
+            % The unique timepoints are separated into groups according to their model number, that means all time points that are between the same
+            % two switching points are in one group. If one group is empty (so no timepoint is given between two switching points), 
+            % the group is left empty and will be skipped in the calculations later. 
+            switches_temp = switches;
+            switches_temp(end) = switches_temp(end) + eps(switches_temp(end));
+            amountGroups = length(switches) - 1;
+            timeGroups = cell(1, amountGroups);
       
-      for i = 1:length(switches)-1
-         indices = (t_sort_unique >= switches_temp(i)) & (t_sort_unique < switches_temp(i+1));
-         timeGroups{i} = t_sort_unique(indices);
-      end
-      
-      % sensData is a struct array that is as long as the amount of the time groups and every index belongs to one group
-      sensData = generateSensData(amountGroups);
-      
-      % The latest timepoint is being extracted to know how many intermediate matrices need to be calculated because they are needed until 
-      % the last switch before the latest timepoint. 
-      t_max = t_sort_unique(end);
-      modelNum = find(t_max < switches_temp, 1) - 1;
-      
-      % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
-      generateData(datahandle, sol);
-
-      % if we are all within the first model, no need for switch treatment
-      if modelNum > 1
-         Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
-         Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
-     
-         Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, 1, modelNum, options);
-         Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
-         
-         if Gp_flag
-            Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
-            
-            Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
-            Gmatrices_intermediate.Gp = Gp_new;
-         end
-      end
-      
-      if save_intermediates
-         Gmatrices_intermediate_template = Gmatrices_intermediate;
-      end
-     
-      % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 
-      % for every group
-      for k = 1 : size(timeGroups, 2)
-         
-         if isempty(timeGroups{k})
-            continue
-         end
-         
-         timepoints = timeGroups{k};
-         modelNum = k;
-         sensData(k).timepoints = timepoints;
-         sensData(k).modelNum = modelNum;
-         
-         sensData(k).Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData(k), options);
-         
-         if Gy_flag
-            Gy_intermediate = Gmatrices_intermediate.Gy;
-            Uy = Gmatrices_intermediate.Uy;
-            Gy_timepoints = cell(1, length(timepoints));
-            for j = 1:length(timepoints)
-               Gy = sensData(k).Gy_t_ts{j};
-               for i = modelNum : -1 : 2
-                  Gy = Gy * Uy{i} * Gy_intermediate{i};
-               end
-               Gy_timepoints{j} = Gy;
+            for i = 1:length(switches)-1
+                indices = (t_sort_unique >= switches_temp(i)) & (t_sort_unique < switches_temp(i+1));
+                timeGroups{i} = t_sort_unique(indices);
             end
-            sensData(k).Gy = Gy_timepoints;
-         end
+
+            % sensData is a struct array that is as long as the amount of the time groups and every index belongs to one group
+            sensData = generateSensData(amountGroups);
+
+            % The latest timepoint is being extracted to know how many intermediate matrices need to be calculated because they are needed until 
+            % the last switch before the latest timepoint. 
+            t_max = t_sort_unique(end);
+            modelNum = find(t_max < switches_temp, 1) - 1;
+            
+            % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
+            generateData(datahandle, sol);
+            
+            % if we are all within the first model, no need for switch treatment
+            if modelNum > 1
+                Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
+                Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
+     
+                Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, 1, modelNum, options);
+                Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
          
-         if Gp_flag
-            sensData(k).Gp = generateGmatrices_Gp(datahandle, sol, sensData(k), Gmatrices_intermediate, options);
-         end
+                if Gp_flag
+                    Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
+
+                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
+                    Gmatrices_intermediate.Gp = Gp_new;
+                end
+            end
+
+            if save_intermediates
+                Gmatrices_intermediate_template = Gmatrices_intermediate;
+            end
+     
+            % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 
+            % for every group
+            for k = 1 : size(timeGroups, 2)
          
+                if isempty(timeGroups{k})
+                    continue
+                end
+
+                timepoints = timeGroups{k};
+                modelNum = k;
+                sensData(k).timepoints = timepoints;
+                sensData(k).modelNum = modelNum;
+                
+                sensData(k).Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData(k), options);
+                
+                if Gy_flag
+                    Gy_intermediate = Gmatrices_intermediate.Gy;
+                    Uy = Gmatrices_intermediate.Uy;
+                    Gy_timepoints = cell(1, length(timepoints));
+                    for j = 1:length(timepoints)
+                        Gy = sensData(k).Gy_t_ts{j};
+                        for i = modelNum : -1 : 2
+                            Gy = Gy * Uy{i} * Gy_intermediate{i};
+                        end
+                        Gy_timepoints{j} = Gy;
+                    end
+                    sensData(k).Gy = Gy_timepoints;
+                end
+
+                if Gp_flag
+                    sensData(k).Gp = generateGmatrices_Gp(datahandle, sol, sensData(k), Gmatrices_intermediate, options);
+                end
+         
+            end
+            sensitivitiesOutput = assembleSensitivityOutput(sensData, Gmatrices_intermediate, t_sort_unique, Gy_flag, Gp_flag, Gmatrices_intermediate_flag);
+            sensitivities(:) = sensitivitiesOutput(unique_indices);
+        else
+            % The unique timepoints are separated into groups according to their model number, that means all time points that are between the same
+            % two switching points are in one group. If one group is empty (so no timepoint is given between two switching points), 
+            % the group is left empty and will be skipped in the calculations later. 
+            switches_temp = switches;
+            switches_temp(end) = switches_temp(end) + eps(switches_temp(end));
+            amountGroups = length(switches) - 1;
+            timeGroups = cell(1, amountGroups);
+      
+            for i = 1:length(switches)-1
+                indices = (t_sort_unique >= switches_temp(i)) & (t_sort_unique < switches_temp(i+1));
+                timeGroups{i} = t_sort_unique(indices);
+            end
+
+            % sensData is a struct array that is as long as the amount of the time groups and every index belongs to one group
+            sensData = generateSensData(amountGroups);
+
+            % The latest timepoint is being extracted to know how many intermediate matrices need to be calculated because they are needed until 
+            % the last switch before the latest timepoint. 
+            t_max = t_sort_unique(end);
+            modelNum = find(t_max < switches_temp, 1) - 1;
+            
+            % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
+            generateData(datahandle, sol);
+            
+            % if we are all within the first model, no need for switch treatment
+            if modelNum > 1
+                Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
+                Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
+     
+                Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, 1, modelNum, options);
+                Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
+         
+                if Gp_flag
+                    Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
+
+                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
+                    Gmatrices_intermediate.Gp = Gp_new;
+                end
+            end
+
+            if save_intermediates
+                Gmatrices_intermediate_template = Gmatrices_intermediate;
+            end
+     
+            % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 
+            % for every group
+            for k = 1 : size(timeGroups, 2)
+         
+                if isempty(timeGroups{k})
+                    continue
+                end
+
+                timepoints = timeGroups{k};
+                modelNum = k;
+                sensData(k).timepoints = timepoints;
+                sensData(k).modelNum = modelNum;
+                
+                sensData(k).Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData(k), options);
+                
+                if Gy_flag
+                    Gy_intermediate = Gmatrices_intermediate.Gy;
+                    Uy = Gmatrices_intermediate.Uy;
+                    Gy_timepoints = cell(1, length(timepoints));
+                    for j = 1:length(timepoints)
+                        Gy = sensData(k).Gy_t_ts{j};
+                        for i = modelNum : -1 : 2
+                            Gy = Gy * Uy{i} * Gy_intermediate{i};
+                        end
+                        Gy_timepoints{j} = Gy;
+                    end
+                    sensData(k).Gy = Gy_timepoints;
+                end
+
+                if Gp_flag
+                    sensData(k).Gp = generateGmatrices_Gp(datahandle, sol, sensData(k), Gmatrices_intermediate, options);
+                end
+         
+            end
+            sensitivitiesOutput = assembleSensitivityOutput(sensData, Gmatrices_intermediate, t_sort_unique, Gy_flag, Gp_flag, Gmatrices_intermediate_flag);
+            sensitivities(:) = sensitivitiesOutput(unique_indices);
       end
-      sensitivitiesOutput = assembleSensitivityOutput(sensData, Gmatrices_intermediate, t_sort_unique, Gy_flag, Gp_flag, Gmatrices_intermediate_flag);
-      sensitivities(:) = sensitivitiesOutput(unique_indices);   
    end
-   
 end
