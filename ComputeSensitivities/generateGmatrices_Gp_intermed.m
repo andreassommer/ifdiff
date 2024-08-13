@@ -47,7 +47,7 @@ function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, startModel, end
          y = deval(sol_original, tspan_end);
          Gp_ts2_ts1 = (eval_disturb_p - y)./ reshape(h_p, 1, []);
       else
-         % Calculate the G-matrix Gp_ts2_ts1 for the update formula using variational differential equations        
+         % Calculate the G-matrix Gp_ts2_ts1 for the update formula using variational differential equations      
          solVDE = solveVDE_Gp(datahandle, sol, tspan_new, i, options);
          Gp_ts2_ts1 = reshape(solVDE.y(:,end), dim_y, dim_p);
       end
