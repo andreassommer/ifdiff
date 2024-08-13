@@ -4,8 +4,8 @@ function [sol_original, sols_disturbed] = solveDisturbed_Gp(datahandle, tspan, m
 % parameter disturbed in one component.
     data = datahandle.getData();
     parameters             = data.SWP_detection.parameters;
-    functionRHS_simple_END = data.computeSensitivity.functionRHS_simple_END;
     functionRHS_original   = data.integratorSettings.preprocessed_rhs;
+    functionRHS_simple_END = @(t,y) functionRHS_original(datahandle, t, y,  data.SWP_detection.parameters);
     dim_p                  = data.computeSensitivity.dim_p;
 
     unit_p = eye(dim_p);
