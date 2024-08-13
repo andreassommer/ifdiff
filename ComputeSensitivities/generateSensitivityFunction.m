@@ -78,7 +78,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    options.methodCoded = methodCoded;
  
    Gmatrices_intermediate_template.Gy = {eye(dim_y)};
-   Gmatrices_intermediate_template.Uy = {zeros(dim_y)};
+   Gmatrices_intermediate_template.Uy = {eye(dim_y)};
    Gmatrices_intermediate_template.Gp = {zeros(dim_y, dim_p)};
    Gmatrices_intermediate_template.Up = {zeros(dim_y, dim_p)};
    return
@@ -147,8 +147,8 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                 if Gp_flag
                     Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
 
-                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
-                    Gmatrices_intermediate.Gp = Gp_new;
+                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, 1, modelNum, options);
+                    Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_new];
                 end
             end
 
@@ -271,8 +271,8 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
 
                     Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
 
-                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
-                    Gmatrices_intermediate.Gp = Gp_new;
+                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, 1, modelNum, options);
+                    Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_new];
                 end
 
                 % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 

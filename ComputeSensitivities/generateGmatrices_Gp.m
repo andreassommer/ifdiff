@@ -70,17 +70,22 @@ function Gp = generateGmatrices_Gp(datahandle, sol, sensData, Gmatrices_intermed
     end
 
     % Calculate the G-matrix Gp_t_t0 according to the update formula
+    Gy = Gmatrices_intermediate.Gy;
     Uy = Gmatrices_intermediate.Uy;
     Up = Gmatrices_intermediate.Up;
     Gp_intermediate = Gmatrices_intermediate.Gp;
     Gy_t_ts = sensData.Gy_t_ts;
 
+    Gp_prev = Gp_intermediate{1};
+    for i=2:modelNum
+        Gp_prev = Gy{i} * (Uy{i-1}*Gp_prev+Up{i-1}) + Gp_intermediate{i};
+    end
     Gp = cell(1, length(timepoints));
     if modelNum == 1
         Gp = Gp_t_ts;
     else
         for i = 1:length(timepoints)
-            Gp{i} = Gy_t_ts{i} * (Uy{modelNum} * Gp_intermediate{modelNum} + Up{modelNum}) + Gp_t_ts{i};
+            Gp{i} = Gy_t_ts{i} * (Uy{modelNum} * Gp_prev + Up{modelNum}) + Gp_t_ts{i};
         end
     end
 end

@@ -1,4 +1,4 @@
-function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, startModel, endModel, options)
+function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, startModel, endModel, options)
    % Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, startModel, endModel, options)
    %
    % Calculates the intermediate G-matrices that contain the sensitivites w.r.t. p at the switching points
@@ -23,7 +23,7 @@ function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_inter
    dim_y = data.computeSensitivity.dim_y;
    dim_p = data.computeSensitivity.dim_p;
 
-   Gp_intermediate = [Gmatrices_intermediate.Gp, cell(1, length(startModel : (endModel-1)))];
+   Gp_intermediate = cell(1, length(startModel : (endModel-1)));
 
    FDstep = options.FDstep;
    h_p = fdStep_getH_p(FDstep, parameters);
@@ -52,12 +52,7 @@ function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_inter
          Gp_ts2_ts1 = reshape(solVDE.y(:,end), dim_y, dim_p);
       end
 
-      % Calculate the intermediate G-matrices according to the update formula
-      if i == 1
-         Gp_intermediate{i+1} = Gp_ts2_ts1;
-      else
-         Gp_intermediate{i+1} = Gmatrices_intermediate.Gy{i+1} * (Gmatrices_intermediate.Uy{i} * Gp_intermediate{i} + Gmatrices_intermediate.Up{i}) + Gp_ts2_ts1;
-      end
+      Gp_intermediate{i} = Gp_ts2_ts1;
    end
 
    Gp_new = Gp_intermediate;
