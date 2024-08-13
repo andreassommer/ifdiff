@@ -21,18 +21,10 @@ function Gp = generateGmatrices_Gp(datahandle, sol, sensData, Gmatrices_intermed
     switches = data.computeSensitivity.switches_extended;
     y_to_switches = data.computeSensitivity.y_to_switches;
     modelNum = sensData.modelNum;
-    integrator = options.integrator;
-    integrator_options = options.integrator_options;
-    
-    functionRHS = data.integratorSettings.preprocessed_rhs;
-    functionRHS_simple_END = data.computeSensitivity.functionRHS_simple_END;
-    functionRHS_simple_VDE = data.computeSensitivity.functionRHS_simple_VDE;
     
     dim_y = data.computeSensitivity.dim_y;
     dim_p = data.computeSensitivity.dim_p;
-    unit_p = eye(dim_p);
-    
-    eval_disturb_p = cell(1, dim_p);
+
     Gp_t_ts = cell(1, length(timepoints));
     
     % Fix the model and set the model number for which model you want to evaluate the RHS
@@ -48,20 +40,18 @@ function Gp = generateGmatrices_Gp(datahandle, sol, sensData, Gmatrices_intermed
         h_p = fdStep_getH_p(FDstep, parameters);
         
         y_start = y_to_switches(:, modelNum);
-        sol_original = integrator(functionRHS_simple_END, tspan_new, y_start, integrator_options);
-        y  = repmat(deval(sol_original,timepoints), [1, dim_p]);
+        [sol_original, sols_disturbed] = solveDisturbed_Gp(datahandle, tspan_new, modelNum, y_start, h_p, options);
      
         % Cycle through every parameter and compute the sensitivites
+        eval_disturb_p = cell(1, dim_p);
         for j=1:dim_p
-            parameters_new = parameters + h_p.*unit_p(:,j);
-            functionRHS_simple_disturb = @(t,y) functionRHS(datahandle, t, y,  parameters_new);
-            sol_disturb = integrator(functionRHS_simple_disturb, tspan_new, y_start, integrator_options);
-            
+            sol_disturb = sols_disturbed{j};
             eval_disturb_p{j} = deval(sol_disturb,timepoints);
         end
-     
+
+        y  = repmat(deval(sol_original,timepoints), [1, dim_p]);
         difference = reshape((cell2mat(eval_disturb_p) - y), [], dim_p);
-        
+
         count = 1 : dim_y : size(difference, 1);
         for i = 1:length(timepoints)
             Gp_t_ts{i} = difference(count(i):i*dim_y, 1:dim_p)./reshape(h_p, 1, []);
@@ -72,15 +62,8 @@ function Gp = generateGmatrices_Gp(datahandle, sol, sensData, Gmatrices_intermed
             Gp_t_ts{1} = zeros(dim_y, dim_p);
         end
     else
-     
-        % Calculate the G-matrix Gp_t_ts for the update formula using variational differential equations
-        
-        function_p_VDE = @(t,G) VDE_RHS_p(sol, functionRHS_simple_VDE, t, G, parameters, options);
-        initial_p = reshape(zeros(dim_y,dim_p), [], 1);
-        
-        solVDE = integrator(function_p_VDE, tspan_new, initial_p, integrator_options);
+        solVDE = solveVDE_Gp(datahandle, sol, tspan_new, modelNum, options);
         diff_y_p_sol = deval(solVDE, timepoints);
-     
         for i = 1:length(timepoints)
             Gp_t_ts{i} = reshape(diff_y_p_sol(:,i), dim_y, []);
         end

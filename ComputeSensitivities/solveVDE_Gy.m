@@ -1,5 +1,5 @@
 function sol = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
-    % Solve the VDE for Gy in the interval tspan fixed to model modelNum and return the sol object
+%SOLVEVDE_GY Solve the VDE for Gy in the interval tspan fixed to model modelNum and return the sol object
     data = datahandle.getData();
 
     parameters             = data.SWP_detection.parameters;
