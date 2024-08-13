@@ -35,19 +35,25 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    % default settings
    integrator                  = data.integratorSettings.numericIntegrator;
    integrator_options          = data.integratorSettings.options;
-   Gy_flag                     = true;
-   Gp_flag                     = true;
-   Gmatrices_intermediate_flag = false;
    method                      = 'VDE';
+   Gmatrices_intermediate_flag = false;
+   Gy_flag                     = true;
+   directions_y                = 0;
+   Gp_flag                     = true;
+   directions_p                = 0;
    save_intermediates          = true;
-   
+
    if olHasOption(varargin, 'integrator'),                 integrator = olGetOption(varargin, 'integrator'); end
    if olHasOption(varargin, 'integrator_options'), integrator_options = olGetOption(varargin, 'integrator_options'); end
    if olHasOption(varargin, 'calcGy'),                        Gy_flag = olGetOption(varargin, 'calcGy'); end
    if olHasOption(varargin, 'calcGp'),                        Gp_flag = olGetOption(varargin, 'calcGp'); end
    if olHasOption(varargin, 'method'),                         method = olGetOption(varargin, 'method'); end
+   if olHasOption(varargin, 'Gmatrices_intermediate')
+                                        Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate');
+   end
    if olHasOption(varargin, 'save_intermediates'), save_intermediates = olGetOption(varargin, 'save_intermediates'); end
-   
+   if olHasOption(varargin, 'directions_y'),             directions_y = olGetOption(varargin, 'directions_y'); end
+   if olHasOption(varargin, 'directions_p'),             directions_p = olGetOption(varargin, 'directions_p'); end
    
    methodCoded.END_piecewise = 1;
    methodCoded.VDE           = 2;
@@ -56,12 +62,6 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    if strcmpi(method, 'END_piecewise'),method = methodCoded.END_piecewise; end
    if strcmpi(method, 'VDE'),          method = methodCoded.VDE; end
    if strcmpi(method, 'END_full'),     method = methodCoded.END_full; end
-   
-   % As for the calculation with END_full no intermediate matrices are generated, the flag for the output for the intermediates 
-   % can only be set to true if another method is chosen (END_piecewise or VDE)
-   if ~(method == methodCoded.END_full)
-      if olHasOption(varargin, 'Gmatrices_intermediate'), Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate'); end
-   end
    
    % switches includes tspan(1) and tspan(end)
    switches = data.computeSensitivity.switches_extended;
@@ -96,41 +96,24 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
       if t_sort_unique(1) < tspan(1) || t_sort_unique(end) > tspan(end)
          error('Time point is outside of the time interval of the IVP solution.')
       end
-      
+
+      config = makeConfig();
+      data = datahandle.getData();
+      data.caseCtrlif = config.caseCtrlif.computeSensitivities;
+      datahandle.setData(data);
+
       Gmatrices_intermediate = Gmatrices_intermediate_template;
-      fieldnames_sensData = {'timepoints', 'modelNum', 'Gy_t_ts', 'Gy', 'Gp'};
-      
-      % If you want to calculate the sensitivities using finite differences (END) with solveODE without using updates, 
-      % you can activate the method 'END_full'.
-      % Then the computation of the sensitivities at the timepoint of a switch is not possible.
+
       if method == methodCoded.END_full
-         if ~isempty(intersect(t_sort_unique, sol.switches))
-            error('Calculation of sensitivity at a switch with END_full not possible.')
-         end
-         
-         sensData = generateStructArray(fieldnames_sensData, 1);
-         sensData.timepoints = t_sort_unique;
-         
-         if Gy_flag
-            directions_y = 0;
-            if olHasOption(varargin, 'directions_y')
-               directions_y = olGetOption(varargin, 'directions_y');
-            end
-            sensData.Gy = compute_sensitivity_ENDfull_y(datahandle, sol, t_sort_unique, FDstep, directions_y);
-         end
-         
-         if Gp_flag
-            directions_p = 0;
-            if olHasOption(varargin, 'directions_p')
-               directions_p = olGetOption(varargin, 'directions_p');
-            end
-            sensData.Gp = compute_sensitivity_ENDfull_p(datahandle, sol, t_sort_unique, FDstep, directions_p);
-         end
-         sensitivitiesOutput = assembleSensitivityOutput(sensData, Gmatrices_intermediate, t_sort_unique, Gy_flag, Gp_flag, Gmatrices_intermediate_flag);
-         sensitivities(:) = sensitivitiesOutput(unique_indices);
-         return
+          sensitivities = compute_sensitivity_ENDfull(datahandle, t_sort_unique, sol, FDstep, Gy_flag, Gp_flag, directions_y, directions_p, Gmatrices_intermediate);
+          sensitivities = sensitivities(unique_indices);
+          return;
+      elseif method == methodCoded.END_piecewise
+
+      else
+          
       end
-      
+
       % The unique timepoints are separated into groups according to their model number, that means all time points that are between the same
       % two switching points are in one group. If one group is empty (so no timepoint is given between two switching points), 
       % the group is left empty and will be skipped in the calculations later. 
@@ -145,7 +128,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
       end
       
       % sensData is a struct array that is as long as the amount of the time groups and every index belongs to one group
-      sensData = generateStructArray(fieldnames_sensData, amountGroups);
+      sensData = generateSensData(amountGroups);
       
       % The latest timepoint is being extracted to know how many intermediate matrices need to be calculated because they are needed until 
       % the last switch before the latest timepoint. 
@@ -154,10 +137,6 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
       
       % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
       generateData(datahandle, sol);
-      config = makeConfig();
-      data = datahandle.getData();
-      data.caseCtrlif = config.caseCtrlif.computeSensitivities;
-      datahandle.setData(data);
 
       % if we are all within the first model, no need for switch treatment
       if modelNum > 1
