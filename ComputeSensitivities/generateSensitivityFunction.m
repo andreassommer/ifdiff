@@ -152,9 +152,6 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                 end
             end
 
-            if save_intermediates
-                Gmatrices_intermediate_template = Gmatrices_intermediate;
-            end
      
             % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 
             % for every group
@@ -235,10 +232,6 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                 Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
                 Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
 
-                if save_intermediates
-                    Gmatrices_intermediate_template = Gmatrices_intermediate;
-                end
-
                 % After calculating the intermediate G-matrices the sensitivities can be set together according
                 % to the respective formula for y0 and p for every group
                 for k = 1 : size(timeGroups, 2)
@@ -281,9 +274,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                     Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
                     Gmatrices_intermediate.Gp = Gp_new;
                 end
-                if save_intermediates
-                    Gmatrices_intermediate_template = Gmatrices_intermediate;
-                end
+
                 % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 
                 % for every group
                 for k = 1 : size(timeGroups, 2)
