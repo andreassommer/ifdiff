@@ -216,8 +216,8 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
 
             % solve the VDE on each of the intervals between the switches
             solVDEs_y = cell(1, modelNum);
-            tspan_new = [switches(i), switches(i+1)];
             for i=1:modelNum
+                tspan_new = [switches(i), switches(i+1)];
                 solVDEs_y{i} = solveVDE_Gy(datahandle, sol, tspan_new, i, options);
             end
 
@@ -243,9 +243,12 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                     modelNum = k;
                     sensData(k).timepoints = timepoints;
                     sensData(k).modelNum = modelNum;
-                    
+                    sensData(k).Gy_t_ts  = cell(1, length(timepoints));
+
                     diff_y_y0_sol = deval(solVDEs_y{k}, timepoints);
-                    sensData(k).Gy_t_ts = reshape(diff_y_y0_sol(:,k), dim_y, []);
+                    for i = 1:length(timepoints)
+                        sensData(k).Gy_t_ts{i} = reshape(diff_y_y0_sol(:,i), dim_y, []);
+                    end
 
                     Gy_intermediate = Gmatrices_intermediate.Gy;
                     Uy = Gmatrices_intermediate.Uy;
