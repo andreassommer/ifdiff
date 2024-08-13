@@ -15,22 +15,15 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
    
    % Initialize
    data = datahandle.getData();
-   parameters = data.SWP_detection.parameters;
    timepoints = sensData.timepoints;
    switches = data.computeSensitivity.switches_extended;
    y_to_switches = data.computeSensitivity.y_to_switches;
    modelNum = sensData.modelNum;
-   integrator = options.integrator;
-   integrator_options = options.integrator_options;
-   
-   functionRHS_simple_END = data.computeSensitivity.functionRHS_simple_END;
-   functionRHS_simple_VDE = data.computeSensitivity.functionRHS_simple_VDE;
    
    dim_y = data.computeSensitivity.dim_y;
    length_t = length(timepoints);
    unit_y = eye(dim_y);
    
-   eval_disturb_y0 = cell(1, dim_y);
    Gy_t_ts = cell(1, length_t);
    
    % To be able to calculate the sensitivities at a switch we consider the function y(t) to be cadlag ("right continuous with left limits").
@@ -47,25 +40,15 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
          save = 2;
       end
    end
-   
-   % Fix the model and set the model number for which model you want to evaluate the RHS
+
    config = makeConfig();
    data.caseCtrlif = config.caseCtrlif.computeSensitivities;
-   data.computeSensitivity.modelStage = modelNum;
    datahandle.setData(data);
    
    tspan_new = [switches(modelNum), timepoints(end)];
    
    if options.method == options.methodCoded.END_piecewise
-      
-      % Calculate the G-matrix Gy_t_ts for the update formula using a simple integrator for solving ODEs (e.g. ode45)
-      
       y_start = y_to_switches(:, modelNum);
-      sol_original = integrator(functionRHS_simple_END, tspan_new, y_start, integrator_options);
-      y  = repmat(deval(sol_original,timepoints), [1, dim_y]);
-      
-      % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-      % the derivative or it can be set to an absolute value.
       FDstep = options.FDstep;
       if FDstep.y_rel
          point_y = abs(y_start);
@@ -73,10 +56,12 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
       else
          h_y = FDstep.y;
       end
-      
+      [sol_original, sols_disturbed] = solveDisturbed_Gy(datahandle, tspan_new, modelNum, y_start, h_y, options);
+      y  = repmat(deval(sol_original,timepoints), [1, dim_y]);
       % Cycle through every initial value and compute the sensitivites
+      eval_disturb_y0 = cell(1, dim_y);
       for j=1:dim_y
-         sol_disturb = integrator(functionRHS_simple_END, tspan_new, y_start + h_y.*unit_y(:,j), integrator_options);
+         sol_disturb = sols_disturbed{j};
          eval_disturb_y0{j} = deval(sol_disturb,timepoints);
       end
       
@@ -91,11 +76,7 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
    else
       
       % Calculate the G-matrix Gy_t_ts for the update formula using variational differential equations
-      
-      function_VDE = @(t,G) VDE_RHS_y(sol, functionRHS_simple_VDE, t, G, parameters, options);
-      initial = reshape(unit_y, [], 1);
-      
-      solVDE = integrator(function_VDE, tspan_new, initial, integrator_options);
+      solVDE = solveVDE_Gy(datahandle, sol, tspan_new, modelNum, options);      
       diff_y_y0_sol = deval(solVDE, timepoints);
       
       for i = 1:length_t
