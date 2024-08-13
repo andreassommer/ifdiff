@@ -32,12 +32,7 @@ function Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, startModel, end
 
       if options.method == options.methodCoded.END_piecewise
          y_start = y_to_switches(:, i);
-         if FDstep.y_rel
-            point_y = abs(y_start);
-            h_y = max(FDstep.y_min, point_y .* FDstep.y);
-         else
-            h_y = FDstep.y;
-         end
+         h_y = fdStep_getH_y(FDstep, y_start);
          [sol_original, sols_disturbed] = solveDisturbed_Gy(datahandle, tspan_new, i, y_start, h_y, options);
          y  = deval(sol_original,tspan_end);
  

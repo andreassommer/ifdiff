@@ -39,16 +39,9 @@ function Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_inter
    % Fix the model and set the model number for which model you want to evaluate the RHS
    data.computeSensitivity.modelStage = amountG;
    datahandle.setData(data);
-   
-   % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-   % the derivative or it can be set to an absolute value. 
+
    FDstep = options.FDstep;
-   if FDstep.p_rel
-      point_p = abs(parameters);
-      h_p = max(FDstep.p_min, point_p .* FDstep.p);
-   else
-      h_p = FDstep.p;
-   end
+   h_p = fdStep_getH_p(FDstep, parameters);
    
    % Calculate the remaining intermediate G-matrices for the update formula until modelNum.
    % First the matrix Gp_ts2_ts1 need to be calculated. Here ts1 and ts2 stand for two consequtive switching points and the matrix contains

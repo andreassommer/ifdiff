@@ -17,15 +17,7 @@ function dG = VDE_RHS_y(sol, functionRHS_simple, t, G, parameters, options)
    % Initialize
    y = deval(sol, t);
    FDstep = options.FDstep;
-   
-   % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-   % the derivative or it can be set to an absolute value.
-   if FDstep.y_rel
-      point_y = abs(y);
-      h_y = max(FDstep.y_min, point_y .* FDstep.y);
-   else
-      h_y = FDstep.y;
-   end
+   h_y = fdStep_getH_y(FDstep, y);
    
    % Calculate the derivative of the RHS w.r.t. y 
    df_y = diff_f_y(functionRHS_simple, t, y, parameters, h_y);

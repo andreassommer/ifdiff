@@ -25,15 +25,7 @@ function dy_y0 = compute_sensitivity_ENDfull_y(datahandle, sol, t_sort_unique, F
    % If no directions for directional derivatives were given then the usual sensitivities are calculated
    if isscalar(directions_y) && directions_y == 0
       directions_y = eye(dim_y);
-      
-      % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-      % the derivative or it can be set to an absolute value. 
-      if FDstep.y_rel
-         point_y = abs(initialvalues);
-         h_y = max(FDstep.y_min, point_y .* FDstep.y);
-      else
-         h_y = FDstep.y;
-      end   
+      h_y = fdStep_getH_y(FDstep, initialvalues);
    end
    
    dim_directions_y = size(directions_y, 2);

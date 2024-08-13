@@ -30,15 +30,7 @@ function Updates = generateGmatrices_Updates(datahandle, amountG, modelNum, Gp_f
  
    if Gp_flag
       Updates.Up_new = cell(1, amount_new_matrices);
-      
-      % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-      % the derivative or it can be set to an absolute value.
-      if FDstep.p_rel
-         point_p = abs(parameters);
-         h_p = max(FDstep.p_min, point_p .* FDstep.p);
-      else
-         h_p = FDstep.p;
-      end
+      h_p = fdStep_getH_p(FDstep, parameters);
    end
 
    % Fix the model and set the model number for which model you want to evaluate the RHS
@@ -51,23 +43,10 @@ function Updates = generateGmatrices_Updates(datahandle, amountG, modelNum, Gp_f
       switchingFunction = switching_functions{i};
       y_to_switch = y_to_switches(:, i+1);
       switchingPoint = switches(i+1);
-      
-      % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-      % the derivative or it can be set to an absolute value.
-      if FDstep.y_rel
-         point_y = abs(y_to_switch);
-         h_y = max(FDstep.y_min, point_y .* FDstep.y);
-      else
-         h_y = FDstep.y;
-      end
-      
-      if FDstep.t_rel
-         point_t = abs(switchingPoint);
-         h_t = max(FDstep.t_min, point_t .* FDstep.t);
-      else
-         h_t = FDstep.t;
-      end
-      
+
+      h_y = fdStep_getH_y(FDstep, y_to_switch);
+      h_t = fdStep_getH_t(FDstep, switchingPoint);
+
       % Calculate the derivatives of the switching functions w.r.t. y, t (and p if necessary)
       diff_sigmay = diff_sigma_y(datahandle, switchingFunction, switchingPoint, y_to_switch, parameters, h_y);
       diff_sigmat = diff_sigma_t(datahandle, switchingFunction, switchingPoint, y_to_switch, parameters, h_y, h_t);

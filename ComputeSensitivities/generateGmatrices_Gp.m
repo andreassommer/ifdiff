@@ -66,16 +66,8 @@ function Gp = generateGmatrices_Gp(datahandle, sol, sensData, Gmatrices_intermed
       if options.method == options.methodCoded.END_piecewise
          
          % Calculate the G-matrix Gp_t_ts for the update formula using a simple integrator for solving ODEs (e.g. ode45)
-        
-         % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-         % the derivative or it can be set to an absolute value. 
          FDstep = options.FDstep;
-         if FDstep.p_rel
-            point_p = abs(parameters);
-            h_p = max(FDstep.p_min, point_p .* FDstep.p);
-         else
-            h_p = FDstep.p;
-         end
+         h_p = fdStep_getH_p(FDstep, parameters);
          
          y_start = y_to_switches(:, modelNum);
          sol_original = integrator(functionRHS_simple_END, tspan_new, y_start, integrator_options);
