@@ -154,19 +154,23 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
       
       % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
       generateData(datahandle, sol);
-      
-      amountG_intermediate = (size(Gmatrices_intermediate.Gy, 2)); 
-      if  amountG_intermediate < modelNum 
-         Updates = generateGmatrices_Updates(datahandle, amountG_intermediate, modelNum, Gp_flag, options);
+      config = makeConfig();
+      data = datahandle.getData();
+      data.caseCtrlif = config.caseCtrlif.computeSensitivities;
+      datahandle.setData(data);
+
+      % if we are all within the first model, no need for switch treatment
+      if modelNum > 1
+         Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
          Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
      
-         Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, amountG_intermediate, modelNum, options);
+         Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, 1, modelNum, options);
          Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
          
          if Gp_flag
             Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
             
-            Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, amountG_intermediate, modelNum, options);
+            Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, Gmatrices_intermediate, 1, modelNum, options);
             Gmatrices_intermediate.Gp = Gp_new;
          end
       end

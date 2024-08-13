@@ -58,8 +58,6 @@ function Gp = generateGmatrices_Gp(datahandle, sol, sensData, Gmatrices_intermed
    if computation_needed
       
       % Fix the model and set the model number for which model you want to evaluate the RHS
-      config = makeConfig();
-      data.caseCtrlif = config.caseCtrlif.computeSensitivities;
       data.computeSensitivity.modelStage = modelNum;
       datahandle.setData(data);
       
