@@ -44,14 +44,9 @@ function Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData, options)
    tspan_new = [switches(modelNum), timepoints(end)];
 
    if options.method == options.methodCoded.END_piecewise
-      y_start = y_to_switches(:, modelNum);
       FDstep = options.FDstep;
-      if FDstep.y_rel
-         point_y = abs(y_start);
-         h_y = max(FDstep.y_min, point_y .* FDstep.y);
-      else
-         h_y = FDstep.y;
-      end
+      y_start = y_to_switches(:, modelNum);
+      h_y = fdStep_getH_y(FDstep, y_start);
       [sol_original, sols_disturbed] = solveDisturbed_Gy(datahandle, tspan_new, modelNum, y_start, h_y, options);
       y  = repmat(deval(sol_original,timepoints), [1, dim_y]);
       % Cycle through every initial value and compute the sensitivites
