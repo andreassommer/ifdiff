@@ -65,6 +65,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    
    % switches includes tspan(1) and tspan(end)
    switches      = data.computeSensitivity.switches_extended;
+   y_to_switches = data.computeSensitivity.y_to_switches;
    
    tspan = data.SWP_detection.tspan;
    dim_y = data.computeSensitivity.dim_y;
@@ -134,28 +135,60 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
             
             % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
             generateData(datahandle, sol);
-            
-            % if we are all within the first model, no need for switch treatment
-            if modelNum > 1
-                Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
-                Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
-     
-                Gy_new = generateGmatrices_Gy_intermed(datahandle, sol, 1, modelNum, options);
-                Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
-         
-                if Gp_flag
-                    Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new]; 
 
-                    Gp_new = generateGmatrices_Gp_intermed(datahandle, sol, 1, modelNum, options);
-                    Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_new];
+            % G(ts2, ts1) at the end of each model stage
+            Gy_new = cell(1, modelNum);
+            % One element for each model stage; this has one element per time point, and these in turn have y_dim x
+            % y_dim elements. Whew!
+            Gy_t_ts = cell(1, modelNum);
+            for i=1:modelNum
+                y_start = y_to_switches(:, i);
+                h_y = fdStep_getH_y(FDstep, y_start);
+                tspan_new = [switches(i), switches(i+1)];
+                [sol_original, sols_disturbed] = solveDisturbed_Gy(datahandle, tspan_new, i, y_start, h_y, options);
+                y  = deval(sol_original, switches(i+1));
+ 
+                eval_disturb_y0 = zeros(dim_y);
+                for j=1:dim_y
+                    sol_disturb = sols_disturbed{j};
+                    eval_disturb_y0(:,j) = deval(sol_disturb, switches(i+1));
                 end
+                Gy_new{i} = (eval_disturb_y0 - y)./ reshape(h_y, 1, []);
             end
+            for i=1:modelNum
+                timepoints = timeGroups{i};
+                tspan_new = [switches(i), timepoints(end)];
+                Gy_t_ts_i = cell(1, length(timepoints));
+                y_start = y_to_switches(:, i);
+                h_y = fdStep_getH_y(FDstep, y_start);
+                [sol_original, sols_disturbed] = solveDisturbed_Gy(datahandle, tspan_new, i, y_start, h_y, options);
+                y  = repmat(deval(sol_original,timepoints), [1, dim_y]);
+                % Cycle through every initial value and compute the sensitivites
+                eval_disturb_y0 = cell(1, dim_y);
+                for j=1:dim_y
+                   sol_disturb = sols_disturbed{j};
+                   eval_disturb_y0{j} = deval(sol_disturb,timepoints);
+                end
+                difference = reshape((cell2mat(eval_disturb_y0) - y), [], dim_y);
+                count = 1 : dim_y : size(difference, 1);
+                for j = 1:length(timepoints)
+                    Gy_t_ts_i{j} = difference(count(j):j*dim_y, 1:dim_y)./reshape(h_y, 1, []);
+                end
+                if timepoints(1) == switches(i)
+                    % at the switch, the sensitivity is eye. Since we applied our h-disturbance to y, though,
+                    % our END solution will not reflect this. So, correct the first time point's value.
+                    Gy_t_ts_i{1} = eye(dim_y);
+                end
+                Gy_t_ts{i} = Gy_t_ts_i;
+            end
+            Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
 
-     
-            % After calculating the intermediate G-matrices the sensitivities can be set together according to the respective formula for y0 and p 
-            % for every group
+            Updates = generateGmatrices_Updates(datahandle, 1, modelNum, Gp_flag, options);
+            Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
+
+            % After calculating the intermediate G-matrices the sensitivities can be set together according
+            % to the respective formula for y0 and p for every group
             for k = 1 : size(timeGroups, 2)
-         
                 if isempty(timeGroups{k})
                     continue
                 end
@@ -164,31 +197,96 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                 modelNum = k;
                 sensData(k).timepoints = timepoints;
                 sensData(k).modelNum = modelNum;
-                
-                sensData(k).Gy_t_ts = generateGmatrices_Gy_t_ts(datahandle, sol, sensData(k), options);
-                
-                if Gy_flag
-                    Gy_intermediate = Gmatrices_intermediate.Gy;
-                    Uy = Gmatrices_intermediate.Uy;
-                    Gy_timepoints = cell(1, length(timepoints));
-                    for j = 1:length(timepoints)
-                        Gy = sensData(k).Gy_t_ts{j};
-                        for i = modelNum : -1 : 2
-                            Gy = Gy * Uy{i} * Gy_intermediate{i};
-                        end
-                        Gy_timepoints{j} = Gy;
-                    end
-                    sensData(k).Gy = Gy_timepoints;
-                end
+                Gy_t_ts_k = Gy_t_ts{k};
 
-                if Gp_flag
-                    sensData(k).Gp = generateGmatrices_Gp(datahandle, sol, sensData(k), Gmatrices_intermediate, options);
+                Gy_intermediate = Gmatrices_intermediate.Gy;
+                Uy = Gmatrices_intermediate.Uy;
+                Gy_timepoints = cell(1, length(timepoints));
+                for j = 1:length(timepoints)
+                    Gy = Gy_t_ts_k{j};
+                    for i = modelNum : -1 : 2
+                        Gy = Gy * Uy{i} * Gy_intermediate{i};
+                    end
+                    Gy_timepoints{j} = Gy;
                 end
-         
+                sensData(k).Gy = Gy_timepoints;
+            end
+            if Gp_flag
+                parameters = data.SWP_detection.parameters;
+                Gp_new = cell(1, modelNum);
+                Gp_t_ts = cell(1, modelNum);
+                for i=1:modelNum
+                    tspan_new = [switches(i), switches(i+1)];
+                    y_start = y_to_switches(:, i);
+                    h_p = fdStep_getH_p(FDstep, parameters);
+                    [sol_original, sols_disturbed] = solveDisturbed_Gp(datahandle, tspan_new, i, y_start, h_p, options);
+                    eval_disturb_p = zeros(dim_y, dim_p);
+                    for j=1:dim_p
+                        sol_disturb = sols_disturbed{j};
+                        eval_disturb_p(:,j) = deval(sol_disturb, switches(i+1));
+                    end
+                    y = deval(sol_original, switches(i+1));
+                    Gp_new{i} = (eval_disturb_p - y)./ reshape(h_p, 1, []);
+                end
+                for i=1:modelNum
+                    timepoints = timeGroups{i};
+                    Gp_t_ts_i = cell(1, length(timepoints));
+                    tspan_new = [switches(i), timepoints(end)];
+                    y_start = y_to_switches(:, i);
+                    h_p = fdStep_getH_p(FDstep, parameters);
+
+                    [sol_original, sols_disturbed] = solveDisturbed_Gp(datahandle, tspan_new, i, y_start, h_p, options);
+                    % Cycle through every parameter and compute the sensitivites
+                    eval_disturb_p = cell(1, dim_p);
+                    for j=1:dim_p
+                        sol_disturb = sols_disturbed{j};
+                        eval_disturb_p{j} = deval(sol_disturb, timepoints);
+                    end
+                    y  = repmat(deval(sol_original, timepoints), [1, dim_p]);
+                    difference = reshape((cell2mat(eval_disturb_p) - y), [], dim_p);
+                    count = 1 : dim_y : size(difference, 1);
+                    for j = 1:length(timepoints)
+                        Gp_t_ts_i{j} = difference(count(j):j*dim_y, 1:dim_p)./reshape(h_p, 1, []);
+                    end
+                    if timepoints(1) == switches(i)
+                        % Gp(t_0, t_0)=0. But since we apply our h-disturbance to the initial values, our solution will not reflect
+                        % this. Here, we correct this case.
+                        Gp_t_ts_i{1} = zeros(dim_y, dim_p);
+                    end
+                    Gp_t_ts{i} = Gp_t_ts_i;
+                end
+                Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_new];
+                Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new];
+
+                for k = 1 : size(timeGroups, 2)
+                    if isempty(timeGroups{k})
+                        continue
+                    end
+                    timepoints = timeGroups{k};
+                    Gy = Gmatrices_intermediate.Gy;
+                    Uy = Gmatrices_intermediate.Uy;
+                    Up = Gmatrices_intermediate.Up;
+                    Gp_intermediate = Gmatrices_intermediate.Gp;
+                    Gy_t_ts_k = Gy_t_ts{k};
+                    Gp_t_ts_k = Gp_t_ts{k};
+                    Gp_prev = Gp_intermediate{1};
+                    for i=2:k
+                        Gp_prev = Gy{i} * (Uy{i-1}*Gp_prev+Up{i-1}) + Gp_intermediate{i};
+                    end
+                    Gp = cell(1, length(timepoints));
+                    if k == 1
+                        Gp = Gp_t_ts_k;
+                    else
+                        for i = 1:length(timepoints)
+                            Gp{i} = Gy_t_ts_k{i} * (Uy{k} * Gp_prev + Up{k}) + Gp_t_ts_k{i};
+                        end
+                    end
+                    sensData(k).Gp = Gp;
+                end
             end
             sensitivitiesOutput = assembleSensitivityOutput(sensData, Gmatrices_intermediate, t_sort_unique, Gy_flag, Gp_flag, Gmatrices_intermediate_flag);
             sensitivities(:) = sensitivitiesOutput(unique_indices);
-      else % VDE
+        else % VDE
             % The unique timepoints are separated into groups according to their model number, that means all time points that are between the same
             % two switching points are in one group. If one group is empty (so no timepoint is given between two switching points), 
             % the group is left empty and will be skipped in the calculations later. 
@@ -222,8 +320,18 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
 
             % G(ts2, ts1) at the end of each model stage
             Gy_new = cell(1, modelNum);
+            % One element for each model stage; this has one element per time point, and these in turn have y_dim x
+            % y_dim elements. Whew!
+            Gy_t_ts = cell(1, modelNum);
             for i=1:modelNum
                 Gy_new{i} = reshape(solVDEs_y{i}.y(:,end), dim_y, dim_y);
+                timepoints = timeGroups{i};
+                Gy_t_ts_i = cell(1, length(timepoints));
+                diff_y_y0_sol = deval(solVDEs_y{i}, timepoints);
+                for j = 1:length(timepoints)
+                    Gy_t_ts_i{j} = reshape(diff_y_y0_sol(:,j), dim_y, []);
+                end
+                Gy_t_ts{i} = Gy_t_ts_i;
             end
             Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_new];
 
@@ -241,18 +349,13 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                 modelNum = k;
                 sensData(k).timepoints = timepoints;
                 sensData(k).modelNum = modelNum;
-                sensData(k).Gy_t_ts  = cell(1, length(timepoints));
-
-                diff_y_y0_sol = deval(solVDEs_y{k}, timepoints);
-                for i = 1:length(timepoints)
-                    sensData(k).Gy_t_ts{i} = reshape(diff_y_y0_sol(:,i), dim_y, []);
-                end
+                Gy_t_ts_k = Gy_t_ts{k};
 
                 Gy_intermediate = Gmatrices_intermediate.Gy;
                 Uy = Gmatrices_intermediate.Uy;
                 Gy_timepoints = cell(1, length(timepoints));
                 for j = 1:length(timepoints)
-                    Gy = sensData(k).Gy_t_ts{j};
+                    Gy = Gy_t_ts_k{j};
                     for i = modelNum : -1 : 2
                         Gy = Gy * Uy{i} * Gy_intermediate{i};
                     end
@@ -267,8 +370,16 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                     solVDEs_p{i} = solveVDE_Gp(datahandle, sol, tspan_new, i, options);
                 end
                 Gp_new = cell(1, modelNum);
+                Gp_t_ts = cell(1, modelNum);
                 for i=1:modelNum
                     Gp_new{i} = reshape(solVDEs_p{i}.y(:,end), dim_y, dim_p);
+                    timepoints = timeGroups{i};
+                    Gp_t_ts_i = cell(1, length(timepoints));
+                    diff_y_p_sol = deval(solVDEs_p{i}, timepoints);
+                    for j = 1:length(timepoints)
+                        Gp_t_ts_i{j} = reshape(diff_y_p_sol(:,j), dim_y, []);
+                    end
+                    Gp_t_ts{i} = Gp_t_ts_i;
                 end
                 Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_new];
                 Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new];
@@ -278,26 +389,22 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                         continue
                     end
                     timepoints = timeGroups{k};
-                    Gp_t_ts = cell(1, length(timepoints));
-                    diff_y_p_sol = deval(solVDEs_p{k}, timepoints);
-                    for i = 1:length(timepoints)
-                        Gp_t_ts{i} = reshape(diff_y_p_sol(:,i), dim_y, []);
-                    end
                     Gy = Gmatrices_intermediate.Gy;
                     Uy = Gmatrices_intermediate.Uy;
                     Up = Gmatrices_intermediate.Up;
                     Gp_intermediate = Gmatrices_intermediate.Gp;
-                    Gy_t_ts = sensData(k).Gy_t_ts;
+                    Gy_t_ts_k = Gy_t_ts{k};
+                    Gp_t_ts_k = Gp_t_ts{k};
                     Gp_prev = Gp_intermediate{1};
                     for i=2:k
                         Gp_prev = Gy{i} * (Uy{i-1}*Gp_prev+Up{i-1}) + Gp_intermediate{i};
                     end
                     Gp = cell(1, length(timepoints));
                     if k == 1
-                        Gp = Gp_t_ts;
+                        Gp = Gp_t_ts_k;
                     else
                         for i = 1:length(timepoints)
-                            Gp{i} = Gy_t_ts{i} * (Uy{k} * Gp_prev + Up{k}) + Gp_t_ts{i};
+                            Gp{i} = Gy_t_ts_k{i} * (Uy{k} * Gp_prev + Up{k}) + Gp_t_ts_k{i};
                         end
                     end
                     sensData(k).Gp = Gp;
