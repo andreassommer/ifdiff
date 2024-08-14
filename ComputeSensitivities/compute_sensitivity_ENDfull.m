@@ -1,4 +1,4 @@
-function sensitivities = compute_sensitivity_ENDfull(datahandle, timepoints, sol, FDstep, Gy_flag, Gp_flag, directions_y, directions_p, Gmatrices_intermediate)
+function sensitivities = compute_sensitivity_ENDfull(datahandle, timepoints, sol, FDstep, Gy_flag, Gp_flag, directions_y, directions_p)
 %COMPUTE_SENSITIVITY_ENDFULL Compute sensitivities using full external numerical differentiation: Solve the IVP with
 % slightly disturbed initial values y0+h and then approximate the sensitivity at time t by the finite difference
 % Gy(t, t0) ~~ (y(t0, y0+h) - h(t0, y0))/h
@@ -18,7 +18,7 @@ function sensitivities = compute_sensitivity_ENDfull(datahandle, timepoints, sol
     if Gp_flag
         sensData.Gp = compute_sensitivity_ENDfull_p(datahandle, sol, timepoints, FDstep, directions_p);
     end
-    sensitivitiesOutput = assembleSensitivityOutput(sensData, Gmatrices_intermediate, timepoints, Gy_flag, Gp_flag, false);
+    sensitivitiesOutput = assembleSensitivityOutput(sensData, timepoints, Gy_flag, Gp_flag, []);
     sensitivities(:) = sensitivitiesOutput;
 end
 
