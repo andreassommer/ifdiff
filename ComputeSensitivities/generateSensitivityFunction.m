@@ -141,8 +141,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
 
         % G(t_{s+1}, ts) at the end of each model stage
         Gy_new = cell(1, modelNum);
-        % G(t, ts), t<t_{s+1} i.e. the sensitivity within each model stage relative to the most recent switching
-        % point
+        % G(t, ts), t<t_{s+1} i.e. the sensitivity within each model stage relative to the most recent switching point
         Gy_t_ts = cell(1, modelNum);
         if method == methodCoded.END_piecewise
             for i=1:modelNum
@@ -190,7 +189,11 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                 tspan_new = [switches(i), switches(i+1)];
                 solVDE_y = solveVDE_Gy(datahandle, sol, tspan_new, i, options);
                 Gy_new{i} = reshape(solVDE_y.y(:,end), dim_y, dim_y);
+            end
+            for i=1:modelNum
                 timepoints = timeGroups{i};
+                tspan_new = [switches(i), timepoints(end)];
+                solVDE_y = solveVDE_Gy(datahandle, sol, tspan_new, i, options);
                 Gy_t_ts_i = cell(1, length(timepoints));
                 diff_y_y0_sol = deval(solVDE_y, timepoints);
                 for j = 1:length(timepoints)
@@ -277,18 +280,22 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
                     Gp_t_ts{i} = Gp_t_ts_i;
                 end
             else
-            for i=1:modelNum
-                tspan_new = [switches(i), switches(i+1)];
-                solVDE_p = solveVDE_Gp(datahandle, sol, tspan_new, i, options);
-                Gp_new{i} = reshape(solVDE_p.y(:,end), dim_y, dim_p);
-                timepoints = timeGroups{i};
-                Gp_t_ts_i = cell(1, length(timepoints));
-                diff_y_p_sol = deval(solVDE_p, timepoints);
-                for j = 1:length(timepoints)
-                    Gp_t_ts_i{j} = reshape(diff_y_p_sol(:,j), dim_y, []);
+                for i=1:modelNum
+                    tspan_new = [switches(i), switches(i+1)];
+                    solVDE_p = solveVDE_Gp(datahandle, sol, tspan_new, i, options);
+                    Gp_new{i} = reshape(solVDE_p.y(:,end), dim_y, dim_p);
                 end
-                Gp_t_ts{i} = Gp_t_ts_i;
-            end
+                for i=1:modelNum
+                    timepoints = timeGroups{i};
+                    tspan_new = [switches(i), timepoints(end)];
+                    solVDE_p = solveVDE_Gp(datahandle, sol, tspan_new, i, options);
+                    Gp_t_ts_i = cell(1, length(timepoints));
+                    diff_y_p_sol = deval(solVDE_p, timepoints);
+                    for j = 1:length(timepoints)
+                        Gp_t_ts_i{j} = reshape(diff_y_p_sol(:,j), dim_y, []);
+                    end
+                    Gp_t_ts{i} = Gp_t_ts_i;
+                end
             end
             Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_new];
             Gmatrices_intermediate.Up = [Gmatrices_intermediate.Up, Updates.Up_new];
