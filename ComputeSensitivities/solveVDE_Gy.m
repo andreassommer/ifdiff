@@ -7,6 +7,7 @@ function sol = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
     functionRHS_simple_VDE = @(t, y, parameters) functionRHS_original(datahandle, t, y,  parameters);
     dim_y                  = data.computeSensitivity.dim_y;
 
+
     integrator         = sensOptions.integrator;
     integrator_options = sensOptions.integrator_options;
 
