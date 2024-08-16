@@ -1,5 +1,5 @@
-function Gy_values = generateGmatrices_intermediate_Gy_END(datahandle, timepoints, modelNum, sensOptions)
-%GENERATEGMATRICES_INTERMEDIATE_GY_END approximate the initial value sensitivity Gy between two switching points
+function Gy_values = getGy_intermediate_END(datahandle, timepoints, modelNum, sensOptions)
+%GETGY_INTERMEDIATE_END approximate the initial value sensitivity Gy between two switching points
 % using external numerical differentiation and return a cell array of Gy at the provided time points
     data = datahandle.getData();
 

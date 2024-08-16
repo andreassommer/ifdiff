@@ -148,18 +148,18 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
         Gy_t_ts = cell(1, numModels);
         if method == methodCoded.END_piecewise
             for i=1:numModels
-                Gy_ts2_ts1(i) = generateGmatrices_intermediate_Gy_END(datahandle, [switches_left(i+1)], i, options);
-                Gy_t_ts{i}    = generateGmatrices_intermediate_Gy_END(datahandle, timeGroups{i}, i, options);
+                Gy_ts2_ts1(i) = getGy_intermediate_END(datahandle, [switches_left(i+1)], i, options);
+                Gy_t_ts{i}    = getGy_intermediate_END(datahandle, timeGroups{i}, i, options);
             end
         else
             for i=1:numModels
-                Gy_ts2_ts1(i) = generateGmatrices_intermediate_Gy_VDE(datahandle, sol, [switches_left(i+1)], i, options);
-                Gy_t_ts{i}    = generateGmatrices_intermediate_Gy_VDE(datahandle, sol, timeGroups{i}, i, options);
+                Gy_ts2_ts1(i) = getGy_intermediate_VDE(datahandle, sol, [switches_left(i+1)], i, options);
+                Gy_t_ts{i}    = getGy_intermediate_VDE(datahandle, sol, timeGroups{i}, i, options);
             end
         end
         Gmatrices_intermediate.Gy = [Gmatrices_intermediate.Gy, Gy_ts2_ts1];
 
-        Updates = generateGmatrices_Updates(datahandle, 1, numModels, Gp_flag, options);
+        Updates = getGy_Gp_update(datahandle, 1, numModels, Gp_flag, options);
         Gmatrices_intermediate.Uy = [Gmatrices_intermediate.Uy, Updates.Uy_new];
 
         % Finally, compute the sensitivity values w.r.t. t0, across switches, at each time point
@@ -197,13 +197,13 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
             Gp_t_ts = cell(1, numModels);
             if method == methodCoded.END_piecewise
                 for i=1:numModels
-                    Gp_ts2_ts1(i) = generateGmatrices_intermediate_Gp_END(datahandle, [switches_left(i+1)], i, options);
-                    Gp_t_ts{i}    = generateGmatrices_intermediate_Gp_END(datahandle, timeGroups{i}, i, options);
+                    Gp_ts2_ts1(i) = getGp_intermediate_END(datahandle, [switches_left(i+1)], i, options);
+                    Gp_t_ts{i}    = getGp_intermediate_END(datahandle, timeGroups{i}, i, options);
                 end
             else
                 for i=1:numModels
-                    Gp_ts2_ts1(i) = generateGmatrices_intermediate_Gp_VDE(datahandle, sol, [switches_left(i+1)], i, options);
-                    Gp_t_ts{i}    = generateGmatrices_intermediate_Gp_VDE(datahandle, sol, timeGroups{i}, i, options);
+                    Gp_ts2_ts1(i) = getGp_intermediate_VDE(datahandle, sol, [switches_left(i+1)], i, options);
+                    Gp_t_ts{i}    = getGp_intermediate_VDE(datahandle, sol, timeGroups{i}, i, options);
                 end
             end
             Gmatrices_intermediate.Gp = [Gmatrices_intermediate.Gp, Gp_ts2_ts1];
