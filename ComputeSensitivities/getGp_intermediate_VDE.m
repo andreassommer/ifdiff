@@ -1,5 +1,5 @@
-function Gp_values = generateGmatrices_intermediate_Gp_VDE(datahandle, sol, timepoints, modelNum, sensOptions)
-%GENERATEGMATRICES_INTERMEDIATE_GY_END approximate the parameter sensitivity Gp between two switching points
+function Gp_values = getGp_intermediate_VDE(datahandle, sol, timepoints, modelNum, sensOptions)
+%GETGP_INTERMEDIATE_VDE approximate the parameter sensitivity Gp between two switching points
 % by solving the variational differential equation and return a cell array of Gp at the provided time points
     data = datahandle.getData();
     switches      = data.computeSensitivity.switches_extended;

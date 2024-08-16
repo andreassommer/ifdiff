@@ -1,5 +1,5 @@
-function Gy_values = generateGmatrices_intermediate_Gy_VDE(datahandle, sol, timepoints, modelNum, sensOptions)
-%GENERATEGMATRICES_INTERMEDIATE_GY_END approximate the initial value sensitivity Gy between two switching points
+function Gy_values = getGy_intermediate_VDE(datahandle, sol, timepoints, modelNum, sensOptions)
+%GETGY_INTERMEDIATE_VDE approximate the initial value sensitivity Gy between two switching points
 % by solving the variational differential equation and return a cell array of Gy at the provided time points
     data = datahandle.getData();
     switches      = data.computeSensitivity.switches_extended;

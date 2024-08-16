@@ -1,5 +1,5 @@
-function Gp_values = generateGmatrices_intermediate_Gp_END(datahandle, timepoints, modelNum, sensOptions)
-%GENERATEGMATRICES_INTERMEDIATE_GY_END approximate the parameter sensitivity Gp between two switching points
+function Gp_values = getGp_intermediate_END(datahandle, timepoints, modelNum, sensOptions)
+%GETGP_INTERMEDIATE_END approximate the parameter sensitivity Gp between two switching points
 % using external numerical differentiation and return a cell array of Gp at the provided time points
     data = datahandle.getData();
     parameters    = data.SWP_detection.parameters;
