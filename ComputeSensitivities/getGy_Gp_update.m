@@ -45,45 +45,45 @@ function Updates = getGy_Gp_update(datahandle, startModel, endModel, Gp_flag, op
     for i = startModel : (endModel-1)
         switchingFunction = switching_functions{i};
         jumpFunction      = jump_functions{i};
-        y_to_switch_left = y_to_switches_left(:, i+1);
-        y_to_switch = y_to_switches(:, i+1);
-        switchingPoint = switches(i+1);
-        switchingPoint_left = switches_left(i+1);
+        ts                = switches(i+1);
+        tsMinus           = switches_left(i+1);
+        yMinus            = y_to_switches_left(:, i+1);
+        yPlus             = y_to_switches(:, i+1);
 
-        h_y = fdStep_getH_y(FDstep, y_to_switch_left);
-        h_t = fdStep_getH_t(FDstep, switchingPoint_left);
+        h_y = fdStep_getH_y(FDstep, yMinus);
+        h_t = fdStep_getH_t(FDstep, tsMinus);
 
         % Calculate the derivatives of the switching functions w.r.t. y, t (and p if necessary)
-        del_sigmay = del_f_del_y(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_y);
-        del_sigmat = del_f_del_t(datahandle, switchingFunction, switchingPoint_left,  y_to_switch_left, parameters, h_t);
-        diff_sigmat = del_sigmat + del_sigmay * functionRHS(datahandle, switchingPoint_left,  y_to_switch_left, parameters);
+        del_sigmay = del_f_del_y(datahandle, switchingFunction, tsMinus, yMinus, parameters, h_y);
+        del_sigmat = del_f_del_t(datahandle, switchingFunction, tsMinus,  yMinus, parameters, h_t);
+        diff_sigmat = del_sigmat + del_sigmay * functionRHS(datahandle, tsMinus, yMinus, parameters);
         if isempty(jumpFunction)
             del_jumpy = zeros(dim_y);
             del_jumpt = zeros(dim_y, 1);
         else
-            del_jumpy = del_f_del_y(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
-            del_jumpt = del_f_del_t(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
+            del_jumpy = del_f_del_y(datahandle, jumpFunction, tsMinus, yPlus, parameters, h_y);
+            del_jumpt = del_f_del_t(datahandle, jumpFunction, tsMinus, yPlus, parameters, h_y);
         end
 
         % Evaluate the RHS at the switching point first with the model fixed on the left of the switch, then increase the model number
         % and evalate the RHS with the model fixed on the left of the switch. 
-        fminus = functionRHS(datahandle, switchingPoint_left, y_to_switch_left, parameters);
+        fminus = functionRHS(datahandle, tsMinus, yMinus, parameters);
 
-        data = datahandle.getData();
+        data   = datahandle.getData();
         data.computeSensitivity.modelStage = data.computeSensitivity.modelStage + 1;
         datahandle.setData(data);
 
-        fplus = functionRHS(datahandle, switchingPoint, y_to_switch, parameters);
+        fplus = functionRHS(datahandle, ts, yPlus, parameters);
 
         % Calculate the updates according to the update formula 
         Updates.Uy_new{i} = unit + del_jumpy + (fplus - (del_jumpt + (unit+del_jumpy)*fminus)) * del_sigmay / diff_sigmat;
 
         if Gp_flag
-            del_sigmap = del_f_del_p(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
+            del_sigmap = del_f_del_p(datahandle, switchingFunction, tsMinus, yMinus, parameters, h_p);
             if isempty(jumpFunction)
                 del_jumpp = zeros(dim_y, dim_p);
             else
-                del_jumpp = del_f_del_p(datahandle, jumpFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
+                del_jumpp = del_f_del_p(datahandle, jumpFunction, tsMinus, yMinus, parameters, h_p);
             end
             Updates.Up_new{i} = del_jumpp + (fplus - (del_jumpt + (unit+del_jumpy)*fminus)) * del_sigmap / diff_sigmat;
         end
