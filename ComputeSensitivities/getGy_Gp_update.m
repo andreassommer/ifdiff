@@ -62,7 +62,7 @@ function Updates = getGy_Gp_update(datahandle, startModel, endModel, Gp_flag, op
             del_jumpt = zeros(dim_y, 1);
         else
             del_jumpy = del_f_del_y(datahandle, jumpFunction, tsMinus, yPlus, parameters, h_y);
-            del_jumpt = del_f_del_t(datahandle, jumpFunction, tsMinus, yPlus, parameters, h_y);
+            del_jumpt = del_f_del_t(datahandle, jumpFunction, tsMinus, yPlus, parameters, h_t);
         end
 
         % Evaluate the RHS at the switching point first with the model fixed on the left of the switch, then increase the model number
