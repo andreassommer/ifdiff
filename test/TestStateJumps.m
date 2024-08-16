@@ -196,5 +196,139 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 testCase.verifyEqual(deval(sol, ts, 2), gamma^i*v0, 'RelTol', 1e-6);
             end
         end
+        function testSensitivitiesSimpleVDE(testCase)
+            % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
+            [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpSensitivityRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            testCase.verifyEqual(length(sol.switches), 1);
+
+            atol1 = 1e-6;
+            atol2 = 1e-5;
+
+            FDstep = generateFDstep(size(sol.y,1), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+
+            t1 = sol.switches(1);
+            t1Minus = t1 - eps(t1-eps(t1));
+            sens = sensFun([t0, t1Minus, t1, tEnd]);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getSensitivitiesForJumpSensitivityRHS(sol, p);
+
+            % MODEL 1
+            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'AbsTol', atol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'AbsTol', atol1);
+            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'AbsTol', atol2);
+
+            % MODEL 2
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'AbsTol', atol2);
+        end
+        function testSensitivitiesSimpleEND_piecewise(testCase)
+            % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
+            [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpSensitivityRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            testCase.verifyEqual(length(sol.switches), 1);
+
+            atol1 = 1e-5; % one OOM worse than with VDE
+            atol2 = 1e-5;
+
+            FDstep = generateFDstep(size(sol.y,1), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+
+            t1 = sol.switches(1);
+            t1Minus = t1 - eps(t1-eps(t1));
+            sens = sensFun([t0, t1Minus, t1, tEnd]);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getSensitivitiesForJumpSensitivityRHS(sol, p);
+
+            % MODEL 1
+            % Sensitivities before and after the first switch
+            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'AbsTol', atol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'AbsTol', atol1);
+            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'AbsTol', atol2);
+
+            % MODEL 2
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'AbsTol', atol2);
+        end
+        function testSensitivitiesSimpleEND_full(testCase)
+            % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
+            [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpSensitivityRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            testCase.verifyEqual(length(sol.switches), 1);
+
+            atol1 = 1e-5;
+            atol2 = 1e-5;
+
+            FDstep = generateFDstep(size(sol.y,1), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_full', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+
+            t1 = sol.switches(1);
+            % Since END fails around switches, we need to go a little further away to test our sensitivities. We will
+            % still use the more precise t1Minus and t1Plus for computing the analytic sensitivities
+            t1MinusMinus = t1 - 1e-3*t1;
+            t1PlusPlus = t1 + 1e-3*t1;
+            sens = sensFun([t0, t1MinusMinus, t1PlusPlus, tEnd]);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getSensitivitiesForJumpSensitivityRHS(sol, p);
+
+            % MODEL 1
+            testCase.verifyEqual(Gy{2}, Gy1(t1MinusMinus), 'AbsTol', atol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1MinusMinus), 'AbsTol', atol1);
+
+            % MODEL 2
+            t1Minus = t1 - eps(t1-eps(t1));
+            testCase.verifyEqual(Gy{3}, Gy2(t1PlusPlus) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gp{3}, Gy2(t1PlusPlus) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(t1PlusPlus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'AbsTol', atol2);
+        end
+    end
+    methods
+        function [integrator, options, t0, tEnd, p, x0] = getOdeDataForJumpSensitivityRHS(~)
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            t0 = 0;
+            tEnd = 10;
+            p = 1/4;
+            x0 = 1;
+        end
+        function [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = getSensitivitiesForJumpSensitivityRHS(~, sol, p)
+            t0 = sol.x(1);
+            x0 = sol.y(1);
+
+            t1 = sol.switches(1);
+            t1Minus = t1 - eps(t1-eps(t1));
+            t1Plus = t1 + eps(t1);
+            x1Minus1 = deval(sol, t1Minus);
+            x1Plus1  = deval(sol, t1Plus);
+
+            Gy1 = @(t) exp(p*(t-t0));
+            Gp1 = @(t) (t-t0) * x0 * exp(p*(t-t0));
+            Uy1 = 2 + (1/(2*x1Plus1) - 2*p*x1Minus1) * (t1 / (x1Minus1 + t1*p*x1Minus1));
+            Up1 = (1/(2*x1Plus1) - 2*p*x1Minus1) / (p*p*(x1Minus1 + t1*p*x1Minus1));
+            Gy2 = @(t) sqrt((t1 - t1 + x1Plus1^2) / (t + -t1 + x1Plus1^2));
+            Gp2 = @(t) 0;
+        end
     end
 end

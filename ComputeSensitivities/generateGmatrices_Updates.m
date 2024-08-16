@@ -16,13 +16,17 @@ function Updates = generateGmatrices_Updates(datahandle, amountG, modelNum, Gp_f
    data = datahandle.getData();
    parameters = data.SWP_detection.parameters;
    switches = data.computeSensitivity.switches_extended;
-   y_to_switches = data.computeSensitivity.y_to_switches;
+   switches_left = data.computeSensitivity.switches_extended_left;
+   y_to_switches      = data.computeSensitivity.y_to_switches;
+   y_to_switches_left = data.computeSensitivity.y_to_switches_left;
    switching_functions = data.SWP_detection.switchingFunction;
+   jump_functions      = data.SWP_detection.jumpFunction;
    functionRHS =  data.integratorSettings.preprocessed_rhs;
    
    FDstep = options.FDstep;
-   
+
    dim_y = data.computeSensitivity.dim_y;
+   dim_p = data.computeSensitivity.dim_p;
    unit = eye(dim_y);
    
    amount_new_matrices = (modelNum - 1) - (amountG - 1);
@@ -41,37 +45,51 @@ function Updates = generateGmatrices_Updates(datahandle, amountG, modelNum, Gp_f
    save = 1;
    for i = amountG : (modelNum-1)
       switchingFunction = switching_functions{i};
+      jumpFunction      = jump_functions{i};
+      y_to_switch_left = y_to_switches_left(:, i+1);
       y_to_switch = y_to_switches(:, i+1);
       switchingPoint = switches(i+1);
+      switchingPoint_left = switches_left(i+1);
 
-      h_y = fdStep_getH_y(FDstep, y_to_switch);
-      h_t = fdStep_getH_t(FDstep, switchingPoint);
+      h_y = fdStep_getH_y(FDstep, y_to_switch_left);
+      h_t = fdStep_getH_t(FDstep, switchingPoint_left);
 
       % Calculate the derivatives of the switching functions w.r.t. y, t (and p if necessary)
-      diff_sigmay = diff_sigma_y(datahandle, switchingFunction, switchingPoint, y_to_switch, parameters, h_y);
-      diff_sigmat = diff_sigma_t(datahandle, switchingFunction, switchingPoint, y_to_switch, parameters, h_y, h_t);
-      
-      if Gp_flag
-         diff_sigmap = diff_sigma_p(datahandle, switchingFunction, switchingPoint, y_to_switch, parameters, h_p);
+      diff_sigmay = diff_sigma_y(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_y);
+      diff_sigmat = diff_sigma_t(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_y, h_t);
+      if isempty(jumpFunction)
+          diff_jumpy = zeros(dim_y);
+          diff_jumpt = zeros(dim_y, 1);
+      else
+          diff_jumpy = diff_jump_y(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
+          diff_jumpt = diff_jump_t(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
       end
-      
+      if Gp_flag
+         diff_sigmap = diff_sigma_p(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
+         if isempty(jumpFunction)
+             diff_jumpp = zeros(dim_y, dim_p);
+         else
+             diff_jumpp = diff_jump_p(datahandle, jumpFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
+         end
+      end
+
       % Evaluate the RHS at the switching point first with the model fixed on the left of the switch, then increase the model number
       % and evalate the RHS with the model fixed on the left of the switch. 
-      fminus = functionRHS(datahandle, switchingPoint, y_to_switch, parameters);
-      
+      fminus = functionRHS(datahandle, switchingPoint_left, y_to_switch_left, parameters);
+
       data = datahandle.getData();
       data.computeSensitivity.modelStage = data.computeSensitivity.modelStage + 1;
       datahandle.setData(data);
       
       fplus = functionRHS(datahandle, switchingPoint, y_to_switch, parameters);
-      
+
       % Calculate the updates according to the update formula 
-      Updates.Uy_new{save} = unit + (fplus - fminus) * diff_sigmay / diff_sigmat;
-      
+      Updates.Uy_new{save} = unit + diff_jumpy + (fplus - (diff_jumpt + (unit+diff_jumpy)*fminus)) * diff_sigmay / diff_sigmat;
+
       if Gp_flag
-         Updates.Up_new{save} = (fplus - fminus) * diff_sigmap / diff_sigmat;
+         Updates.Up_new{save} = diff_jumpp + (fplus - (diff_jumpt + (unit+diff_jumpy)*fminus)) * diff_sigmap / diff_sigmat;
       end
-      
+
       save = save + 1;
    end
    

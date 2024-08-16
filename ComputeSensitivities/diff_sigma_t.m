@@ -2,6 +2,8 @@ function dsigma_t = diff_sigma_t(datahandle, switchingFunction, t, y, parameters
    % dsigma_t = diff_sigma_t(datahandle, switchingFunction, t, y, parameters, h_y, h_t)
    %
    % Calculates the derivative of the RHS with respect to t usind END (External numerical Differentiation)
+   % Note that this is a total derivative - the contribution of t to sigma directly as well as indirectly through y(t)
+   % are relevant
    %
    % INPUT: datahandle        - datahandle you get from the integration process with solveODE
    %        switchingFunction - switching function for which you want the derivative with respect to t

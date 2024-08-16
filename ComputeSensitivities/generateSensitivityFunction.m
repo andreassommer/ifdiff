@@ -65,7 +65,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    
    % switches includes tspan(1) and tspan(end)
    switches      = data.computeSensitivity.switches_extended;
-   y_to_switches = data.computeSensitivity.y_to_switches;
+   switches_left = data.computeSensitivity.switches_extended_left;
    
    tspan = data.SWP_detection.tspan;
    dim_y = data.computeSensitivity.dim_y;
@@ -115,13 +115,14 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
       end
         % VDE and END_piecewise share most of their code for obvious reasons. Only the construction of the intermediate
         % matrices G(t_s, t) varies.
-        % The unique timepoints are separated into groups according to their model number, that means all time points that are between the same
-        % two switching points are in one group. If one group is empty (so no timepoint is given between two switching points), 
+        % The unique timepoints are separated into groups according to their model number, that means all time
+        % points that are between the same two switching points are in one group. If one group is empty (so
+        % no timepoint is given between two switching points), 
         % the group is left empty and will be skipped in the calculations later. 
         switches_temp = switches;
         switches_temp(end) = switches_temp(end) + eps(switches_temp(end));
-        amountGroups = length(switches) - 1;
-        timeGroups = cell(1, amountGroups);
+        numTimeGroups = length(switches) - 1;
+        timeGroups = cell(1, numTimeGroups);
   
         for i = 1:length(switches)-1
             indices = (t_sort_unique >= switches_temp(i)) & (t_sort_unique < switches_temp(i+1));
@@ -129,10 +130,10 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
         end
 
         % sensData is a struct array that is as long as the amount of the time groups and every index belongs to one group
-        sensData = generateSensData(amountGroups);
+        sensData = generateSensData(numTimeGroups);
 
-        % The latest timepoint is being extracted to know how many intermediate matrices need to be calculated because they are needed until 
-        % the last switch before the latest timepoint. 
+        % The latest timepoint is being extracted to know how many intermediate matrices need to be calculated
+        % because they are only needed until the last switch before the latest timepoint.
         t_max = t_sort_unique(end);
         numModels = find(t_max < switches_temp, 1) - 1;
         
@@ -147,12 +148,12 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
         Gy_t_ts = cell(1, numModels);
         if method == methodCoded.END_piecewise
             for i=1:numModels
-                Gy_ts2_ts1(i) = generateGmatrices_intermediate_Gy_END(datahandle, [switches(i+1)], i, options);
+                Gy_ts2_ts1(i) = generateGmatrices_intermediate_Gy_END(datahandle, [switches_left(i+1)], i, options);
                 Gy_t_ts{i}    = generateGmatrices_intermediate_Gy_END(datahandle, timeGroups{i}, i, options);
             end
         else
             for i=1:numModels
-                Gy_ts2_ts1(i) = generateGmatrices_intermediate_Gy_VDE(datahandle, sol, [switches(i+1)], i, options);
+                Gy_ts2_ts1(i) = generateGmatrices_intermediate_Gy_VDE(datahandle, sol, [switches_left(i+1)], i, options);
                 Gy_t_ts{i}    = generateGmatrices_intermediate_Gy_VDE(datahandle, sol, timeGroups{i}, i, options);
             end
         end
@@ -196,12 +197,12 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
             Gp_t_ts = cell(1, numModels);
             if method == methodCoded.END_piecewise
                 for i=1:numModels
-                    Gp_ts2_ts1(i) = generateGmatrices_intermediate_Gp_END(datahandle, [switches(i+1)], i, options);
+                    Gp_ts2_ts1(i) = generateGmatrices_intermediate_Gp_END(datahandle, [switches_left(i+1)], i, options);
                     Gp_t_ts{i}    = generateGmatrices_intermediate_Gp_END(datahandle, timeGroups{i}, i, options);
                 end
             else
                 for i=1:numModels
-                    Gp_ts2_ts1(i) = generateGmatrices_intermediate_Gp_VDE(datahandle, sol, [switches(i+1)], i, options);
+                    Gp_ts2_ts1(i) = generateGmatrices_intermediate_Gp_VDE(datahandle, sol, [switches_left(i+1)], i, options);
                     Gp_t_ts{i}    = generateGmatrices_intermediate_Gp_VDE(datahandle, sol, timeGroups{i}, i, options);
                 end
             end

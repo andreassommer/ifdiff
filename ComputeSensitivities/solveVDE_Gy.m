@@ -1,4 +1,4 @@
-function sol = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
+function solVDE = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
 %SOLVEVDE_GY Solve the VDE for Gy in the interval tspan fixed to model modelNum and return the sol object
     data = datahandle.getData();
 
@@ -16,6 +16,6 @@ function sol = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
 
     function_y_VDE = @(t,G) VDE_RHS_y(sol, functionRHS_simple_VDE, t, G, parameters, sensOptions);
     initial_y = reshape(eye(dim_y), [], 1);
-    sol = integrator(function_y_VDE, tspan, initial_y, integrator_options);
+    solVDE = integrator(function_y_VDE, tspan, initial_y, integrator_options);
 end
 

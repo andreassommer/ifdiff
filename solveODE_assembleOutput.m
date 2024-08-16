@@ -14,11 +14,13 @@ data = datahandle.getData();
 
 
 
-l = length(data.SWP_detection.switchingpoints);
-switches = zeros(1,l);
+numSwitches = length(data.SWP_detection.switchingpoints);
+switches = zeros(1, numSwitches);
+jumps    = zeros(1, numSwitches);
 
-for i = 1:l
-    switches(1,i) = data.SWP_detection.switchingpoints{i};
+for i = 1:numSwitches
+    switches(1, i) = data.SWP_detection.switchingpoints{i};
+    jumps(1, i) = ~isempty(data.SWP_detection.jumpFunction{i});
 end
 
 
@@ -29,6 +31,7 @@ ode_output.y = data.SWP_detection.solution_until_t3.y;
 ode_output.stats = data.SWP_detection.solution_until_t3.stats;
 ode_output.idata = data.SWP_detection.solution_until_t3.idata;
 ode_output.switches = switches;
+ode_output.jumps = jumps;
 ode_output.switchingFunction = data.SWP_detection.switchingFunction;
 ode_output.signature = data.SWP_detection.signature;
 
