@@ -1,4 +1,4 @@
-function dG = VDE_RHS_y(sol, functionRHS_simple, t, G, parameters, options)
+function dG = VDE_RHS_y(datahandle, sol, functionRHS, t, G, parameters, options)
    % dG = VDE_RHS_y(sol, functionRHS_simple, t, G, parameters, options)
    %
    % Calculates the RHS of the VDE (Variaional differential equation) for the sensitivity calculation
@@ -13,14 +13,13 @@ function dG = VDE_RHS_y(sol, functionRHS_simple, t, G, parameters, options)
    %                             for calcualtion of derivatives with END (External numerical differentiation)
    %
    % OUTPUT: dG - matrix that represents the RHS of the VDE shaped as a vector for further calculations
-   
-   % Initialize
+
    y = deval(sol, t);
    FDstep = options.FDstep;
    h_y = fdStep_getH_y(FDstep, y);
    
    % Calculate the derivative of the RHS w.r.t. y 
-   df_y = diff_f_y(functionRHS_simple, t, y, parameters, h_y);
+   df_y = del_f_del_y(datahandle, functionRHS, t, y, parameters, h_y);
    
    G_matrix = reshape(G, size(df_y));
    dG_matrix = df_y * G_matrix;

@@ -54,14 +54,15 @@ function Updates = getGy_Gp_update(datahandle, startModel, endModel, Gp_flag, op
         h_t = fdStep_getH_t(FDstep, switchingPoint_left);
 
         % Calculate the derivatives of the switching functions w.r.t. y, t (and p if necessary)
-        diff_sigmay = diff_sigma_y(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_y);
-        diff_sigmat = diff_sigma_t(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_y, h_t);
+        del_sigmay = del_f_del_y(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_y);
+        del_sigmat = del_f_del_t(datahandle, switchingFunction, switchingPoint_left,  y_to_switch_left, parameters, h_t);
+        diff_sigmat = del_sigmat + del_sigmay * functionRHS(datahandle, switchingPoint_left,  y_to_switch_left, parameters);
         if isempty(jumpFunction)
-            diff_jumpy = zeros(dim_y);
-            diff_jumpt = zeros(dim_y, 1);
+            del_jumpy = zeros(dim_y);
+            del_jumpt = zeros(dim_y, 1);
         else
-            diff_jumpy = diff_jump_y(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
-            diff_jumpt = diff_jump_t(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
+            del_jumpy = del_f_del_y(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
+            del_jumpt = del_f_del_t(datahandle, jumpFunction, switchingPoint_left, y_to_switch, parameters, h_y);
         end
 
         % Evaluate the RHS at the switching point first with the model fixed on the left of the switch, then increase the model number
@@ -75,16 +76,16 @@ function Updates = getGy_Gp_update(datahandle, startModel, endModel, Gp_flag, op
         fplus = functionRHS(datahandle, switchingPoint, y_to_switch, parameters);
 
         % Calculate the updates according to the update formula 
-        Updates.Uy_new{i} = unit + diff_jumpy + (fplus - (diff_jumpt + (unit+diff_jumpy)*fminus)) * diff_sigmay / diff_sigmat;
+        Updates.Uy_new{i} = unit + del_jumpy + (fplus - (del_jumpt + (unit+del_jumpy)*fminus)) * del_sigmay / diff_sigmat;
 
         if Gp_flag
-            diff_sigmap = diff_sigma_p(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
+            del_sigmap = del_f_del_p(datahandle, switchingFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
             if isempty(jumpFunction)
-                diff_jumpp = zeros(dim_y, dim_p);
+                del_jumpp = zeros(dim_y, dim_p);
             else
-                diff_jumpp = diff_jump_p(datahandle, jumpFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
+                del_jumpp = del_f_del_p(datahandle, jumpFunction, switchingPoint_left, y_to_switch_left, parameters, h_p);
             end
-            Updates.Up_new{i} = diff_jumpp + (fplus - (diff_jumpt + (unit+diff_jumpy)*fminus)) * diff_sigmap / diff_sigmat;
+            Updates.Up_new{i} = del_jumpp + (fplus - (del_jumpt + (unit+del_jumpy)*fminus)) * del_sigmap / diff_sigmat;
         end
     end
 end
