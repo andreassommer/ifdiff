@@ -28,6 +28,10 @@ config.ctrlif_signaturePreallocationChunkSize = 30;
 % ============================= NAMING and INTERNALS =============================
 % WARNING: Do NOT touch if you don't know what you're doing!
 
+% Default values for prepareDatahandle arguments.
+config.optionsDefault = odeset('AbsTol', 1e-12, 'RelTol', 1e-4);
+config.numericIntegratorDefault = @ode45;
+
 % Names of IFDIFF related arguments which are added to preprocessed functions.
 config.datahandleArgumentName     = 'datahandle';
 config.function_indexArgumentName = 'function_index';

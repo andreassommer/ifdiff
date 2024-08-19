@@ -16,10 +16,11 @@ function prepareDatahandleForIntegration_setUpIntegrator(datahandle, varargin)
 
 
 data = datahandle.getData();
+config = makeConfig();
 
 % Default values
-data.integratorSettings.options = odeset('AbsTol', 1e-12, 'RelTol', 1e-4);
-data.integratorSettings.numericIntegrator = @ode45;
+data.integratorSettings.options = config.optionsDefault;
+data.integratorSettings.numericIntegrator = config.numericIntegratorDefault;
 
 % Optional arguments
 if olHasOption(varargin, 'options')
