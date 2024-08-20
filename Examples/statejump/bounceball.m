@@ -21,5 +21,7 @@ T = t0:0.01:tEnd;
 H = deval(sol, T, 1);
 V = deval(sol, T, 2);
 E = p(1)*H + (1/2) * V.^2;
-plot(T, H, T, V, T, E);
-legend('h(t)', 'v(t)', 'e(t)/m')
+plot(T, H, 'LineWidth', 2, 'DisplayName', 'h(t)');
+hold on;
+plotJumpingSolution(sol, [t0 tEnd], 2, {'v(t)'});
+plot(T, E, 'LineWidth', 2, 'DisplayName', 'e(t)/m');
