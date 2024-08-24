@@ -10,7 +10,7 @@ h0 = eps(1)*(1/g) * v0^2;
 p = [g gamma];
 
 t0 = 0;
-tEnd = 20; % zeno begins (analytically, ignoring one eps) at 20.3935964107270316 for these particular data
+tEnd = 20; % zeno begins (analytically) at 20.3935964107270316 for these particular data
 x0 = [h0; v0];
 
 datahandle = prepareDatahandleForIntegration('bounceballRHS', ...
