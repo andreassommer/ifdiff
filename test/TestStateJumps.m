@@ -182,18 +182,46 @@ classdef TestStateJumps < matlab.unittest.TestCase
             p = [g gamma];
 
             t0 = 0;
-            tEnd = 8;
+            tEnd = 10;
             x0 = [0; v0];
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
-            expectedSwitches = (2*v0/g)*[1 (1+gamma) (1+gamma+gamma^2) (1+gamma+gamma^2+gamma^3)];
-            for i=1:length(expectedSwitches)
-                ts = sol.switches(i);
-                % Since the solution is discontinuous at the switching points, an imperfect calculation of
-                % the SWP can cause deval(sol, expectedSwitches(i)) to be way wrong. Instead, we deval
-                % at the actual switch, and compare the switching _time_ to the expected time.
-                testCase.verifyEqual(ts, expectedSwitches(i), 'RelTol', 1e-6);
-                testCase.verifyEqual(deval(sol, ts, 1), 0, 'AbsTol', 1e-6);
-                testCase.verifyEqual(deval(sol, ts, 2), gamma^i*v0, 'RelTol', 1e-6);
+
+            % expect four switching points. If you change tEnd, then also change these
+            expectedSwitches = testCase.bounceballSwitches(6, v0, g, gamma);
+            atol             = [1e-6 1e-6 1e-6 1e-6 1e-6 1e-6];
+
+            % Prepare the sensitivities at t- and t for each switch
+            switchesLeft = sol.switches - eps(sol.switches - eps(sol.switches));
+            sensTimes = reshape([switchesLeft; sol.switches], 1, []);
+            sensTimes = [t0 sensTimes tEnd];
+            fdStep = generateFDstep(length(x0), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, fdStep, 'method', 'VDE', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+            sens = sensFun(sensTimes);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+
+            Gy_prev = eye(length(x0));
+            Gp_prev = zeros(length(x0), length(p));
+            for i=1:length(sol.switches)
+                % t2 is the current switch, t1 is the previous one
+                t1  = sensTimes(2*i-1);
+                t2Minus = sensTimes(2*i);
+                t2 = sol.switches(i);
+                % switching time and solution value
+                testCase.verifyEqual(t2, expectedSwitches(i), 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, t2, 1), 0, 'AbsTol', 1e-6);
+                testCase.verifyEqual(deval(sol, t2, 2), gamma^i*v0, 'RelTol', 1e-6);
+                % sensitivities
+                [Gy_t2_t1, Gp_t2_t1, Uy_t2, Up_t2] = testCase.bounceballIntermediateSensitivities(sol, p, t1, t2Minus);
+                Gy_full = Gy_t2_t1 * Gy_prev;
+                Gp_full = Gy_t2_t1 * Gp_prev + Gp_t2_t1;
+                testCase.verifyEqual(Gy{2*i}, Gy_full, 'AbsTol', atol(i));
+                testCase.verifyEqual(Gp{2*i}, Gp_full, 'AbsTol', atol(i));
+                Gy_prev = Uy_t2 * Gy_full;
+                Gp_prev = Uy_t2 * Gp_full + Up_t2;
+                testCase.verifyEqual(Gy{2*i+1}, Gy_prev, 'AbsTol', atol(i));
+                testCase.verifyEqual(Gp{2*i+1}, Gp_prev, 'AbsTol', atol(i));
             end
         end
         function testSensitivitiesSimpleVDE(testCase)
@@ -329,6 +357,43 @@ classdef TestStateJumps < matlab.unittest.TestCase
             Up1 = (1/(2*x1Plus1) - 2*p*x1Minus1) / (p*p*(x1Minus1 + t1*p*x1Minus1));
             Gy2 = @(t) sqrt((t1 - t1 + x1Plus1^2) / (t + -t1 + x1Plus1^2));
             Gp2 = @(t) 0;
+        end
+        function expectedSwitches = bounceballSwitches(~, numSwitches, v0, g, gamma)
+            % Compute the first n (numSwitches) switching points expected in the bouncing ball problem.
+            % In the exact version, switch #i is computed as (2*v0/g)*(1 + gamma + ... + gamma^(i-1))
+            expectedSwitches = zeros(1, numSwitches);
+            firstBounce = (2*v0/g);
+            swp = firstBounce;
+            expectedSwitches(1) = swp;
+            for i=2:numSwitches
+                swp = swp*gamma + firstBounce;
+                expectedSwitches(i) = swp;
+            end
+        end
+        function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballIntermediateSensitivities( ...
+                ~, sol, p, t1, t2Minus)
+            % To help in computing sensitivities for the bouncing ball example, this function
+            % provides intermediate matrices: given a previous switching point t1 and a left-shifted
+            % next SWP t2Minus (just shy of the actual SWP, since our solutions are cadlag), get
+            % the intermediate Gy and Gp between them (no updates) and the update matrices Uy and Up at ts2.
+            % You can then piece them together with the cumulative G matrices from previous SWPs.
+            g     = p(1);
+            gamma = p(2);
+            Gy_t_ts = @(t, ts) [1 t-ts; 0 1];
+            Gp_t_ts = @(t, ts) [-(1/2)*(t-ts)^2 0; -(t-ts) 0];
+            % Note: these matrices generally need x+(t_s), but we already reduced it to x- here.
+            Uy   = @(t) [
+                2*eps(1)*gamma^2-gamma,    (2/g)*eps(1)*gamma^2*deval(sol, t, 2);
+                -(1+gamma)*g/deval(sol, t, 2), -gamma
+                ];
+            Up   = @(t) [
+                eps(1)*gamma^2*deval(sol, t, 2)^2/(g^2), 2*eps(1)*gamma*deval(sol, t, 2)/g;
+                0, -deval(sol, t, 2)
+                ];
+            Gy_t2_ts1 = Gy_t_ts(t2Minus, t1);
+            Gp_t2_ts1 = Gp_t_ts(t2Minus, t1);
+            Uy_t2 = Uy(t2Minus);
+            Up_t2 = Up(t2Minus);
         end
     end
 end
