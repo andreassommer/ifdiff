@@ -13,13 +13,20 @@ function dx = bounceballRHS(~, x, p)
 % (1 + gamma + gamma^2 + ... + gamma^(k-1)) * 2*v0/g, converging to (1/(1-gamma))*2*v0/g as the number of bounces goes
 % to infinity. The other way round: within the time horizon (1/(1-gamma))*2*v0/g, there are infinitely many bounces.
 
+% For the state jump: if the height goes from positive to negative, jump to [0, -gamma*v].
+
+% Refinement 1: set h+ = eps*v+^2. We cannot set h = 0, as the jump cannot put the state straight back on the zero
+% manifold. Setting h+ to a value other than 0 initially ruins that elegant geometric series, but setting h+ to a
+% multiple of v+^2 lets us pull v+ out of the square root and get a geometric series after all. The initial value
+% should also be not [0, v0], but instead [eps*v0^2, v0]
+% Refinement 2: instead of eps*v+^2, set h+ to (1/g)*eps*v+^2 because the error in v+ depends on
+% g. Then the initial value should also be this also leads to some nice canceling out in the derivation of
+% the Zeno limit.
+% Now, the k-th bounce occurs after
+% (1 + gamma~ + gamma~^2 + ... + gamma~^(k-1)) * (1+sqrt(1+2eps))*v0/g, where gamma~ = sqrt(1+2eps)gamma
+% The Zeno limit is (1/(1-gamma~))*(1+sqrt(1+2eps))*v0/g.
+% Since sqrt(1+2eps)=1+eps and eps(2) = 2eps(1), 1+sqrt(1+2eps)) will reduce to 2 in the machine.
+
     dx = [x(2); -p(1)];
-    % state jump: if the height goes from positive to negative, jump to [+eps, -v].
-    % The eps is to avoid another immediate switching event being detected.
-    % Refinement 1: set h+ = eps*v+^2. setting h+ to a value other than 0 kind of ruins that elegant
-    % geometric series, but setting h+ to a multiple of v+^2 lets us pull v+ out of the square root
-    % and get a geometric series after all.
-    % Refinement 2: instead of eps*v+^2, set h+ to (1/g)*eps*v+^2 because the error in v+ depends on
-    % g. this also leads to some nice canceling out in the derivation of the zeno limit
     ifdiff_jumpif(x(1), -1, [eps(1)*(1/p(1)) * p(2)^2*x(2)^2 - x(1); -(1+p(2))*x(2)]);
 end
