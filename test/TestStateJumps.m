@@ -228,7 +228,9 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
         function testSensitivitiesSimpleVDE(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
-            [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            [t0, tEnd, p, x0] = jumpSensitivityInitdata();
             datahandle = prepareDatahandleForIntegration( ...
                 'jumpSensitivityRHS', ...
                 'solver', func2str(integrator), ...
@@ -248,7 +250,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sens = sensFun([t0, t1Minus, t1, tEnd]);
             Gy = {sens.Gy};
             Gp = {sens.Gp};
-            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getSensitivitiesForJumpSensitivityRHS(sol, p);
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
 
             % MODEL 1
             testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'AbsTol', atol1);
@@ -262,7 +264,9 @@ classdef TestStateJumps < matlab.unittest.TestCase
         end
         function testSensitivitiesSimpleEND_piecewise(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
-            [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            [t0, tEnd, p, x0] = jumpSensitivityInitdata();
             datahandle = prepareDatahandleForIntegration( ...
                 'jumpSensitivityRHS', ...
                 'solver', func2str(integrator), ...
@@ -282,7 +286,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sens = sensFun([t0, t1Minus, t1, tEnd]);
             Gy = {sens.Gy};
             Gp = {sens.Gp};
-            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getSensitivitiesForJumpSensitivityRHS(sol, p);
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
 
             % MODEL 1
             % Sensitivities before and after the first switch
@@ -297,7 +301,9 @@ classdef TestStateJumps < matlab.unittest.TestCase
         end
         function testSensitivitiesSimpleEND_full(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
-            [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            [t0, tEnd, p, x0] = jumpSensitivityInitdata();
             datahandle = prepareDatahandleForIntegration( ...
                 'jumpSensitivityRHS', ...
                 'solver', func2str(integrator), ...
@@ -320,7 +326,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sens = sensFun([t0, t1MinusMinus, t1PlusPlus, tEnd]);
             Gy = {sens.Gy};
             Gp = {sens.Gp};
-            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getSensitivitiesForJumpSensitivityRHS(sol, p);
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
 
             % MODEL 1
             testCase.verifyEqual(Gy{2}, Gy1(t1MinusMinus), 'AbsTol', atol1);
@@ -335,31 +341,6 @@ classdef TestStateJumps < matlab.unittest.TestCase
         end
     end
     methods
-        function [integrator, options, t0, tEnd, p, x0] = getOdeDataForJumpSensitivityRHS(~)
-            integrator = TestStateJumps.defaultIntegrator;
-            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
-            t0 = 0;
-            tEnd = 10;
-            p = 1/4;
-            x0 = 1;
-        end
-        function [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = getSensitivitiesForJumpSensitivityRHS(~, sol, p)
-            t0 = sol.x(1);
-            x0 = sol.y(1);
-
-            t1 = sol.switches(1);
-            t1Minus = t1 - eps(t1-eps(t1));
-            t1Plus = t1 + eps(t1);
-            x1Minus1 = deval(sol, t1Minus);
-            x1Plus1  = deval(sol, t1Plus);
-
-            Gy1 = @(t) exp(p*(t-t0));
-            Gp1 = @(t) (t-t0) * x0 * exp(p*(t-t0));
-            Uy1 = 1/(4*p*x1Minus1^2);
-            Up1 = 1/(4*p^3*x1Minus1^2) - 2/p^2;
-            Gy2 = @(t) sqrt((t1 - t1 + x1Plus1^2) / (t + -t1 + x1Plus1^2));
-            Gp2 = @(t) 0;
-        end
         function expectedSwitches = bounceballSwitches(~, numSwitches, v0, g, gamma)
             % Compute the first n (numSwitches) switching points expected in the bouncing ball problem.
             % In the exact version, switch #i is computed as (2*v0/g)*(1 + gamma + ... + gamma^(i-1))
@@ -397,6 +378,19 @@ classdef TestStateJumps < matlab.unittest.TestCase
             Gp_t2_ts1 = Gp_t_ts(t2Minus, t1);
             Uy_t2 = Uy(t2Minus);
             Up_t2 = Up(t2Minus);
+        end
+        function [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = getJumpSensitivitySensitivities(~, sol, p)
+            % We compute these analytic sensitivities based on the intermediate values that IFDIFF produces,
+            % because we are more interested in checking that the algorithm does what is expected in these
+            % tests than in actually computing the total error.
+            t0 = sol.x(1);
+            x0 = sol.y(1);
+            t1 = sol.switches(1);
+            t1Minus = t1 - eps(t1-eps(t1));
+            t1Plus = t1 + eps(t1);
+            x1Minus1 = deval(sol, t1Minus);
+            x1Plus1  = deval(sol, t1Plus);
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = jumpSensitivitySensitivities(p, t0, x0, t1, x1Minus1, x1Plus1);
         end
     end
 end
