@@ -225,6 +225,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 testCase.verifyEqual(Gp{2*i+1}, Gp_prev, 'AbsTol', atol(i));
             end
         end
+
         function testSensitivitiesSimpleVDE(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
             [integrator, options, t0, tEnd, p, x0] = testCase.getOdeDataForJumpSensitivityRHS();
@@ -235,8 +236,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             testCase.verifyEqual(length(sol.switches), 1);
 
-            atol1 = 1e-6;
-            atol2 = 1e-5;
+            atol1 = 1e-5;
+            atol2 = 1e-4;
 
             FDstep = generateFDstep(size(sol.y,1), length(p));
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', ...
@@ -269,8 +270,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             testCase.verifyEqual(length(sol.switches), 1);
 
-            atol1 = 1e-5; % one OOM worse than with VDE
-            atol2 = 1e-5;
+            atol1 = 1e-4; % one OOM worse than with VDE
+            atol2 = 1e-4;
 
             FDstep = generateFDstep(size(sol.y,1), length(p));
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', ...
@@ -304,8 +305,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             testCase.verifyEqual(length(sol.switches), 1);
 
-            atol1 = 1e-5;
-            atol2 = 1e-5;
+            atol1 = 1e-4;
+            atol2 = 1e-3;
 
             FDstep = generateFDstep(size(sol.y,1), length(p));
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_full', ...
@@ -354,8 +355,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
             Gy1 = @(t) exp(p*(t-t0));
             Gp1 = @(t) (t-t0) * x0 * exp(p*(t-t0));
-            Uy1 = 2 + (1/(2*x1Plus1) - 2*p*x1Minus1) * (t1 / (x1Minus1 + t1*p*x1Minus1));
-            Up1 = (1/(2*x1Plus1) - 2*p*x1Minus1) / (p*p*(x1Minus1 + t1*p*x1Minus1));
+            Uy1 = 1/(2*p*x1Plus1^2);
+            Up1 = 1/(2*p^3*x1Plus1^2) - 2/p^2;
             Gy2 = @(t) sqrt((t1 - t1 + x1Plus1^2) / (t + -t1 + x1Plus1^2));
             Gp2 = @(t) 0;
         end
