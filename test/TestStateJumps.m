@@ -238,8 +238,9 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             testCase.verifyEqual(length(sol.switches), 1);
 
-            atol1 = 1e-5;
-            atol2 = 1e-4;
+            % These are tight, setting either of them one OOM lower causes the test to fail
+            rtol1 = 1e-6;
+            rtol2 = 1e-5;
 
             FDstep = generateFDstep(size(sol.y,1), length(p));
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', ...
@@ -253,14 +254,14 @@ classdef TestStateJumps < matlab.unittest.TestCase
             [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
 
             % MODEL 1
-            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'AbsTol', atol1);
-            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'AbsTol', atol1);
-            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'AbsTol', atol2);
+            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'RelTol', rtol2);
 
             % MODEL 2
-            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'AbsTol', atol2);
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
         end
         function testSensitivitiesSimpleEND_piecewise(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
@@ -274,8 +275,9 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             testCase.verifyEqual(length(sol.switches), 1);
 
-            atol1 = 1e-4; % one OOM worse than with VDE
-            atol2 = 1e-4;
+            % These are tight, setting either of them one OOM lower causes the test to fail
+            rtol1 = 1e-6;
+            rtol2 = 1e-5;
 
             FDstep = generateFDstep(size(sol.y,1), length(p));
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', ...
@@ -290,14 +292,14 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
             % MODEL 1
             % Sensitivities before and after the first switch
-            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'AbsTol', atol1);
-            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'AbsTol', atol1);
-            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'AbsTol', atol2);
+            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'RelTol', rtol2);
 
             % MODEL 2
-            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'AbsTol', atol2);
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
         end
         function testSensitivitiesSimpleEND_full(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
@@ -311,8 +313,9 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             testCase.verifyEqual(length(sol.switches), 1);
 
-            atol1 = 1e-4;
-            atol2 = 1e-3;
+            % These are tight, setting either of them one OOM lower causes the test to fail
+            rtol1 = 1e-5;
+            rtol2 = 1e-4;
 
             FDstep = generateFDstep(size(sol.y,1), length(p));
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_full', ...
@@ -329,15 +332,15 @@ classdef TestStateJumps < matlab.unittest.TestCase
             [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
 
             % MODEL 1
-            testCase.verifyEqual(Gy{2}, Gy1(t1MinusMinus), 'AbsTol', atol1);
-            testCase.verifyEqual(Gp{2}, Gp1(t1MinusMinus), 'AbsTol', atol1);
+            testCase.verifyEqual(Gy{2}, Gy1(t1MinusMinus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1MinusMinus), 'RelTol', rtol1);
 
             % MODEL 2
             t1Minus = t1 - eps(t1-eps(t1));
-            testCase.verifyEqual(Gy{3}, Gy2(t1PlusPlus) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gp{3}, Gy2(t1PlusPlus) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(t1PlusPlus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'AbsTol', atol2);
-            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'AbsTol', atol2);
+            testCase.verifyEqual(Gy{3}, Gy2(t1PlusPlus) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{3}, Gy2(t1PlusPlus) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(t1PlusPlus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
         end
     end
     methods
