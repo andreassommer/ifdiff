@@ -45,17 +45,53 @@ GpsPlusStandard  = Gp{3};
 GyfStandard      = Gy{4};
 GpfStandard      = Gp{4};
 
+
+% IFDIFF solution with strict tolerances. The smaller FDstep makes most of the difference,
+% but the strict ODE tolerances also help a little bit
+optionsStrict    = odeset('AbsTol', 1e-12, 'RelTol', 1e-10);
+FDstepStrict = generateFDstep(size(x0,1), length(p), 'ht', 1e-9, 'hy', 1e-9, 'hp', 1e-9);
+
+integrator         = @ode45;
+datahandle = prepareDatahandleForIntegration( ...
+    'jumpSensitivityRHS', ...
+    'solver', func2str(integrator), ...
+    'options', optionsStrict);
+solStrict = solveODE(datahandle, [t0 tEnd], x0, p);
+
+tsStrict      = solStrict.switches(1);
+tsMinusStrict = tsStrict - eps(tsStrict - eps(tsStrict));
+xsMinusStrict = deval(solStrict, tsMinusStrict);
+xsPlusStrict  = deval(solStrict, tsStrict);
+xEndStrict    = deval(solStrict, tEnd);
+sensFunStrict = generateSensitivityFunction(datahandle, solStrict, FDstepStrict, 'method', 'VDE', ...
+    'CalcGy', true, 'CalcGp', true);
+sensStrict = sensFunStrict([t0, tsMinusStrict, tsStrict, tEnd]);
+Gy = {sensStrict.Gy};
+Gp = {sensStrict.Gp};
+GysMinusStrict = Gy{2};
+GpsMinusStrict = Gp{2};
+GysPlusStrict  = Gy{3};
+GpsPlusStrict  = Gp{3};
+GyfStrict      = Gy{4};
+GpfStrict      = Gp{4};
+
 % And print everything in a nice table
 Value           = ["t_s";     "x_-(t_s)";       "x_+(t_s)";     "Gy_-(t_s)";      "Gp_-(t_s)"; ...
                    "Gy_+(t_s)";     "Gp_+(t_s)";     "Gy(t_f)";      "Gp(t_f)"];
-analyticPoints  = [tsExact;   xsMinusExact;     xsPlusExact;    GysMinusExact;    GpsMinusExact; ...
+analyticPoints  = [tsExact;    xsMinusExact;    xsPlusExact;    GysMinusExact;    GpsMinusExact; ...
                    GysPlusExact;    GpsPlusExact;    GyfExact;    GpfExact];
 standardPoints  = [tsStandard; xsMinusStandard; xsPlusStandard; GysMinusStandard; GpsMinusStandard; ...
                    GysPlusStandard; GpsPlusStandard; GyfStandard; GpfStandard];
-standardError   = standardPoints - analyticPoints;
+strictPoints    = [tsStrict;   xsMinusStrict;   xsPlusStrict;   GysMinusStrict;   GpsMinusStrict; ...
+                   GysPlusStrict;   GpsPlusStrict;   GyfStrict;   GpfStrict];
+standardError   = (standardPoints - analyticPoints) ./ analyticPoints;
+strictError     = (strictPoints   - analyticPoints) ./ analyticPoints;
+
 print16 = @(x) sprintf("% 16.16f", x);
 Analytic        = arrayfun(print16, analyticPoints);
 IFDIFF_Standard = arrayfun(print16, standardPoints);
 Error_Standard  = arrayfun(print16, standardError);
+IFDIFF_Strict   = arrayfun(print16, strictPoints);
+Error_Strict    = arrayfun(print16, strictError);
 
-T = table(Value, Analytic, IFDIFF_Standard, Error_Standard)
+T = table(Value, Analytic, IFDIFF_Standard, Error_Standard, IFDIFF_Strict, Error_Strict)
