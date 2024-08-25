@@ -355,8 +355,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
 
             Gy1 = @(t) exp(p*(t-t0));
             Gp1 = @(t) (t-t0) * x0 * exp(p*(t-t0));
-            Uy1 = 1/(2*p*x1Plus1^2);
-            Up1 = 1/(2*p^3*x1Plus1^2) - 2/p^2;
+            Uy1 = 1/(4*p*x1Minus1^2);
+            Up1 = 1/(4*p^3*x1Minus1^2) - 2/p^2;
             Gy2 = @(t) sqrt((t1 - t1 + x1Plus1^2) / (t + -t1 + x1Plus1^2));
             Gp2 = @(t) 0;
         end
