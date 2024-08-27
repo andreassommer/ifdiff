@@ -54,6 +54,6 @@ function [value, cellarray] = olGetOption(cellarray, searchOption, defaultValue)
 
    % if more than one output argument, remove the queried option
    if (nargout >= 2)
-      cellarray = olRemoveOptions(cellarray, optionName);
+      cellarray = olRemoveOption(cellarray, searchOption);
    end
 end

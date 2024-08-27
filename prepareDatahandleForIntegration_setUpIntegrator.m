@@ -38,44 +38,46 @@ end
 data.integratorSettings.options = config.optionsDefault;
 data.integratorSettings.numericIntegrator = config.numericIntegratorDefault;
 
-% Optional arguments
-if olHasOption(optionlist, 'options')
-    data.integratorSettings.options = olGetOption(varargin, 'options');
+% Optional argument: ODE Options
+[optionsVal, optionlist] = olGetOption(optionlist, 'options');
+if ~isempty(optionsVal)
+    data.integratorSettings.options = optionsVal;
 else
     fprintf( ...
         'INFO: Option ''options'' not specified. Using default value: AbsTol=%.2e, RelTol=%.2e\n', ...
         data.integratorSettings.options.AbsTol, data.integratorSettings.options.RelTol);
 end
-optionlist = olRemoveOption(optionlist, 'options');
 
-% Besides 'integrator' 'solver' is also accepted for backwards compatibility.
-% We will simply use whichever option we find first.
-integratorOption = olHasAnyOption(optionlist, 'integrator', 'solver');
-if ~isempty(integratorOption)
-    integrator = olGetOption(varargin, integratorOption);
+% Optional argument: Integrator
+[integratorVal, optionlist] = olGetOption(optionlist, 'integrator');
+% Besides 'integrator', 'solver' is also accepted as a key for backward compatibility.
+if isempty(integratorVal)
+    [integratorVal, optionlist] = olGetOption(optionlist, 'solver');
+end
+
+if ~isempty(integratorVal)
     % Integrator may be passed as function handle or char array.
-    if ~isa(integrator, 'function_handle')
+    if ~isa(integratorVal, 'function_handle')
         try
-            integrator = str2func(integrator);
+            integratorVal = str2func(integratorVal);
         catch ME
             if strcmp(ME.identifier, 'MATLAB:string:MustBeStringScalarOrCharacterVector')
-                msg = sprintf( ...
-                    ['Incorrect type for option ''%s'': ' ...
+                msg = sprintf([ ...
+                    'Incorrect type for option ''integrator'': ' ...
                     'Expected text scalar or function handle but got %s instead.\n'], ...
-                    integratorOption, class(integrator));
+                    class(integratorVal));
                 causeException = MException('IFDIFF:prepareDatahandle:incorrectParameterType', msg);
                 ME = addCause(ME, causeException);
             end
             rethrow(ME);
         end
     end
-    data.integratorSettings.numericIntegrator = integrator;
+    data.integratorSettings.numericIntegrator = integratorVal;
 else
     fprintf( ...
         'INFO: Option ''integrator'' not specified. Using default value: %s\n', ...
         func2str(data.integratorSettings.numericIntegrator));
 end
-optionlist = olRemoveOption(optionlist, integratorOption);
 
 % Print warning if there are unused options
 if ~isempty(optionlist)
