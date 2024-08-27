@@ -1,5 +1,24 @@
-% Solve jumpSensitivityRHS with IFDIFF and print out results with standard tolerances, strict tolerances, and
-% results from an analytic solution.
+% Solve jumpSensitivityRHS with IFDIFF and print out results of
+% 1. the analytic solution
+% 2. IFDIFF with standard tolerances and FD step, plus relative error
+% 3. IFDIFF with strict tolerances and shorter FD step, plus relative error
+
+
+% CONFIGURATION
+% Precision settings
+optionsStandard    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+FDstepStandard     = generateFDstep(size(x0,1), length(p));
+
+optionsStrict      = odeset('AbsTol', 1e-12, 'RelTol', 1e-10);
+FDstepStrict       = generateFDstep(size(x0,1), length(p), 'ht', 1e-8, 'hy', 1e-8, 'hp', 1e-8);
+
+% Controlling the table output at the end
+printValues = false;
+valueFormatString = "% 10.6f";
+errorFormatString = "% .4e";
+
+
+% MAIN
 initPaths();
 
 [t0, tEnd, p, x0] = jumpSensitivityInitdata();
@@ -18,9 +37,6 @@ GyfExact      = Gy2(tEnd) * GysPlusExact;
 GpfExact      = Gy2(tEnd) * GpsPlusExact + Gp2(tEnd);
 
 % IFDIFF solution (standard tolerances)
-optionsStandard    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
-FDstepStandard = generateFDstep(size(x0,1), length(p));
-
 integrator         = @ode45;
 datahandle = prepareDatahandleForIntegration( ...
     'jumpSensitivityRHS', ...
@@ -48,9 +64,6 @@ GpfStandard      = Gp{4};
 
 % IFDIFF solution with strict tolerances. The smaller FDstep makes most of the difference,
 % but the strict ODE tolerances also help a little bit
-optionsStrict    = odeset('AbsTol', 1e-12, 'RelTol', 1e-10);
-FDstepStrict = generateFDstep(size(x0,1), length(p), 'ht', 1e-9, 'hy', 1e-9, 'hp', 1e-9);
-
 integrator         = @ode45;
 datahandle = prepareDatahandleForIntegration( ...
     'jumpSensitivityRHS', ...
@@ -87,11 +100,16 @@ strictPoints    = [tsStrict;   xsMinusStrict;   xsPlusStrict;   GysMinusStrict; 
 standardError   = (standardPoints - analyticPoints) ./ analyticPoints;
 strictError     = (strictPoints   - analyticPoints) ./ analyticPoints;
 
-print16 = @(x) sprintf("% 16.16f", x);
-Analytic        = arrayfun(print16, analyticPoints);
-IFDIFF_Standard = arrayfun(print16, standardPoints);
-Error_Standard  = arrayfun(print16, standardError);
-IFDIFF_Strict   = arrayfun(print16, strictPoints);
-Error_Strict    = arrayfun(print16, strictError);
+printValue = @(x) sprintf(valueFormatString, x);
+printError = @(x) sprintf(errorFormatString, x);
+Analytic        = arrayfun(printValue, analyticPoints);
+IFDIFF_Standard = arrayfun(printValue, standardPoints);
+Error_Standard  = arrayfun(printError, standardError);
+IFDIFF_Strict   = arrayfun(printValue, strictPoints);
+Error_Strict    = arrayfun(printError, strictError);
 
-T = table(Value, Analytic, IFDIFF_Standard, Error_Standard, IFDIFF_Strict, Error_Strict)
+if printValues
+    T = table(Value, Analytic, IFDIFF_Standard, Error_Standard, IFDIFF_Strict, Error_Strict)
+else
+    T = table(Value, Analytic, Error_Standard, Error_Strict)
+end
