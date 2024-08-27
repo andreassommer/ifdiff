@@ -169,7 +169,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
         end
 
         function testBounceball(testCase)
-            % Test the bouncing ball example. See RHS file for explanation on where these expected values come from
+            % bouncing ball example, compare to analytic solution
             integrator = TestStateJumps.defaultIntegrator;
             options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
             datahandle = prepareDatahandleForIntegration( ...
@@ -214,7 +214,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 testCase.verifyEqual(deval(sol, t2, 1), 0, 'AbsTol', 1e-6);
                 testCase.verifyEqual(deval(sol, t2, 2), gamma^i*v0, 'RelTol', 1e-6);
                 % sensitivities
-                [Gy_t2_t1, Gp_t2_t1, Uy_t2, Up_t2] = testCase.bounceballIntermediateSensitivities(sol, p, t1, t2Minus);
+                [Gy_t2_t1, Gp_t2_t1, Uy_t2, Up_t2] = testCase.getbounceballSensitivities(sol, p, t1, t2Minus);
                 Gy_full = Gy_t2_t1 * Gy_prev;
                 Gp_full = Gy_t2_t1 * Gp_prev + Gp_t2_t1;
                 testCase.verifyEqual(Gy{2*i}, Gy_full, 'AbsTol', atol(i));
@@ -357,31 +357,14 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 expectedSwitches(i) = swp;
             end
         end
-        function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballIntermediateSensitivities( ...
+        function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = getbounceballSensitivities( ...
                 ~, sol, p, t1, t2Minus)
-            % To help in computing sensitivities for the bouncing ball example, this function
-            % provides intermediate matrices: given a previous switching point t1 and a left-shifted
-            % next SWP t2Minus (just shy of the actual SWP, since our solutions are cadlag), get
-            % the intermediate Gy and Gp between them (no updates) and the update matrices Uy and Up at ts2.
-            % You can then piece them together with the cumulative G matrices from previous SWPs.
             g     = p(1);
             gamma = p(2);
-            Gy_t_ts = @(t, ts) [1 t-ts; 0 1];
-            Gp_t_ts = @(t, ts) [-(1/2)*(t-ts)^2 0; -(t-ts) 0];
-            % Note: these matrices generally need x+(t_s), but we already reduced it to x- here.
-            Uy   = @(t) [
-                2*eps(1)*gamma^2-gamma,    (2/g)*eps(1)*gamma^2*deval(sol, t, 2);
-                -(1+gamma)*g/deval(sol, t, 2), -gamma
-                ];
-            Up   = @(t) [
-                eps(1)*gamma^2*deval(sol, t, 2)^2/(g^2), 2*eps(1)*gamma*deval(sol, t, 2)/g;
-                0, -deval(sol, t, 2)
-                ];
-            Gy_t2_ts1 = Gy_t_ts(t2Minus, t1);
-            Gp_t2_ts1 = Gp_t_ts(t2Minus, t1);
-            Uy_t2 = Uy(t2Minus);
-            Up_t2 = Up(t2Minus);
+            x2Minus = deval(sol, t2Minus, 2);
+            [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma, t1, t2Minus, x2Minus);
         end
+
         function [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = getJumpSensitivitySensitivities(~, sol, p)
             % We compute these analytic sensitivities based on the intermediate values that IFDIFF produces,
             % because we are more interested in checking that the algorithm does what is expected in these
