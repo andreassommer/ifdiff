@@ -10,7 +10,7 @@ odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12, 'MaxStep', 2);
 filename = 'sign_inconsistent_rhs';
 tic
 datahandle = prepareDatahandleForIntegration(filename, ...
-    'solver', func2str(integrator), 'options', odeoptions);
+    'integrator', func2str(integrator), 'options', odeoptions);
 toc
 
 fprintf('Integration with ifdiff/%s...\n  ', func2str(integrator));

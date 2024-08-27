@@ -31,7 +31,7 @@ set(gca, 'Box', 'off');
 initPaths();
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS','solver', func2str(integrator), 'options', odeoptionsrhs_test);
+datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);
 
 tspan         = [0 20];
 initialvalues = [1;0];

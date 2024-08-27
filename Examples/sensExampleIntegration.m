@@ -5,7 +5,7 @@ initp = [3.0];
 odeoptions = odeset( 'AbsTol', 1e-06, 'RelTol', 1e-04);   
 
 tic
-hdlsens = prepareDatahandleForIntegration('sensExample', 'solver', 'ode23', 'options', odeoptions);
+hdlsens = prepareDatahandleForIntegration('sensExample', 'integrator', 'ode23', 'options', odeoptions);
 preptime = toc
 
 tic

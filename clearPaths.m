@@ -1,13 +1,21 @@
 function clearPaths()
-   % function clearPaths()
-   % 
-   % Remove all extra added paths from search path
-   % 
-   % INPUT:  none
-   % OUTPUT: none
-   %
+%CLEARPATHS Remove directories required by IFDIFF from the MATLAB search path.
+%
+%   INPUT
+%   [none]
+%
+%   OUTPUT
+%   [none]
+%
+%   See also INITPATHS whose changes are undone by CLEARPATHS.
 
-   rmpath('./Tools');
-   rmpath(genpath('./Examples'));  % include subdirs
 
+% Get absolute path to directory in which this file resides.
+[filePath, ~, ~] = fileparts(mfilename('fullpath'));
+
+rmpath(filePath);
+rmpath(genpath(fullfile(filePath, 'Tools')));
+rmpath(genpath(fullfile(filePath, 'Examples')));
+rmpath(genpath(fullfile(filePath, 'PreprocessedFunctions')));
+rmpath(fullfile(filePath, 'ComputeSensitivities'));
 end

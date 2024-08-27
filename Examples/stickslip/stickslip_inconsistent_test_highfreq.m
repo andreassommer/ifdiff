@@ -15,7 +15,7 @@ fprintf('Preprocessing...\n  ');
 filename = 'stickslip_inconsistent_rhs_highfreq';
 integrator = @ode45;
 odeopts = odeset('RelTol',1e-10, 'AbsTol',1e-12); % defaults
-datahandle = prepareDatahandleForIntegration(filename, 'solver', func2str(integrator), 'options', odeopts);
+datahandle = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', odeopts);
 % integrate with ifdiff
 fprintf('Integration with ifdiff/%s...\n  ', func2str(integrator));
 tic

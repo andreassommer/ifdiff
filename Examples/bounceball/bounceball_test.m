@@ -9,7 +9,7 @@ fprintf('Preprocessing...\n  ');
 odeoptions = odeset( 'AbsTol', 1e-14, 'RelTol', 1e-12);
 filename = 'bounceball_rhs';
 tic
-handlerhs_test = prepareDatahandleForIntegration(filename, 'solver', func2str(integrator), 'options', odeoptions);
+handlerhs_test = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', odeoptions);
 toc
 
 fprintf('Integration with ifdiff/%s...\n  ', func2str(integrator));

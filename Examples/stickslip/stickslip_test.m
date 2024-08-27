@@ -18,7 +18,7 @@ odeoptions = odeset( 'AbsTol', 1e-10, 'RelTol', 1e-3);
 
 fprintf('Preparing...\n  ');
 tic
-hdlrhs_test = prepareDatahandleForIntegration('stickslip_rhs', 'solver', func2str(odesolver), 'options', odeoptions);
+hdlrhs_test = prepareDatahandleForIntegration('stickslip_rhs', 'integrator', func2str(odesolver), 'options', odeoptions);
 toc
 %%
 fprintf('Solving using ifdiff...\n  ');

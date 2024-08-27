@@ -90,9 +90,9 @@ function node = mtree_createMtreeNode(varargin)
     % value (from input by user); 
     % if not mentioned from user set as default value 0; 
     function n = getValueOrDefault(name)
-        if hasOption(varargin, name)
+        if olHasOption(varargin, name)
             % assgin value as given through input
-            n = getOption(varargin, name); 
+            n = olGetOption(varargin, name);
         else % default value 
             n = 0;
         end

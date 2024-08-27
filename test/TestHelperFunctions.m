@@ -4,12 +4,16 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
         function setPath(testCase)
             originalPath = path;
             testCase.addTeardown(@path, originalPath);
+
             if ~exist('initPaths', 'file')
                 % We are probably in the test directory, so check parent directory
                 cd('..');
             end
             initPaths();
-            addpath(fullfile('test', 'TestHelperFunctions'));
+
+            % Get absolute path to directory in which this file resides.
+            [filePath, ~, ~] = fileparts(mfilename('fullpath'));
+            addpath(fullfile(filePath, 'TestHelperFunctions'));
         end
     end
 
@@ -28,7 +32,7 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
 
             datahandle = prepareDatahandleForIntegration( ...
                 'funinelse_RHS', ...
-                'solver', func2str(integrator), ...
+                'integrator', func2str(integrator), ...
                 'options', odeoptions);
             tEnd = 20;
             tspan         = [0 tEnd];
@@ -46,7 +50,7 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
 
             datahandle = prepareDatahandleForIntegration( ...
                 'manyFunctions', ...
-                'solver', func2str(integrator), ...
+                'integrator', func2str(integrator), ...
                 'options', odeoptions);
             tEnd = 30;
             tspan         = [0 tEnd];

@@ -1,5 +1,5 @@
-function answer = assertOptionlist(object)
-   % assertOptionlist(object);
+function answer = olAssertOptionlist(object)
+   % olAssertOptionlist(object);
    %
    % Asserts that the given object is an optionlist and returns true.
    % Otherwise, an error is thrown.
@@ -8,12 +8,14 @@ function answer = assertOptionlist(object)
    %
    % OUTPUT:    answer  -  true if object is a valid optionlist.
    %
-   % Copyright (c) 2016, Andreas Sommer
+   % Author:  Andreas Sommer, 2016
    % andreas.sommer@iwr.uni-heidelberg.de
-   % mail@andreas-sommer.eu
+   % code@andreas-sommer.eu
+   %
+   % History:     Jul2024 --> renamed to ol* scheme
    
    % ensure optionlist is an optionlist
-   [passed, problem] = isOptionlist(object);
+   [passed, problem] = olIsOptionlist(object);
    if ~passed
       error('Not a valid optionlist! Problem: %s', problem);
    end

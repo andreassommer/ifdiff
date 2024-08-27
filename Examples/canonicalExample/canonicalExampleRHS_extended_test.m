@@ -11,7 +11,7 @@ options = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
 filename = 'canonicalExampleRHS_extended';
 clc
 tic
-hdlrhs_test = prepareDatahandleForIntegration(filename, 'solver', func2str(integrator), 'options', options);
+hdlrhs_test = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', options);
 toc
 
 

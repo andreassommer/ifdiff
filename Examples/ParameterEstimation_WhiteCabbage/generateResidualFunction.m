@@ -7,7 +7,7 @@ function [residual_function] = generateResidualFunction(t, datahandle, sol, meas
    
    integrator_solveODE = @ode45;
    odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-6);
-   datahandle    = prepareDatahandleForIntegration('whiteCabbageRHS','solver', func2str(integrator_solveODE), 'options', odeoptionsrhs_test);
+   datahandle    = prepareDatahandleForIntegration('whiteCabbageRHS', 'integrator', func2str(integrator_solveODE), 'options', odeoptionsrhs_test);
    
    return
    

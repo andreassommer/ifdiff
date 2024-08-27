@@ -22,7 +22,7 @@ X = deval(solode, T);
 
 % ifdiff
 tic
-hdl = prepareDatahandleForIntegration(rhs_name, 'solver', func2str(odesolver), 'options', options);
+hdl = prepareDatahandleForIntegration(rhs_name, 'integrator', func2str(odesolver), 'options', options);
 fprintf('Ifdiff handle preparation took %g seconds.\n', toc());
 tic
 [solif, dataif] = solveODE(hdl, tspan, x0, []);

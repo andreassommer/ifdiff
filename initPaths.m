@@ -1,14 +1,22 @@
 function initPaths()
-   % function initPaths()
-   % 
-   % Initialise the paths for ifdiff.
-   % 
-   % INPUT:   none
-   % OUTPUT:  none
-   %
-   addpath('./');
-   addpath('./Tools');
-   addpath(genpath('./Examples'));  % include subdirs
-   addpath(genpath('./PreprocessedFunctions'))
-   addpath('./ComputeSensitivities');
+%INITPATHS  Add directories required by IFDIFF to the MATLAB search path.
+%   You should always run this function before using IFDIFF (once per MATLAB session)!
+%
+%   INPUT
+%   [none]
+%
+%   OUTPUT
+%   [none]
+%
+%   See also CLEARPATHS to undo the changes made by INITPATHS.
+
+
+% Get absolute path to directory in which this file resides.
+[filePath, ~, ~] = fileparts(mfilename('fullpath'));
+
+addpath(filePath);
+addpath(genpath(fullfile(filePath, 'Tools')));
+addpath(genpath(fullfile(filePath, 'Examples')));
+addpath(genpath(fullfile(filePath, 'PreprocessedFunctions')));
+addpath(fullfile(filePath, 'ComputeSensitivities'));
 end
