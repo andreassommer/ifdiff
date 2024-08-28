@@ -1,12 +1,25 @@
 function Gy_values = getGy_intermediate_END(datahandle, timepoints, modelNum, sensOptions)
 %GETGY_INTERMEDIATE_END approximate the initial value sensitivity Gy between two switching points
 % using external numerical differentiation and return a cell array of Gy at the provided time points
+% timepoints must be sorted ascendingly, have no duplicates, and be within model #modelNum.
+    if isempty(timepoints)
+        Gy_values = {};
+        return;
+    end
+
     data = datahandle.getData();
 
     switches      = data.computeSensitivity.switches_extended;
     y_to_switches = data.computeSensitivity.y_to_switches;
     dim_y         = data.computeSensitivity.dim_y;
 
+
+    if switches(modelNum) == timepoints(end)
+        % ODE solvers will crash if you pass them identical start and end times, so we have to handle this special case
+        % Note that the conditions we placed on time points mean there is exactly one point in this case
+        Gy_values = {eye(dim_y)};
+        return;
+    end
 
     Gy_values = cell(1, length(timepoints));
 
