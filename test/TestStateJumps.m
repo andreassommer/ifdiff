@@ -188,7 +188,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
 
             % expect four switching points. If you change tEnd, then also change these
-            expectedSwitches = testCase.bounceballSwitches(6, v0, g, gamma);
+            expectedSwitches = testCase.getBounceballSwitches(6, v0, g, gamma);
             atol             = [1e-6 1e-6 1e-6 1e-6 1e-6 1e-6];
 
             % Prepare the sensitivities at t- and t for each switch
@@ -344,25 +344,19 @@ classdef TestStateJumps < matlab.unittest.TestCase
         end
     end
     methods
-        function expectedSwitches = bounceballSwitches(~, numSwitches, v0, g, gamma)
-            % Compute the first n (numSwitches) switching points expected in the bouncing ball problem.
-            % In the exact version, switch #i is computed as (2*v0/g)*(1 + gamma + ... + gamma^(i-1))
-            expectedSwitches = zeros(1, numSwitches);
-            firstBounce = (2*v0/g);
+        function expectedSwitches = getBounceballSwitches(~, numSwitches, v0, g, gamma)
+            % Setting h_+(t_s) to eps/g * v_+^2 leads to the next SWP being slightly off, which we can compute
+            % using this disturbed gamma. We should technically also replace (2*v0/g) with
+            % ((1 + sqrt(1+2eps))*v0/g), but that eps ends up getting cancelled anyway
             gamma_eps = sqrt(1+2*eps)*gamma;
-            swp = firstBounce;
-            expectedSwitches(1) = swp;
-            for i=2:numSwitches
-                swp = swp*gamma_eps + firstBounce;
-                expectedSwitches(i) = swp;
-            end
+            expectedSwitches = bounceballSwitches(numSwitches, v0, g, gamma_eps);
         end
         function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = getbounceballSensitivities( ...
                 ~, sol, p, t1, t2Minus)
             g     = p(1);
             gamma = p(2);
             x2Minus = deval(sol, t2Minus, 2);
-            [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma, t1, t2Minus, x2Minus);
+            [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma, t1, t2Minus, x2Minus, false);
         end
 
         function [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = getJumpSensitivitySensitivities(~, sol, p)

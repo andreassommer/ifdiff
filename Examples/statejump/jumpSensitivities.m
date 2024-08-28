@@ -19,7 +19,7 @@ FDstepStrict       = generateFDstep(size(x0,1), length(p), 'ht', 1e-8, 'hy', 1e-
 % Controlling the table output at the end
 % Whether to print out IFDIFF's solution values, or only their relative error
 printValues = false;
-% Format string for solution/G values
+% Format string for solution/G values. Using string here to avoid braces all over the place in the table later
 valueFormatString = "% 10.6f";
 % Format string for relative error
 errorFormatString = "% .4e";
