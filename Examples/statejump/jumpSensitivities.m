@@ -3,25 +3,29 @@
 % 2. IFDIFF with standard tolerances and FD step, plus relative error
 % 3. IFDIFF with strict tolerances and shorter FD step, plus relative error
 
+initPaths();
+[t0, tEnd, p, x0] = jumpSensitivityInitdata();
 
 % CONFIGURATION
 % Precision settings
+solverStandard     = @ode45;
 optionsStandard    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
 FDstepStandard     = generateFDstep(size(x0,1), length(p));
 
+solverStrict       = @ode45;
 optionsStrict      = odeset('AbsTol', 1e-12, 'RelTol', 1e-10);
 FDstepStrict       = generateFDstep(size(x0,1), length(p), 'ht', 1e-8, 'hy', 1e-8, 'hp', 1e-8);
 
 % Controlling the table output at the end
+% Whether to print out IFDIFF's solution values, or only their relative error
 printValues = false;
+% Format string for solution/G values
 valueFormatString = "% 10.6f";
+% Format string for relative error
 errorFormatString = "% .4e";
 
 
 % MAIN
-initPaths();
-
-[t0, tEnd, p, x0] = jumpSensitivityInitdata();
 
 % Analytic solution
 tsExact       = 4 * log(4);
@@ -37,10 +41,9 @@ GyfExact      = Gy2(tEnd) * GysPlusExact;
 GpfExact      = Gy2(tEnd) * GpsPlusExact + Gp2(tEnd);
 
 % IFDIFF solution (standard tolerances)
-integrator         = @ode45;
 datahandle = prepareDatahandleForIntegration( ...
     'jumpSensitivityRHS', ...
-    'solver', func2str(integrator), ...
+    'solver', func2str(solverStandard), ...
     'options', optionsStandard);
 solStandard = solveODE(datahandle, [t0 tEnd], x0, p);
 
@@ -64,10 +67,9 @@ GpfStandard      = Gp{4};
 
 % IFDIFF solution with strict tolerances. The smaller FDstep makes most of the difference,
 % but the strict ODE tolerances also help a little bit
-integrator         = @ode45;
 datahandle = prepareDatahandleForIntegration( ...
     'jumpSensitivityRHS', ...
-    'solver', func2str(integrator), ...
+    'solver', func2str(solverStrict), ...
     'options', optionsStrict);
 solStrict = solveODE(datahandle, [t0 tEnd], x0, p);
 
@@ -90,13 +92,13 @@ GpfStrict      = Gp{4};
 
 % And print everything in a nice table
 Value           = ["t_s";     "x_-(t_s)";       "x_+(t_s)";     "Gy_-(t_s)";      "Gp_-(t_s)"; ...
-                   "Gy_+(t_s)";     "Gp_+(t_s)";     "Gy(t_f)";      "Gp(t_f)"];
+                   "Gy_+(t_s)";     "Gp_+(t_s)";     "x(t_f)";    "Gy(t_f)";      "Gp(t_f)"];
 analyticPoints  = [tsExact;    xsMinusExact;    xsPlusExact;    GysMinusExact;    GpsMinusExact; ...
-                   GysPlusExact;    GpsPlusExact;    GyfExact;    GpfExact];
+                   GysPlusExact;    GpsPlusExact;    xEndExact;    GyfExact;    GpfExact];
 standardPoints  = [tsStandard; xsMinusStandard; xsPlusStandard; GysMinusStandard; GpsMinusStandard; ...
-                   GysPlusStandard; GpsPlusStandard; GyfStandard; GpfStandard];
+                   GysPlusStandard; GpsPlusStandard; xEndStandard; GyfStandard; GpfStandard];
 strictPoints    = [tsStrict;   xsMinusStrict;   xsPlusStrict;   GysMinusStrict;   GpsMinusStrict; ...
-                   GysPlusStrict;   GpsPlusStrict;   GyfStrict;   GpfStrict];
+                   GysPlusStrict;   GpsPlusStrict;   xEndStrict;   GyfStrict;   GpfStrict];
 standardError   = (standardPoints - analyticPoints) ./ analyticPoints;
 strictError     = (strictPoints   - analyticPoints) ./ analyticPoints;
 
