@@ -24,5 +24,5 @@ V = deval(sol, T, 2);
 E = p(1)*H + (1/2) * V.^2;
 plot(T, H, 'LineWidth', 2, 'DisplayName', 'h(t)');
 hold on;
-plotJumpingSolution(sol, [t0 tEnd], 2, {'v(t)'});
+plotWithJumps([t0 tEnd], @(ts) deval(sol, ts, 2), sol.switches, 'v(t)', 'red', struct(), 'LineWidth', 2);
 plot(T, E, 'LineWidth', 2, 'DisplayName', 'e(t)/m');
