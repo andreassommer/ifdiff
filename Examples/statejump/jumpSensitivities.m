@@ -99,8 +99,8 @@ standardPoints  = [tsStandard; xsMinusStandard; xsPlusStandard; GysMinusStandard
                    GysPlusStandard; GpsPlusStandard; xEndStandard; GyfStandard; GpfStandard];
 strictPoints    = [tsStrict;   xsMinusStrict;   xsPlusStrict;   GysMinusStrict;   GpsMinusStrict; ...
                    GysPlusStrict;   GpsPlusStrict;   xEndStrict;   GyfStrict;   GpfStrict];
-standardError   = (standardPoints - analyticPoints) ./ analyticPoints;
-strictError     = (strictPoints   - analyticPoints) ./ analyticPoints;
+standardError   = (standardPoints - analyticPoints) ./ zeroByOne(analyticPoints);
+strictError     = (strictPoints   - analyticPoints) ./ zeroByOne(analyticPoints);
 
 printValue = @(x) sprintf(valueFormatString, x);
 printError = @(x) sprintf(errorFormatString, x);
@@ -114,4 +114,9 @@ if printValues
     T = table(Value, Analytic, IFDIFF_Standard, Error_Standard, IFDIFF_Strict, Error_Strict)
 else
     T = table(Value, Analytic, Error_Standard, Error_Strict)
+end
+
+function xsOrOne = zeroByOne(xs)
+    % When computing relative errors, replace each element in an array that is 0 by 1 to avoid division by 0.
+    xsOrOne = xs .* (xs > eps) + (xs < eps);
 end
