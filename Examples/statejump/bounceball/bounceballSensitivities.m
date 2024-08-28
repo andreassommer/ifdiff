@@ -1,4 +1,4 @@
-function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma, t1, t2Minus, x2Minus, exact)
+function [Gy_t2_t1, Gp_t2_t1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma, t1, t2Minus, x2Minus, exact)
 %BOUNCEBALLSENSITIVITIES Compute G and U matrices for sensitivities of the bouncing ball example
 % To help in computing sensitivities for the bouncing ball example, this function
 % provides intermediate matrices: given a previous switching point t1, a left-shifted
@@ -23,8 +23,8 @@ function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma
             0,                             -x2Minus
             ];
     end
-    Gy_t2_ts1 = Gy_t_ts(t2Minus, t1);
-    Gp_t2_ts1 = Gp_t_ts(t2Minus, t1);
+    Gy_t2_t1 = Gy_t_ts(t2Minus, t1);
+    Gp_t2_t1 = Gp_t_ts(t2Minus, t1);
     Uy_t2 = Uy;
     Up_t2 = Up;
 end
