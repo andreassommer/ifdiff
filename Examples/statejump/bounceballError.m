@@ -169,23 +169,23 @@ fprintf('time taken for strict solution: %f\n', toc(strictTic));
 % Relative errors
 for k=1:numPointsToReport
     w = (k-1) * 6;
-    errorStandard(w + 1) = (ifdiffStandard{w + 1} - exact{w + 1})/exact{w + 1};
-    errorStandard(w + 2) = (ifdiffStandard{w + 2} - exact{w + 2})/exact{w + 2};
-    errGyMinusStandard = (ifdiffStandard{w + 3} - exact{w + 3})/max(abs(exact{w + 3}), [], 'all');
-    errGpMinusStandard = (ifdiffStandard{w + 4} - exact{w + 4})/max(abs(exact{w + 4}), [], 'all');
-    errGyPlusStandard  = (ifdiffStandard{w + 5} - exact{w + 5})/max(abs(exact{w + 5}), [], 'all');
-    errGpPlusStandard  = (ifdiffStandard{w + 6} - exact{w + 6})/max(abs(exact{w + 6}), [], 'all');
+    errorStandard(w + 1) = (ifdiffStandard{w + 1} - exact{w + 1})/magnitude(exact{w + 1});
+    errorStandard(w + 2) = (ifdiffStandard{w + 2} - exact{w + 2})/magnitude(exact{w + 2});
+    errGyMinusStandard = (ifdiffStandard{w + 3} - exact{w + 3})/magnitude(exact{w + 3});
+    errGpMinusStandard = (ifdiffStandard{w + 4} - exact{w + 4})/magnitude(exact{w + 4});
+    errGyPlusStandard  = (ifdiffStandard{w + 5} - exact{w + 5})/magnitude(exact{w + 5});
+    errGpPlusStandard  = (ifdiffStandard{w + 6} - exact{w + 6})/magnitude(exact{w + 6});
     errorStandard(w + 3) = max(abs(errGyMinusStandard), [], 'all');
     errorStandard(w + 4) = max(abs(errGpMinusStandard), [], 'all');
     errorStandard(w + 5) = max(abs(errGyPlusStandard), [], 'all');
     errorStandard(w + 6) = max(abs(errGpPlusStandard), [], 'all');
 
-    errorStrict(w + 1) = (ifdiffStrict{w + 1} - exact{w + 1})/exact{w + 1};
-    errorStrict(w + 2) = (ifdiffStrict{w + 2} - exact{w + 2})/exact{w + 2};
-    errGyMinusStrict = (ifdiffStrict{w + 3} - exact{w + 3})/max(abs(exact{w + 3}), [], 'all');
-    errGpMinusStrict = (ifdiffStrict{w + 4} - exact{w + 4})/max(abs(exact{w + 4}), [], 'all');
-    errGyPlusStrict  = (ifdiffStrict{w + 5} - exact{w + 5})/max(abs(exact{w + 5}), [], 'all');
-    errGpPlusStrict  = (ifdiffStrict{w + 6} - exact{w + 6})/max(abs(exact{w + 6}), [], 'all');
+    errorStrict(w + 1) = (ifdiffStrict{w + 1} - exact{w + 1})/magnitude(exact{w + 1});
+    errorStrict(w + 2) = (ifdiffStrict{w + 2} - exact{w + 2})/magnitude(exact{w + 2});
+    errGyMinusStrict = (ifdiffStrict{w + 3} - exact{w + 3})/magnitude(exact{w + 3});
+    errGpMinusStrict = (ifdiffStrict{w + 4} - exact{w + 4})/magnitude(exact{w + 4});
+    errGyPlusStrict  = (ifdiffStrict{w + 5} - exact{w + 5})/magnitude(exact{w + 5});
+    errGpPlusStrict  = (ifdiffStrict{w + 6} - exact{w + 6})/magnitude(exact{w + 6});
     errorStrict(w + 3) = max(abs(errGyMinusStrict), [], 'all');
     errorStrict(w + 4) = max(abs(errGpMinusStrict), [], 'all');
     errorStrict(w + 5) = max(abs(errGyPlusStrict), [], 'all');
@@ -198,3 +198,12 @@ Analytic = cellfun(@(ch) string(ch), Analytic);
 Error_Standard = arrayfun(@(err) string(printError(err)), errorStandard);
 Error_Strict   = arrayfun(@(err) string(printError(err)), errorStrict);
 T = table(Value, Analytic, Error_Standard, Error_Strict)
+
+function mag = magnitude(mat)
+    % Magnitude (maximum norm) of a matrix, used for computing relative errors. If the matrix is all (nearly)
+    % zeros, return 1 instead for the absolute error.
+    mag = max(abs(mat), [], 'all');
+    if mag < eps
+        mag = 1;
+    end
+end
