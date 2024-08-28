@@ -11,5 +11,5 @@ sol = solveODE(datahandle, [t0 tF], x0, p);
 
 T = linspace(t0, tF, 100);
 hold on;
-plotWithJumps([t0 tF], @(ts) deval(sol, ts, 1), sol.switches, 'x1', 'blue', struct(), 'LineWidth', 2);
-plotWithJumps([t0 tF], @(ts) deval(sol, ts, 2), sol.switches, 'x2', 'red', struct(), 'LineWidth', 2);
+plotSolWithJumps([t0 tF], sol, 1, 'x1', 'blue', struct(), 'LineWidth', 2);
+plotSolWithJumps([t0 tF], sol, 2, 'x2', 'red', struct(), 'LineWidth', 2);
