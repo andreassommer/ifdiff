@@ -10,8 +10,6 @@ datahandle = prepareDatahandleForIntegration('sinCosRHS', 'solver', func2str(sol
 sol = solveODE(datahandle, [t0 tF], x0, p);
 
 T = linspace(t0, tF, 100);
-plotJumpingSolution(sol, T, [1 2], {'x1', 'x2'});
-
-% X = deval(sol, T);
-
-% plot(T, X);
+hold on;
+plotWithJumps([t0 tF], @(ts) deval(sol, ts, 1), sol.switches, 'x1', 'blue', struct(), 'LineWidth', 2);
+plotWithJumps([t0 tF], @(ts) deval(sol, ts, 2), sol.switches, 'x2', 'red', struct(), 'LineWidth', 2);
