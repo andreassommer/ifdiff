@@ -13,7 +13,7 @@ g     = 9.807;
 gamma = 0.9;
 p = [g gamma];
 t0 = 0;
-tEnd = 20.3; % zeno begins (analytically) at 20.3935964107270316 for these particular data
+tEnd = 20.39359; % zeno begins (analytically) at 20.3935964107270316 for these particular data
 v0 = 10;
 h0 = eps(1)*(1/g) * v0^2;
 x0 = [h0; v0];
@@ -21,9 +21,9 @@ x0 = [h0; v0];
 
 % CONFIGURATION
 % How many switching points to report in the output table
-numPointsToReport = 5;
+numPointsToReport = 6;
 % How many switching points should be between the points reported in the output table
-pointStep         = 10;
+pointStep         = 20;
 
 % Precision settings
 solverStandard     = @ode45;
@@ -63,11 +63,11 @@ for k=1:numPointsToReport
 
     i_str  = num2str(i);
     valueNames{w + 1} = ['t_' i_str];
-    valueNames{w + 2} = ['x(t_' i_str ')'];
-    valueNames{w + 3} = ['G_{x,-}(t_' i_str ', t0)'];
-    valueNames{w + 4} = ['G_{p,-}(t_' i_str ', t0)'];
-    valueNames{w + 5} = ['G_{x,+}(t_' i_str ', t0)'];
-    valueNames{w + 6} = ['G_{p,+}(t_' i_str ', t0)'];
+    valueNames{w + 2} = ['v(t_' i_str ')'];
+    valueNames{w + 3} = ['G_{x,-}(t_' i_str ', t_0)'];
+    valueNames{w + 4} = ['G_{p,-}(t_' i_str ', t_0)'];
+    valueNames{w + 5} = ['G_{x,+}(t_' i_str ', t_0)'];
+    valueNames{w + 6} = ['G_{p,+}(t_' i_str ', t_0)'];
     for s=1:pointStep
         j = i - pointStep + s;
         t1 = expectedSwitches(j);
