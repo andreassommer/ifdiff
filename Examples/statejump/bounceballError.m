@@ -42,7 +42,6 @@ valueFormatString = '% 10.6f';
 errorFormatString = '% .4e';
 printValue = @(x) sprintf(valueFormatString, x);
 printError = @(x) sprintf(errorFormatString, x);
-plotResults = true;
 
 
 % MAIN
@@ -200,16 +199,6 @@ Error_Standard = arrayfun(@(err) string(printError(err)), errorStandard);
 Error_Strict   = arrayfun(@(err) string(printError(err)), errorStrict);
 T = table(Value, Analytic, Error_Standard, Error_Strict)
 
-if plotResults
-    T = t0:0.01:tEnd;
-    H = deval(solStrict, T, 1);
-    V = deval(solStrict, T, 2);
-    plot(T, H, 'LineWidth', 2, 'DisplayName', 'h(t)', 'Color', [0 0.5 0.7]);
-    hold on;
-    plotSolWithJumps([t0 tEnd], solStrict, 2, 'v(t)', 'red', struct(), 'LineWidth', 2);
-    hold off;
-    plotSensitivitiesSwitched(solStrict, sensFunStrict, [t0 tEnd]);
-end
 
 function mag = magnitude(mat)
     % Magnitude (maximum norm) of a matrix, used for computing relative errors. If the matrix is all (nearly)
