@@ -23,6 +23,7 @@ printValues = false;
 valueFormatString = "% 10.6f";
 % Format string for relative error
 errorFormatString = "% .4e";
+plotResults = true;
 
 
 % MAIN
@@ -114,6 +115,22 @@ if printValues
     T = table(Value, Analytic, IFDIFF_Standard, Error_Standard, IFDIFF_Strict, Error_Strict)
 else
     T = table(Value, Analytic, Error_Standard, Error_Strict)
+end
+
+if plotResults
+    plotSolWithJumps([t0 tF], solStrict, 1, 'x(t)', [0 0.5 0.7], struct(), 'LineWidth', 2);
+    fig = figure();
+    % shift a little so it doesn't exactly cover the solution plot's window
+    fig.Position = fig.Position + [32 -32 fig.Position(3) 0];
+    jumps = solStrict.switches(find(solStrict.jumps));
+    T = jumpLinspace(t0, tF, jumps, 1000);
+    sensForPlot = sensFunStrict(T);
+    GyForPlot   = {sensForPlot.Gy};
+    GpForPlot   = {sensForPlot.Gp};
+    subplot(1, 2, 1, 'replace');
+    plotPointsWithJumps(T, cellfun(@(x) x(1, 1), GyForPlot), jumps, 'G_{y,1,1}', [0.7 0.4 0], struct(), 'LineWidth', 2);
+    subplot(1, 2, 2, 'replace');
+    plotPointsWithJumps(T, cellfun(@(x) x(1, 1), GpForPlot), jumps, 'G_{p,1,1}', [0.7 0 0.4], struct(), 'LineWidth', 2);
 end
 
 function xsOrOne = zeroByOne(xs)
