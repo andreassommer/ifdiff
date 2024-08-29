@@ -14,26 +14,30 @@ function p = plotPointsWithJumps(T, X, jumps, label, color, varargin)
 %        (see options.minJumpDistance parameter below), the jump is ignored and the segments before and after plotted
 %        contiguously.
 % label: legend label
-% color: line color. Does not update as of now, you will have to set all your colors by hand.
+% color: line color. Does not automatically choose the next color as of now, you will have to set all your
+%   colors by hand.
 % options: A struct with parameters specific to plotWithJumps. Keys it can contain:
-%   minJumpDistance: how far ts- and ts have to be apart (relatively) to plot a jump. Otherwise, the two line
-%     segments before and after ts are plotted as a continuous line.
-% KeyN, ValueN: additional that are passed on to the plot command for the line, like LineWidth.
-% return the plot returned by the last line segment
+%   numPoints: How many points to plot. May not be followed exactly, but there should only be a few points too many or
+%     too few. Default 1000.
+%   minJumpDistance: how far the two points x- and x+ to the left and right of a jump have to be apart to plot it as a
+%     discontinuity. Otherwise, the two line segments before and after ts are plotted as a continuous line. default 1e-6
+%   minJumpDistanceRelative: whether minJumpDistance is relative to x- and x+ or absolute. default true.
+% KeyN, ValueN: additional options that are passed on to the plot commands for the line segments, like LineWidth.
+% return the plot returned by the plot() command for last line segment
 
-    CIRCLE_MARKER_SIZE = 8;
-    DOT_MARKER_SIZE    = 24;
+    CIRCLE_MARKER_SIZE         = 8;
+    DOT_MARKER_SIZE            = 24;
+    MIN_JUMP_DISTANCE          = 1e-6;
+    MIN_JUMP_DISTANCE_RELATIVE = true;
 
     if nargin >= 6
         options = varargin{1};
     else
         options = struct();
     end
-    if isfield(options, 'minJumpDistance')
-        minJumpDistance = options.minJumpDistance;
-    else
-        minJumpDistance = 1e-6;
-    end
+    minJumpDistance = getOrDefault(options, 'minJumpDistance', MIN_JUMP_DISTANCE);
+    minJumpDistanceRelative = getOrDefault(options, 'minJumpDistanceRelative', MIN_JUMP_DISTANCE_RELATIVE);
+
     if nargin >= 7
         plotOptions = varargin(2:end);
     else
@@ -67,7 +71,12 @@ function p = plotPointsWithJumps(T, X, jumps, label, color, varargin)
             else
                 endX       = X(nextTimeIndex);
                 nextStartX = X(nextTimeIndex + 1);
-                if abs(endX - nextStartX) / max(abs([endX, nextStartX])) > minJumpDistance
+                if minJumpDistanceRelative
+                    jumpDistance = abs(endX - nextStartX) / max(abs([endX, nextStartX]));
+                else
+                    jumpDistance = abs(endX - nextStartX);
+                end
+                if jumpDistance > minJumpDistance
                     numTimeGroups = numTimeGroups + 1;
                     timeGroups{numTimeGroups} = T(lastTimeIndex+1:nextTimeIndex);
                     valueGroups{numTimeGroups} = X(lastTimeIndex+1:nextTimeIndex);
@@ -101,5 +110,12 @@ function p = plotPointsWithJumps(T, X, jumps, label, color, varargin)
         hold on
     else
         hold off;
+    end
+end
+function value = getOrDefault(struct, key, default)
+    if isfield(struct, key)
+        value = struct.(key);
+    else
+        value = default;
     end
 end

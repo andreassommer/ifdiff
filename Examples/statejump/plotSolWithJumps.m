@@ -27,16 +27,7 @@ function p = plotSolWithJumps(tspan, sol, component, label, color, varargin)
 
     % Make a set of time points for every interval [t1, t2], ending at t2-eps(t2-eps(t2))
     jumps = sol.switches(find(sol.jumps));
-    jumpsExtended = [tspan(1) jumps tspan(2)];
-    timeGroups = cell(1, length(jumpsExtended) - 1);
-    for i = 1:length(jumpsExtended)-1
-        t1 = jumpsExtended(i);
-        t2 = jumpsExtended(i+1);
-        t2Minus = t2 - eps(t2 - eps(t2));
-        numPointsI = ceil(numPoints * (t2 - t1)/(tspan(2) - tspan(1)));
-        timeGroups{i} = linspace(t1, t2Minus, numPointsI);
-    end
-    T = [timeGroups{:}];
+    T = jumpLinspace(tspan(1), tspan(2), jumps, numPoints);
     X = deval(sol, T, component);
     p = plotPointsWithJumps(T, X, jumps, label, color, varargin{:});
 end
