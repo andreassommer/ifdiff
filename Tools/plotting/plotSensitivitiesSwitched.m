@@ -85,12 +85,12 @@ function fignum = plotSensitivitiesSwitched(sol, sensFun, tspan, varargin)
     fignum = 5678;
     fig = figure(fignum);
     % shift a little so it doesn't exactly cover the solution plot's window
-    fig.Position = fig.Position + [32, -32, 0, 0];
+    fig.Position = fig.Position + [32, 32, 0, 0];
 
     for r=1:yDim
         for c=1:pDim
             % the VDE solution was reshaped to column-major order, while subplot goes row-major.
-            subplot(yDim, pDim, (r-1)*yDim + c);
+            subplot(yDim, pDim, (r-1)*pDim + c);
             Gp_rc = cellfun(@(x) x(r, c), Gp);
             Gp_label = sprintf('G_{p,%d,%d}', r, c);
             plotPointsWithJumps(T, Gp_rc, jumps, Gp_label, [0.7 0 0.4], optionsGp, plotOptionsGp{:});
