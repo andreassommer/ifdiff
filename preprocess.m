@@ -27,7 +27,7 @@ preprocessed.rhs{1,1} = filename;
 preprocessed.rhs{2,1} = [config.preprocessedRhsNamePrefix, filename];
 
 % store mtree
-preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file');
+preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file', '-comments');
 
 
 % get all paths that are required to execute filename.m (we want to

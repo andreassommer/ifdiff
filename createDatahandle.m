@@ -19,7 +19,11 @@ addpath(genpath(preprocessed.path));
 % export rhs
 filepath_rhs = fullfile(preprocessed.path, [preprocessed.rhs{2,1}, '.m']);
 tempFile = fopen(filepath_rhs, 'w');
-fprintf(tempFile, preprocessed.rhs{3,1}.tree2str);
+treeStr = preprocessed.rhs{3,1}.tree2str;
+% fprintf treats '%' as special character, we need to use the
+% representation '%%' of the literal character:
+treeStr = strrep(treeStr,'%','%%');
+fprintf(tempFile, treeStr);
 fclose(tempFile);
 
 
