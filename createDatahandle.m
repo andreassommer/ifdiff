@@ -20,10 +20,8 @@ addpath(genpath(preprocessed.path));
 filepath_rhs = fullfile(preprocessed.path, [preprocessed.rhs{2,1}, '.m']);
 tempFile = fopen(filepath_rhs, 'w');
 treeStr = preprocessed.rhs{3,1}.tree2str;
-% fprintf treats '%' as special character, we need to use the
-% representation '%%' of the literal character:
-treeStr = strrep(treeStr,'%','%%');
-fprintf(tempFile, treeStr);
+% fprintf doesn't write the raw chars by default, which we want here however
+fprintf(tempFile, '%s\n', treeStr);
 fclose(tempFile);
 
 
@@ -62,26 +60,3 @@ data.caseCtrlif = config.caseCtrlif.default;
 datahandle = makeClosure(data);
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
