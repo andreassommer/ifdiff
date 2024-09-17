@@ -24,8 +24,11 @@ end
 % Flag to set debug mode which may display additional information and warnings among other things.
 config.debugMode = false;
 
-% Maximum number of iterations which will increase step size when determining the switching point.
-config.switchingPointMaxIter = 13;
+% Largest power of ten which is added to the switching time when searching for a new signature.
+config.switchingPointMaxPower = 13;
+
+% Print warning if relative error of numerically computed switching point exceeds threshold.
+config.switchingPointRelTolWarningThreshold = 1e-3;
 
 % Chunk size used for preallocation when updating the signature in a ctrlif to avoid frequent resizing of arrays.
 config.ctrlif_signaturePreallocationChunkSize = 30;
