@@ -53,7 +53,7 @@ while isempty(switchingIndices)
         if switchingPointRelError > config.switchingPointRelTolWarningThreshold
             switchingPointRelErrorPrinted = true;
             relErrorWarning = 'Relative error of numerically computed switching point exceeds threshold: %.16g > %.16g\n';
-            warning(relErrorWarning, switchingPointRelError, config.switchingPointRelTolWarningThreshold);
+            warning('IFDIFF:switchingPointRelError', relErrorWarning, switchingPointRelError, config.switchingPointRelTolWarningThreshold);
         end
     end
 
