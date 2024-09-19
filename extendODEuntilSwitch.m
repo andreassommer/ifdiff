@@ -22,10 +22,10 @@ function extendODEuntilSwitch(datahandle)
 
 
 config = makeConfig();
+data = datahandle.getData();
 
 % Check if the numerically computed switching point is part of the new model.
 extendODEuntilSwitch_t1_to_t2(datahandle);
-data = datahandle.getData();
 switchingIndices = getSwitchingIndices(datahandle, 0);
 
 % The numerically computed switching point may still be part of the old model due to inaccuracies.
@@ -60,6 +60,8 @@ while isempty(switchingIndices)
     iter = iter + 1;
 end
 
+data = datahandle.getData();
+
 % Log events related to searching for the switch.
 if config.debugMode
     switchingPointInfo = "DEBUG: Detected switch after %d iterations at time point t=%.16g\n";
@@ -67,7 +69,6 @@ if config.debugMode
 end
 
 % Add new switching point to history.
-data = datahandle.getData();
 data.SWP_detection.switchingpoints{end + 1} = data.SWP_detection.t2;
 
 % Get the new signature at t2 and add it to the signature history.
