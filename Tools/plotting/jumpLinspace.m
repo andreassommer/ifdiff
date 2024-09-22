@@ -5,6 +5,7 @@ function T = jumpLinspace(t0, tF, jumps, numPoints)
 %     closest point before it.
 % numPoints: how many points to generate. Will not be exactly followed, as each subinterval [t1, t2] gets
 %     ceil(numPoints * (t2-t1)/(tF-t0)) points.
+    jumps = jumps(jumps >= t0 & jumps <= tF);
     jumpsExtended = [t0 jumps tF];
     timeGroups = cell(1, length(jumpsExtended) - 1);
     for i = 1:length(jumpsExtended)-1
