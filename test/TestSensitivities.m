@@ -27,9 +27,9 @@ classdef TestSensitivities < matlab.unittest.TestCase
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE');
 
             t1 = sol.switches(1);
-            t1Minus = t1-eps(t1-eps(t1));
+            t1Minus = leftLimit(t1);
             t2 = sol.switches(2);
-            t2Minus = t2-eps(t2-eps(t2));
+            t2Minus = leftLimit(t2);
             T = [t0, t1Minus, t1, t2Minus, t2, tEnd];
             sens = sensFun(T);
             Gy = {sens.Gy};
@@ -75,9 +75,9 @@ classdef TestSensitivities < matlab.unittest.TestCase
             sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise');
 
             t1 = sol.switches(1);
-            t1Minus = t1-eps(t1-eps(t1));
+            t1Minus = leftLimit(t1);
             t2 = sol.switches(2);
-            t2Minus = t2-eps(t2-eps(t2));
+            t2Minus = leftLimit(t2);
             T = [t0, t1Minus, t1, t2Minus, t2, tEnd];
             sens = sensFun(T);
             Gy = {sens.Gy};

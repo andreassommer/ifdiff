@@ -21,7 +21,7 @@ function generateData(datahandle, sol)
     for i=1:length(sol.switches)
         if sol.jumps(i)
             swp = switchesLeftShifted(i);
-            switchesLeftShifted(i) = swp - eps(swp-eps(swp));
+            switchesLeftShifted(i) = leftLimit(swp);
         end
     end
     data.computeSensitivity.switches_extended_left = [data.SWP_detection.tspan(1), switchesLeftShifted, data.SWP_detection.tspan(end)];
