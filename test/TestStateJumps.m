@@ -1,18 +1,25 @@
 classdef TestStateJumps < matlab.unittest.TestCase
 
     properties (Constant)
-        defaultIntegrator = @ode15i;
+        defaultIntegrator = @ode45;
     end
 
     methods(TestClassSetup)
         % Shared setup for the entire test class
-        function setup(~)
-            cd("..");
+        function setup(testCase)
+            originalPath = path;
+            testCase.addTeardown(@path, originalPath);
+
+            if ~exist('initPaths', 'file')
+                % We are probably in the test directory, so check parent directory
+                cd('..');
+            end
             initPaths();
-            addpath(genpath("test/TestStateJumps"));
-            config = makeConfig();
-            config.jump.disable = false;
-            makeConfig(config);
+
+            % Get absolute path to directory in which initPaths resides.
+            % This should be the IFDIFF project root directory.
+            [filePath, ~, ~] = fileparts(which('initPaths'));
+            addpath(fullfile(filePath, 'test', 'TestStateJumps'));
         end
     end
 
@@ -37,7 +44,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
             p = [0.1, 2];
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             % See identicalIfRHS for the derivation of these expected values
-            testCase.verifyEqual(deval(sol, 1), [exp(1); 2], 'RelTol', 1e-5);
+            testCase.verifyEqual(sol.switches(1), 1, 'RelTol', 1e-5);
+            testCase.verifyEqual(deval(sol, sol.switches(1)), [exp(1); 2], 'RelTol', 1e-5);
             testCase.verifyEqual(deval(sol, 2), [exp(1.1); 3], 'RelTol', 1e-5);
             testCase.verifyEqual(deval(sol, 3), [exp(1.2); 4], 'RelTol', 1e-5);
             testCase.verifyEqual(sol.switches, 1, 'AbsTol', 1e-5);
@@ -61,15 +69,20 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 'solver', func2str(integrator), ...
                 'options', options);
             t0 = 0;
-            tEnd = 4.1;
+            tEnd = 4.1; % switches at tEnd exactly unfortunately aren't handled too gracefully
             x0 = 1;
             p = 0;
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
             % (mainly just test that it doesn't crash) and use abstol where the actual value is 0
             testCase.verifyEqual(deval(sol, 2.5), 0.5, 'RelTol', 1e-8);
-            testCase.verifyEqual(deval(sol, 3), 0, 'AbsTol', 1e-8);
             testCase.verifyEqual(deval(sol, 3.5), -0.5, 'RelTol', 1e-8);
-            testCase.verifyEqual(deval(sol, 4), 0, 'AbsTol', 1e-8);
+
+            expectedSwitches = [1,  2,  3, 4;
+                                -1, 1, -1, 1];
+            for i=1:length(expectedSwitches)
+                testCase.verifyEqual(sol.switches(i), expectedSwitches(1, i), 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, sol.switches(i)), expectedSwitches(2, i), 'RelTol', 1e-6);
+            end
         end
 
         function testTwoJumpsSameDirection(testCase)
@@ -121,8 +134,12 @@ classdef TestStateJumps < matlab.unittest.TestCase
             p = 0;
             x0 = 0;
             sol = solveODE(datahandle, [t0 tEnd], x0, p);
-            testCase.verifyEqual(deval(sol, 5), 10, 'RelTol', 1e-6);
-            testCase.verifyEqual(deval(sol, 15), 30, 'RelTol', 1e-6);
+            % the first switch is a pure jump, the second a pure model switch, the third a full switch.
+            expectedSwitches = [5 10 15; 10 15 30];
+            for i=1:length(expectedSwitches)
+                testCase.verifyEqual(sol.switches(i), expectedSwitches(1, i), 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, sol.switches(i)), expectedSwitches(2, i), 'RelTol', 1e-6);
+            end
             testCase.verifyEqual(deval(sol, 25), 40, 'RelTol', 1e-6);
         end
 
