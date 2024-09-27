@@ -25,7 +25,7 @@ function p = plotSolWithJumps(tspan, sol, component, label, color, varargin)
         numPoints = 1000;
     end
 
-    % Make a set of time points for every interval [t1, t2], ending at t2-eps(t2-eps(t2))
+    % Make a set of time points for every interval [t1, t2), with its last entry at a point just to the left of t2
     jumps = sol.switches(find(sol.jumps));
     T = jumpLinspace(tspan(1), tspan(2), jumps, numPoints);
     X = deval(sol, T, component);

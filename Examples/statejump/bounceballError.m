@@ -102,7 +102,7 @@ datahandle  = prepareDatahandleForIntegration('bounceballRHS', ...
 solStandard = solveODE(datahandle, [t0 tEnd], x0, p);
 
 switchesToReport     = solStandard.switches(pointStep:pointStep:(numPointsToReport*pointStep));
-switchesLeft         = switchesToReport - eps(switchesToReport - eps(switchesToReport));
+switchesLeft         = leftLimit(switchesToReport);
 switchesLeftAndRight = reshape([switchesLeft; switchesToReport], 1, []);
 
 sensPoints       = [t0 switchesLeftAndRight tEnd];
@@ -138,7 +138,7 @@ datahandle  = prepareDatahandleForIntegration('bounceballRHS', ...
 solStrict = solveODE(datahandle, [t0 tEnd], x0, p);
 
 switchesToReport     = solStrict.switches(pointStep:pointStep:(numPointsToReport*pointStep));
-switchesLeft         = switchesToReport - eps(switchesToReport - eps(switchesToReport));
+switchesLeft         = leftLimit(switchesToReport);
 switchesLeftAndRight = reshape([switchesLeft; switchesToReport], 1, []);
 
 sensPoints       = [t0 switchesLeftAndRight tEnd];

@@ -16,10 +16,7 @@ data = datahandle.getData();
 if ~isempty(data.SWP_detection.jumpFunction{end})
     t2MinusIndex = length(data.SWP_detection.solution_until_t2.x);
     t2 = z.x(t2MinusIndex);
-    % eps is the difference to the next-larger number. in most cases, this is also the difference to the next-smallest.
-    % only for powers of two do we need to use eps(t2-eps(t2)). Also appears to work for 0 and denormal numbers
-    t2 = t2 - eps(t2-eps(t2));
-    z.x(t2MinusIndex) = t2;
+    z.x(t2MinusIndex) = leftLimit(t2);
 end
 data.SWP_detection.solution_until_t3 = z;
 

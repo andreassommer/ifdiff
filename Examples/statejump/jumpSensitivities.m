@@ -49,7 +49,7 @@ datahandle = prepareDatahandleForIntegration( ...
 solStandard = solveODE(datahandle, [t0 tEnd], x0, p);
 
 tsStandard      = solStandard.switches(1);
-tsMinusStandard = tsStandard - eps(tsStandard - eps(tsStandard));
+tsMinusStandard = leftLimit(tsStandard);
 xsMinusStandard = deval(solStandard, tsMinusStandard);
 xsPlusStandard  = deval(solStandard, tsStandard);
 xEndStandard    = deval(solStandard, tEnd);
@@ -75,7 +75,7 @@ datahandle = prepareDatahandleForIntegration( ...
 solStrict = solveODE(datahandle, [t0 tEnd], x0, p);
 
 tsStrict      = solStrict.switches(1);
-tsMinusStrict = tsStrict - eps(tsStrict - eps(tsStrict));
+tsMinusStrict = leftLimit(tsStrict);
 xsMinusStrict = deval(solStrict, tsMinusStrict);
 xsPlusStrict  = deval(solStrict, tsStrict);
 xEndStrict    = deval(solStrict, tEnd);

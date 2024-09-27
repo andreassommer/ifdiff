@@ -192,7 +192,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             atol             = [1e-6 1e-6 1e-6 1e-6 1e-6 1e-6];
 
             % Prepare the sensitivities at t- and t for each switch
-            switchesLeft = sol.switches - eps(sol.switches - eps(sol.switches));
+            switchesLeft = leftLimit(sol.switches);
             sensTimes = reshape([switchesLeft; sol.switches], 1, []);
             sensTimes = [t0 sensTimes tEnd];
             fdStep = generateFDstep(length(x0), length(p));
@@ -247,7 +247,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
 
             t1 = sol.switches(1);
-            t1Minus = t1 - eps(t1-eps(t1));
+            t1Minus = leftLimit(t1);
             sens = sensFun([t0, t1Minus, t1, tEnd]);
             Gy = {sens.Gy};
             Gp = {sens.Gp};
@@ -284,7 +284,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
 
             t1 = sol.switches(1);
-            t1Minus = t1 - eps(t1-eps(t1));
+            t1Minus = leftLimit(t1);
             sens = sensFun([t0, t1Minus, t1, tEnd]);
             Gy = {sens.Gy};
             Gp = {sens.Gp};
@@ -336,7 +336,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(Gp{2}, Gp1(t1MinusMinus), 'RelTol', rtol1);
 
             % MODEL 2
-            t1Minus = t1 - eps(t1-eps(t1));
+            t1Minus = leftLimit(t1);
             testCase.verifyEqual(Gy{3}, Gy2(t1PlusPlus) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
             testCase.verifyEqual(Gp{3}, Gy2(t1PlusPlus) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(t1PlusPlus), 'RelTol', rtol2);
             testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
@@ -366,7 +366,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             t0 = sol.x(1);
             x0 = sol.y(1);
             t1 = sol.switches(1);
-            t1Minus = t1 - eps(t1-eps(t1));
+            t1Minus = leftLimit(t1);
             t1Plus = t1 + eps(t1);
             x1Minus1 = deval(sol, t1Minus);
             x1Plus1  = deval(sol, t1Plus);
