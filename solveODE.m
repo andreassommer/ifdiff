@@ -70,7 +70,7 @@ while switch_detected
     jumpCtrlifIndices = solveODE_getJumpIndices(datahandle);
     data = datahandle.getData();
     if length(jumpCtrlifIndices) > 1
-        error('Multiple jumps apply to the switch at t=%16.16f\n', data.SWP_detection.switchingpoints{end});
+        error('Multiple jumps apply to the switch at t=%.16g\n', data.SWP_detection.switchingpoints{end});
     elseif isempty(jumpCtrlifIndices)
         data.SWP_detection.jumpFunction{end + 1} = [];
         datahandle.setData(data);
