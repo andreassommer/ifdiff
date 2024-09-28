@@ -149,23 +149,30 @@ classdef TestStateJumps < matlab.unittest.TestCase
             config.jump.disable = true;
             makeConfig(config);
 
-            integrator = TestStateJumps.defaultIntegrator;
-            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
-            datahandle = prepareDatahandleForIntegration( ...
-                'jumpInHelperRHS', ...
-                'solver', func2str(integrator), ...
-                'options', options);
-            t0 = 0;
-            tEnd = 25;
-            p = 0;
-            x0 = 0;
-            sol = solveODE(datahandle, [t0 tEnd], x0, p);
-            testCase.verifyEqual(deval(sol, 5), 5, 'RelTol', 1e-6);
-            testCase.verifyEqual(deval(sol, 15), 15, 'RelTol', 1e-6);
-            testCase.verifyEqual(deval(sol, 25), 30, 'RelTol', 1e-6);
-
+            err = [];
+            try
+                integrator = TestStateJumps.defaultIntegrator;
+                options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+                datahandle = prepareDatahandleForIntegration( ...
+                    'jumpInHelperRHS', ...
+                    'solver', func2str(integrator), ...
+                    'options', options);
+                t0 = 0;
+                tEnd = 25;
+                p = 0;
+                x0 = 0;
+                sol = solveODE(datahandle, [t0 tEnd], x0, p);
+                testCase.verifyEqual(deval(sol, 5), 5, 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, 15), 15, 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, 25), 30, 'RelTol', 1e-6);
+            catch e
+                err = e;
+            end
             config.jump.disable = false;
             makeConfig(config);
+            if ~isempty(err)
+                throw(err);
+            end
         end
 
         function testBounceball(testCase)
