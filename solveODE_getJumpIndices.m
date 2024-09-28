@@ -2,24 +2,15 @@ function jumpCtrlifs = solveODE_getJumpIndices(datahandle)
 %SOLVEODE_GETJUMPINDICES Get the switching indices of all jumps that apply to a switch.
 % Just like with switching function computation, switching index is the index into the switch_cond, ctrlif_index,
 % and function_index arrays. A switching index corresponds not to a ctrlif, but to one execution of a ctrlif.
-    config = makeConfig();
     data = datahandle.getData();
-    cIndex = mtree_cIndex();
-    mtrees = data.mtreeplus(3, :);
-    rIndices = cellfun(@mtree_rIndex, mtrees, 'UniformOutput', false);
 
-    % First, collect the ctrlif index and direction of all the jumps
-    jumps = [];
-    for i=1:length(mtrees)
-        mtreeobj = mtrees{i};
-        rIndex   = rIndices{i};
-        if ~isfield(rIndex.BODY, config.jump.internalFunction)
-            continue
-        end
-        ctrljumpArgs  = rIndex.BODY.([config.jump.internalFunction '_Arg']);
-        directionFlag = getJumpIndices_parseDirectionFlags(mtreeobj, ctrljumpArgs(:, 2));
-        ctrlif_index  = str2double(mtreeobj.C(mtreeobj.T(ctrljumpArgs(:,3), cIndex.stringTableIndex)))';
-        jumps         = [jumps [directionFlag; ctrlif_index]];
+    % First, get the ctrlif index and direction of all jumps
+    if isfield(data.SWP_detection, 'jumpConditions')
+        jumps = data.SWP_detection.jumpConditions;
+    else
+        jumps = getJumpIndices_getJumpConditions(datahandle);
+        data.SWP_detection.jumpConditions = jumps;
+        datahandle.setData(data);
     end
 
     jumpCtrlifs = [];
