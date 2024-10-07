@@ -15,7 +15,6 @@ function tf = mtree_ifdiff_ignore_checkComment(comment_string)
     config = makeConfig();
     ignorestring = config.preprocess_ignorestring;
     
-    comment_string = lower(comment_string);
     tf = contains(comment_string, ignorestring);
 
 end

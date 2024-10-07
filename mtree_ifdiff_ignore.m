@@ -1,8 +1,10 @@
 function tf = mtree_ifdiff_ignore(mtreeobj, index)
     % tf = mtree_ifdiff_ignore(mtreeobj, index)
     %
-    % For an if-statement whether it's followed by an "ifdiff:ignore" 
-    % comment. 
+    % For an if-statement checks whether it's followed by a
+    % comment containing the ignorestring (specified in
+    % config.preprocess_ignorestring) or is
+    % enclosed by another if-statemtn that has the ignorestring.
     % In that case, the if-statement should be ignored by the
     % preprocessing, i.e., not transformed into a ctrlif.
     % 
@@ -19,23 +21,28 @@ function tf = mtree_ifdiff_ignore(mtreeobj, index)
     % by mtreeobj (or several if 'index' is an array). We refer to it as
     % the input node here.
 
-    % get the subtree at the input node, and from that tree all *body* nodes
-    mtreeobj_if = Full(select(mtreeobj,index));
-    body_nodes = Body(mtreeobj_if);
-    body_nodes_indices = body_nodes.indices();
-    
-    % we want to check if the first *body* node of the if-statement is an
-    % ifdiff ignore comment
-    first_body_node = select(mtreeobj, body_nodes_indices(1));
-    first_body_node_type = first_body_node.kinds();
-    first_body_node_string = first_body_node.strings();
 
-    if strcmp(first_body_node_type, 'COMMENT')
-        % type is 'COMMENT'
-        tf = mtree_ifdiff_ignore_checkComment(first_body_node_string);
-    else
-        % type is not 'COMMENT'
-        tf = false;
+    % climb up the tree while checking every if statement for an ifdiff_ignore
+    cIndex = mtree_cIndex();
+
+    tf = false;
+    node = select(mtreeobj, index);
+
+    fct_id = node.K.FUNCTION;
+    if_id = node.K.IF;
+    node_type_id = node.T(node.IX, cIndex.kindOfNode);
+
+    while ~(node_type_id==fct_id) && ~tf
+        % stop when reached 'FUNCTION' node (root) 
+        % or an if has the ignorestring
+
+        if node_type_id == if_id
+            tf = mtree_ifnode_has_ifdiff_ignore(node);
+        end
+
+        node = trueparent(node);
+        node_type_id = node.T(node.IX, cIndex.kindOfNode);
     end
+
 
 end

@@ -39,14 +39,14 @@ end
 for i = 1:length(rIndex.BODY.IF)
     
     if mtree_ifdiff_ignore(mtreeobj, rIndex.BODY.IF(i))
-        % skip this if-statement if the user specifies so
+        % skip this if-statement if the user specified so
         continue
     end
     
     cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond(i));
     if ~cond_feasible
+        warning('IFDIFF:INFEASIBLE_IF_CONDITION', 'An if condition is not feasible and was not replaced by a ctrlif.');
         continue
-        warning('An if condition is not feasible and was not replaced by a ctrlif.');
     end
     % add ctrlif before the if
     
