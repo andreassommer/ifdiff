@@ -1,5 +1,5 @@
 function tf = mtree_ifdiff_ignore_checkComment(comment_string)
-    % tf = mtree_ifdiff_ignore(comment_string)
+    % tf = mtree_ifdiff_ignore_checkComment(comment_string)
     %
     % Checks if 'comment_string' contains the ignorestring defined in the
     % config struct.
