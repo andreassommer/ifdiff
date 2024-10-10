@@ -81,6 +81,29 @@ classdef TestIgnore < matlab.unittest.TestCase
             testCase.verifyEqual(sol.switches(1), 5, 'RelTol', 1e-6);
             testCase.verifyEqual(deval(sol, tF), 18, 'RelTol', 0.1);
         end
+        function testIgnoredIfInHelper(testCase)
+            options = odeset();
+            solver = @ode45;
+            t0 = 0;
+            tF = 10;
+            x0    = 0;
+            p     = 0;
+            
+            datahandle = prepareDatahandleForIntegration('ignoreInHelperRHS', ...
+                'solver', func2str(solver), ...
+                'options', options);
+            data = datahandle.getData();
+            % ensure only one of the two ifs got turned into a ctrlif
+            rIndex_preprocessed = mtree_rIndex(data.mtreeplus{3,1});
+            testCase.verifyEqual(length(rIndex_preprocessed.BODY.ctrlif), 1);
+            % Since the only nondifferentiability in the helper was ignored, it should not even be in mtreeplus
+            testCase.verifyEqual(size(data.mtreeplus, 2), 1);
+
+            % ensure the ctrlif did not lead to a switching event
+            sol = solveODE(datahandle, [t0 tF], x0, p);
+            testCase.verifyEqual(length(sol.switches), 0);
+            testCase.verifyEqual(deval(sol, tF), 15, 'RelTol', 0.1);
+        end
     end
     
 end
