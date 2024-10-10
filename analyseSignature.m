@@ -64,7 +64,7 @@ switch flag
         
     case 'done'
         
-        if data.forcedBranching.switchDetected
+        if isfield(data.forcedBranching, 'switchDetected') && data.forcedBranching.switchDetected
             
             data.SWP_detection.switch_cond_t1 = data.forcedBranching.switch_cond_forcedBranching;
             data.SWP_detection.switch_cond_t2 = [];
