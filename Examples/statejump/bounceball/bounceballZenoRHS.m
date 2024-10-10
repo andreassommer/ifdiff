@@ -3,6 +3,8 @@ function dx = bounceballZenoRHS(~, x, p)
 % not by air friction.
 % p = [g, gamma, eByMassMin]
 % See bounceballRHS for explanation on the basic bouncing ball.
+% For Zeno's phenomenon, we compute the quotient energy/mass and stop bouncing once it passes below a
+% threshold
 
     % Energy computation: ePot = m*g*h, eKin = (1/2)*m*v^2. leaving out the mass since the threshold for
     % transitioning to the motionless model is defined by e/m, so we will end up dividing by the mass anyway.
