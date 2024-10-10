@@ -1,0 +1,383 @@
+classdef TestStateJumps < matlab.unittest.TestCase
+
+    properties (Constant)
+        defaultIntegrator = @ode45;
+    end
+
+    methods(TestClassSetup)
+        % Shared setup for the entire test class
+        function setup(testCase)
+            originalPath = path;
+            testCase.addTeardown(@path, originalPath);
+
+            if ~exist('initPaths', 'file')
+                % We are probably in the test directory, so check parent directory
+                cd('..');
+            end
+            initPaths();
+
+            % Get absolute path to directory in which initPaths resides.
+            % This should be the IFDIFF project root directory.
+            [filePath, ~, ~] = fileparts(which('initPaths'));
+            addpath(fullfile(filePath, 'test', 'TestStateJumps'));
+        end
+    end
+
+    methods(TestMethodSetup)
+        % Setup for each test
+    end
+
+    methods(Test)
+        % Test methods
+
+        function testIdenticalIfs(testCase)
+            % Test a RHS with two ifs that have the same SWF.
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'identicalIfRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            t0 = 0;
+            tEnd = 3;
+            x0 = [1; 0];
+            p = [0.1, 2];
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            % See identicalIfRHS for the derivation of these expected values
+            testCase.verifyEqual(sol.switches(1), 1, 'RelTol', 1e-5);
+            testCase.verifyEqual(deval(sol, sol.switches(1)), [exp(1); 2], 'RelTol', 1e-5);
+            testCase.verifyEqual(deval(sol, 2), [exp(1.1); 3], 'RelTol', 1e-5);
+            testCase.verifyEqual(deval(sol, 3), [exp(1.2); 4], 'RelTol', 1e-5);
+            testCase.verifyEqual(sol.switches, 1, 'AbsTol', 1e-5);
+            % Sensitivities. See identicalIfRHS for the derivation of the expected value
+            FDstep = generateFDstep(2, 2);
+            sensFunction = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE');
+            T = t0:0.01:tEnd;
+            sens = sensFunction(T);
+            Gp = {sens.Gp};
+            Gp11 = cellfun(@(x) x(1,1), Gp);
+            testCase.verifyEqual(Gp11(end), 2*exp(1.2), 'RelTol', 1e-5);
+        end
+
+        function testTwoJumpsOppositeDirections(testCase)
+            % Test an RHS that has two jumps with the same switching function, but opposite direction
+            % flags.
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'twoJumpsGoodRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            t0 = 0;
+            tEnd = 4.1; % switches at tEnd exactly unfortunately aren't handled too gracefully
+            x0 = 1;
+            p = 0;
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            % (mainly just test that it doesn't crash) and use abstol where the actual value is 0
+            testCase.verifyEqual(deval(sol, 2.5), 0.5, 'RelTol', 1e-8);
+            testCase.verifyEqual(deval(sol, 3.5), -0.5, 'RelTol', 1e-8);
+
+            expectedSwitches = [1,  2,  3, 4;
+                                -1, 1, -1, 1];
+            for i=1:length(expectedSwitches)
+                testCase.verifyEqual(sol.switches(i), expectedSwitches(1, i), 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, sol.switches(i)), expectedSwitches(2, i), 'RelTol', 1e-6);
+            end
+        end
+
+        function testTwoJumpsSameDirection(testCase)
+            % Test an RHS that has two jumps that overlap - this should throw an error
+            integrator = TestStateJumps.defaultIntegrator;
+            options = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+
+            t0 = 0;
+            tF = 10;
+            p = 0;
+            x0 = 4;
+
+            datahandle = prepareDatahandleForIntegration( ...
+                'twoJumpsBadRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+
+            testCase.verifyError(@() solveODE(datahandle, [t0 tF], x0, p), '');
+        end
+
+        function testJumpChangesModel(testCase)
+            % Test an RHS that enters one model and then performs a jump into yet another model
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpChangesModelRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            t0 = 0;
+            tEnd = 4;
+            x0 = [0; 0];
+            p = 2;
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            % at t=2, x(1) jumps from 4 to 13 and x(2) = 4.
+            testCase.verifyEqual(deval(sol, tEnd, 1), 17, 'RelTol', 1e-5);
+            testCase.verifyEqual(deval(sol, tEnd, 2), 0, 'AbsTol', 1e-5);
+        end
+
+        function testJumpInHelper(testCase)
+            % Test an RHS where there are jumps in helper functions
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpInHelperRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            t0 = 0;
+            tEnd = 25;
+            p = 0;
+            x0 = 0;
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            % the first switch is a pure jump, the second a pure model switch, the third a full switch.
+            expectedSwitches = [5 10 15; 10 15 30];
+            for i=1:length(expectedSwitches)
+                testCase.verifyEqual(sol.switches(i), expectedSwitches(1, i), 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, sol.switches(i)), expectedSwitches(2, i), 'RelTol', 1e-6);
+            end
+            testCase.verifyEqual(deval(sol, 25), 40, 'RelTol', 1e-6);
+        end
+
+        function testJumpInHelperWithJumpsDisabled(testCase)
+            % Test that everything works with jump handling disabled
+            config = makeConfig();
+            config.jump.disable = true;
+            makeConfig(config);
+
+            err = [];
+            try
+                integrator = TestStateJumps.defaultIntegrator;
+                options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+                datahandle = prepareDatahandleForIntegration( ...
+                    'jumpInHelperRHS', ...
+                    'solver', func2str(integrator), ...
+                    'options', options);
+                t0 = 0;
+                tEnd = 25;
+                p = 0;
+                x0 = 0;
+                sol = solveODE(datahandle, [t0 tEnd], x0, p);
+                testCase.verifyEqual(deval(sol, 5), 5, 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, 15), 15, 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, 25), 30, 'RelTol', 1e-6);
+            catch e
+                err = e;
+            end
+            config.jump.disable = false;
+            makeConfig(config);
+            if ~isempty(err)
+                throw(err);
+            end
+        end
+
+        function testBounceball(testCase)
+            % bouncing ball example, compare to analytic solution
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'bounceballRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            g     = 9.807;
+            gamma = 0.9;
+            v0 = 10;
+            h0 = eps(1)*(1/g) * v0^2;
+            p = [g gamma];
+
+            t0 = 0;
+            tEnd = 10;
+            x0 = [h0; v0];
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+
+            % expect four switching points. If you change tEnd, then also change these
+            expectedSwitches = testCase.getBounceballSwitches(6, v0, g, gamma);
+            atol             = [1e-6 1e-6 1e-6 1e-6 1e-6 1e-6];
+
+            % Prepare the sensitivities at t- and t for each switch
+            switchesLeft = leftLimit(sol.switches);
+            sensTimes = reshape([switchesLeft; sol.switches], 1, []);
+            sensTimes = [t0 sensTimes tEnd];
+            fdStep = generateFDstep(length(x0), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, fdStep, 'method', 'VDE', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+            sens = sensFun(sensTimes);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+
+            Gy_prev = eye(length(x0));
+            Gp_prev = zeros(length(x0), length(p));
+            for i=1:length(sol.switches)
+                % t2 is the current switch, t1 is the previous one
+                t1  = sensTimes(2*i-1);
+                t2Minus = sensTimes(2*i);
+                t2 = sol.switches(i);
+                % switching time and solution value
+                testCase.verifyEqual(t2, expectedSwitches(i), 'RelTol', 1e-6);
+                testCase.verifyEqual(deval(sol, t2, 1), 0, 'AbsTol', 1e-6);
+                testCase.verifyEqual(deval(sol, t2, 2), gamma^i*v0, 'RelTol', 1e-6);
+                % sensitivities
+                [Gy_t2_t1, Gp_t2_t1, Uy_t2, Up_t2] = testCase.getbounceballSensitivities(sol, p, t1, t2Minus);
+                Gy_full = Gy_t2_t1 * Gy_prev;
+                Gp_full = Gy_t2_t1 * Gp_prev + Gp_t2_t1;
+                testCase.verifyEqual(Gy{2*i}, Gy_full, 'AbsTol', atol(i));
+                testCase.verifyEqual(Gp{2*i}, Gp_full, 'AbsTol', atol(i));
+                Gy_prev = Uy_t2 * Gy_full;
+                Gp_prev = Uy_t2 * Gp_full + Up_t2;
+                testCase.verifyEqual(Gy{2*i+1}, Gy_prev, 'AbsTol', atol(i));
+                testCase.verifyEqual(Gp{2*i+1}, Gp_prev, 'AbsTol', atol(i));
+            end
+        end
+
+        function testSensitivitiesSimpleVDE(testCase)
+            % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            [t0, tEnd, p, x0] = jumpSensitivityInitdata();
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpSensitivityRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            testCase.verifyEqual(length(sol.switches), 1);
+
+            % These are tight, setting either of them one OOM lower causes the test to fail
+            rtol1 = 1e-6;
+            rtol2 = 1e-5;
+
+            FDstep = generateFDstep(size(sol.y,1), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+
+            t1 = sol.switches(1);
+            t1Minus = leftLimit(t1);
+            sens = sensFun([t0, t1Minus, t1, tEnd]);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
+
+            % MODEL 1
+            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'RelTol', rtol2);
+
+            % MODEL 2
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
+        end
+        function testSensitivitiesSimpleEND_piecewise(testCase)
+            % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            [t0, tEnd, p, x0] = jumpSensitivityInitdata();
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpSensitivityRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            testCase.verifyEqual(length(sol.switches), 1);
+
+            % These are tight, setting either of them one OOM lower causes the test to fail
+            rtol1 = 1e-6;
+            rtol2 = 1e-5;
+
+            FDstep = generateFDstep(size(sol.y,1), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+
+            t1 = sol.switches(1);
+            t1Minus = leftLimit(t1);
+            sens = sensFun([t0, t1Minus, t1, tEnd]);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
+
+            % MODEL 1
+            % Sensitivities before and after the first switch
+            testCase.verifyEqual(Gy{2}, Gy1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1Minus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gy{3}, Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{3}, Uy1 * Gp1(t1Minus) + Up1, 'RelTol', rtol2);
+
+            % MODEL 2
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
+        end
+        function testSensitivitiesSimpleEND_full(testCase)
+            % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            [t0, tEnd, p, x0] = jumpSensitivityInitdata();
+            datahandle = prepareDatahandleForIntegration( ...
+                'jumpSensitivityRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+            testCase.verifyEqual(length(sol.switches), 1);
+
+            % These are tight, setting either of them one OOM lower causes the test to fail
+            rtol1 = 1e-5;
+            rtol2 = 1e-4;
+
+            FDstep = generateFDstep(size(sol.y,1), length(p));
+            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_full', ...
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+
+            t1 = sol.switches(1);
+            % Since END fails around switches, we need to go a little further away to test our sensitivities. We will
+            % still use the more precise t1Minus and t1Plus for computing the analytic sensitivities
+            t1MinusMinus = t1 - 1e-3*t1;
+            t1PlusPlus = t1 + 1e-3*t1;
+            sens = sensFun([t0, t1MinusMinus, t1PlusPlus, tEnd]);
+            Gy = {sens.Gy};
+            Gp = {sens.Gp};
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = testCase.getJumpSensitivitySensitivities(sol, p);
+
+            % MODEL 1
+            testCase.verifyEqual(Gy{2}, Gy1(t1MinusMinus), 'RelTol', rtol1);
+            testCase.verifyEqual(Gp{2}, Gp1(t1MinusMinus), 'RelTol', rtol1);
+
+            % MODEL 2
+            t1Minus = leftLimit(t1);
+            testCase.verifyEqual(Gy{3}, Gy2(t1PlusPlus) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{3}, Gy2(t1PlusPlus) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(t1PlusPlus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
+            testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
+        end
+    end
+    methods
+        function expectedSwitches = getBounceballSwitches(~, numSwitches, v0, g, gamma)
+            % Setting h_+(t_s) to eps/g * v_+^2 leads to the next SWP being slightly off, which we can compute
+            % using this disturbed gamma. We should technically also replace (2*v0/g) with
+            % ((1 + sqrt(1+2eps))*v0/g), but that eps ends up getting cancelled anyway
+            gamma_eps = sqrt(1+2*eps)*gamma;
+            expectedSwitches = bounceballSwitches(numSwitches, v0, g, gamma_eps);
+        end
+        function [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = getbounceballSensitivities( ...
+                ~, sol, p, t1, t2Minus)
+            g     = p(1);
+            gamma = p(2);
+            x2Minus = deval(sol, t2Minus, 2);
+            [Gy_t2_ts1, Gp_t2_ts1, Uy_t2, Up_t2] = bounceballSensitivities(g, gamma, t1, t2Minus, x2Minus, false);
+        end
+
+        function [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = getJumpSensitivitySensitivities(~, sol, p)
+            % We compute these analytic sensitivities based on the intermediate values that IFDIFF produces,
+            % because we are more interested in checking that the algorithm does what is expected in these
+            % tests than in actually computing the total error.
+            t0 = sol.x(1);
+            x0 = sol.y(1);
+            t1 = sol.switches(1);
+            t1Minus = leftLimit(t1);
+            t1Plus = t1 + eps(t1);
+            x1Minus1 = deval(sol, t1Minus);
+            x1Plus1  = deval(sol, t1Plus);
+            [Gy1, Gp1, Uy1, Up1, Gy2, Gp2] = jumpSensitivitySensitivities(p, t0, x0, t1, x1Minus1, x1Plus1);
+        end
+    end
+end

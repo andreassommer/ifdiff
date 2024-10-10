@@ -1,17 +1,16 @@
-function switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, ctrlif_i, mtree_i)
+function switchingFcn = setUpSwitchingFunction_replaceCtrlifByTrueOrFalse(switchingFcn, mtree_i, ctrlif_i)
 % replace a ctrlif with its truepart/ falsepart.
 % ctrlif_i is the index into the ctrlif_index, function_index, and switch_cond arrays.
 % mtree_i is the index into switchingFcn.mtreeobj_switchingFcn, i.e. which function's mtree we want to modify.
 
     cIndex = mtree_cIndex();
 
-    % find out which ctrlif (e.g. first, second...) is the considered
-    % ctrlif w.r.t to the function
-    u = find(switchingFcn.ctrlif_index(ctrlif_i) == switchingFcn.mtreeobj_switchingFcn{6,mtree_i});
+    % map the global ctrlif index to the ctrlif_index (1st, 2nd, ...) within this function only
+    u = find(switchingFcn.ctrlif_index_t1(ctrlif_i) == switchingFcn.mtreeobj_switchingFcn{6,mtree_i});
 
     rIndex_ctrlif = switchingFcn.mtreeobj_switchingFcn{7,mtree_i};
 
-    if switchingFcn.condition(ctrlif_i)
+    if switchingFcn.switch_cond_t1(ctrlif_i)
         switchingFcn.mtreeobj_switchingFcn{3,mtree_i} = mtree_connectNodes(...
             switchingFcn.mtreeobj_switchingFcn{3,mtree_i}, ...
             rIndex_ctrlif.ctrlif_Equals(u), ...

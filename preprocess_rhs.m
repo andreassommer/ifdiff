@@ -1,7 +1,7 @@
 function preprocessed = preprocess_rhs(preprocessed)
 % preprocess rhs, i.e. transform all possible lines of code that could lead to a switch. 
 % 
-% obejcts of intereset: max, min, abs, sign and if-clauses. 
+% obejcts of intereset: max, min, abs, sign, if-clauses. 
 % either in the rhs or in a function that is being called within the rhs. 
 % transform each of those elements of code such that it fits in the ctrlif
 % structure. 

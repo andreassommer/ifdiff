@@ -1,42 +1,33 @@
-function switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, i)
-% select and generate relavant information for assembling the
-% switchingfunction and store them a struct switchingfunction
-
-
+function switchingFcn = setUpSwitchingFunction_assembleStruct(datahandle, sI, namePrefix, outputVariable, folder)
+% create a struct for building the switching function and set a few properties in it, as well as
+% incrementing the uniqueSwEnumeration property of data.SWP_detection
 data = datahandle.getData();
 
-switchingFcn.sI = data.SWP_detection.switchingIndices(i);
-switchingFcn.i = i;
+switchingFcn.sI = sI;
 
-
-switchingFcn.mtreeobj = data.mtreeplus; 
-switchingFcn.mtreeobj_switchingFcn = cell(7,1); 
-% sI is the switching index, refered to the vectors in data.SWP_detection, get the ctrlif_index w.r.t. to sI
-% switchingfunction.rhs_new_name = setUpSwitchingFunction_newName(switchingfunction, switchingfunction.sI, i);
-
-% n-th switching functions refers to the n-th switch (n is suffix for switching function name)
-switchingFcn.n = length(data.SWP_detection.switchingpoints) + 1;
+switchingFcn.mtreeobj = data.mtreeplus;
 
 switchingFcn.function_index_t1 = data.SWP_detection.function_index_t1;
-switchingFcn.function_index_t1_temp = 0;
+switchingFcn.ctrlif_index_t1   = data.SWP_detection.ctrlif_index_t1;
+switchingFcn.switch_cond_t1    = data.SWP_detection.switch_cond_t1;
 
-% every switching function gets a unique index and its functions index and
-% ctrlifindex. 
-data.SWP_detection.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration + 1; 
-datahandle.setData(data); 
 switchingFcn.uniqueSwEnumeration = data.SWP_detection.uniqueSwEnumeration;
 
-
-
 switchingFcn.rhs_name_original = data.mtreeplus{2,1}; 
-
-% get the function_index w.r.t. to sI
-switchingFcn.function_index = data.SWP_detection.function_index_t1{switchingFcn.sI};
-switchingFcn.ctrlif_index = data.SWP_detection.ctrlif_index_t1;
-switchingFcn.condition = data.SWP_detection.switch_cond_t1;
+switchingFcn.namePrefix = namePrefix;
+switchingFcn.outputVariable = outputVariable;
 switchingFcn.rhs_name = setUpSwitchingFunction_newName(switchingFcn, 0);
-switchingFcn.mtreeobj_switchingFcn = {}; 
 
-switchingFcn.path = data.paths.preprocessed_switchingFunction;
+switchingFcn.path = folder;
+
+% Assign the function and ctrlif indices to the functions in which they appear
+switchingFcn = setUpSwitchingFunction_getFunctionIndices_wrapper(switchingFcn);
+switchingFcn = setUpSwitchingFunction_getCtrlifIndices(switchingFcn);
+
+% make a copy of the mtree for modifying, change name of the RHS (e.g. from preprocessed_rhs -> sw_preprocessed_rhs)
+% helper functions will be copied and renamed later only if they are actually needed
+switchingFcn.mtreeobj_switchingFcn = switchingFcn.mtreeobj(:,1);
+switchingFcn.mtreeobj_switchingFcn{3,1} = mtree_changeFcnName(switchingFcn.mtreeobj_switchingFcn{3,1}, switchingFcn.rhs_name);
+switchingFcn.mtreeobj_switchingFcn{1,1} = switchingFcn.rhs_name;
 
 end

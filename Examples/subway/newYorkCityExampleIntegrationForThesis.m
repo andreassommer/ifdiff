@@ -160,7 +160,7 @@ ylabel('energy [Wh]')
 %
 % sensirhs = @(t,x) rhsIND(t,x,params,newdatahandle,solnyc);
 % sensiinit = reshape(sensmatIND,9,1);
-% swindices = datanyc.variable.switchingindices;
+% swindices = datanyc.variable.switchingIndices;
 % swfuncs = datanyc.constant.switchingfunctionhandles;
 % numswitches = length(datanyc.variable.switchingpoints);
 % hcplx = 1.0e-20;

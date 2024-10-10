@@ -1,27 +1,12 @@
 function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index) 
-% Consider a rhs (right-hand-side) function of an ODE. 
-% First it creates a Mtree of the function. The mtree is modified s.t. all Max, Min,
-% Abs, Sign, If, IIf function calls are exchanged by ctrlif ('control-if') function calls. 
-% 
-% The ctrlif structure is essential for monitoring all possible switches
-% and to detect and adapt the calculation of the solution, as well as the
-% exporting of the switching functions. 
-%
-% 
-%
-% INPUT:
-% 'filename':   the name of the file that contains the righhandside
-%               function
-%
-%
-% OUTPUT:
-% 'datahandle';
-%  with mtree object and Ctrlif functions as condition for if statements:
-%          .mtreeobj:   the returned mtree object which then
-%                       contains CtrlifRe03 function calls - ready
-%                       for switching point detection
-
-
+% Replace nondifferentiabilities in RHS with ctrlif ('control-if'). ctrlif is a function that takes the
+% condition of an if. In the simplest case, it just returns true or false depending on the condition - in this
+% case, the preprocessed RHS is equivalent to the original. It can also be set to store the true/false value
+% ('signature') and to later return the stored true/false value, allowing integration with a fixed model even
+% after passing the switching point, while monitoring if the actual true/false value changed. ctrlif is also
+% used for constructing switching functions after a switch is found.
+% if/else, min, max, abs/ sign, and IIf can be replaced by ctrlif.
+% State jumps, signaled by the dummy function ifdiff_statejump, are also translated to ctrlif.
 
 % adjust If conditions s.th. it is compatible with the ctrlif structure,
 % e.g.
@@ -36,8 +21,6 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % ...
 % end 
 [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index);
-
-
 
 % replace Abs by Crtlif, 
 % e.g.
@@ -61,7 +44,6 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % note that sign(0) = 0 is modified to sign(0) = 1; user will be warned
 [mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index);
 
-
 % replace Max, Min by Ctrlif
 % e.g.
 % c = max(a,b) 
@@ -74,28 +56,15 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 [mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index);
 [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index);
 
-
-end 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+% State jumps: replace e.g.
+% ifdiff_jumpif(a - b, 1, 20)
+%
+% with
+% 
+% ctrlif(a - b >= 0, true, false, ...)
+% ctrljump(20, 0, ...)
+% 
+% the ctrljump is never executed, it only serves to find the correct ctrlif for the later task of constructing the
+% jump function
+[mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif_index);
+end
