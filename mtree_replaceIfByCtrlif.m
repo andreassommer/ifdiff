@@ -1,4 +1,4 @@
-function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index)
+function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, ignore)
 % add ctrlif before every if condition
 %
 % Example:
@@ -9,21 +9,21 @@ function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_ind
 %
 % is changed to
 %
-% condValue = ctrlif(cond, true, false, index, datahandle);
-% if condValue
+% conditionvalue = ctrlif(cond, true, false, index, datahandle);
+% if conditionvalue
 % ...
 % end
 %
 %
-% INPUT: 'mtreeobj' -> mtreeobj of rhs
-%
+% INPUT:
+%   mtreeobj:     parse tree of the RHS so far
+%   ctrlif_index: continuing ctrlif index for numbering ctrlifs
+%   ignore:       array of row indices to ignore (just leave as is, no ctrlif)
 % OUTPUT:
+%   mtreeobj:     modified syntax tree
+%   ctrlif_index: updated ctrlif index
 %
 config = makeConfig();
-
-% notation:
-% cIndex -> column index; refers to a property type
-% rIndex -> row index of some object; refers to the entire row.
 cIndex = mtree_cIndex();
 rIndex = mtree_rIndex(mtreeobj);
 
@@ -37,9 +37,8 @@ end
 
 % handle each if node seperately
 for i = 1:length(rIndex.BODY.IF)
-    
-    if mtree_ifdiff_ignore(mtreeobj, rIndex.BODY.IF(i))
-        % skip this if-statement if the user specified so
+
+    if ismember(rIndex.BODY.IF(i), ignore)
         continue
     end
     
