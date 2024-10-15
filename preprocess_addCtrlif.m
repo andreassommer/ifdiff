@@ -7,7 +7,7 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % used for constructing switching functions after a switch is found.
 % if/else, min, max, abs/ sign, and IIf can be replaced by ctrlif.
 % State jumps, signaled by the dummy function ifdiff_statejump, are also translated to ctrlif.
-
+ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
 % adjust If conditions s.th. it is compatible with the ctrlif structure,
 % e.g.
 % if a >= b 
@@ -20,7 +20,7 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % if cond
 % ...
 % end 
-[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index);
+[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, ignoredIfs);
 
 % replace Abs by Crtlif, 
 % e.g.
