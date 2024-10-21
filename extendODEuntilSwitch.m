@@ -32,7 +32,6 @@ switchingIndices = getSwitchingIndices(datahandle, 0);
 % In that case, slightly increment the switching point and reintegrate with forced branching.
 % Repeat this process until a new signature is detected.
 originalT2 = data.SWP_detection.t2;
-switchingPointRelErrorPrinted = false;
 baseOffset = 16*eps(data.SWP_detection.t2);
 iter = 0;
 while isempty(switchingIndices)
@@ -47,14 +46,15 @@ while isempty(switchingIndices)
     data = datahandle.getData();
     switchingIndices = getSwitchingIndices(datahandle, 0);
 
-    % Print warning (once) if relative error of numerically computed switching point exceeds threshold.
-    if ~switchingPointRelErrorPrinted
-        switchingPointRelError = abs((data.SWP_detection.t2 - originalT2) / originalT2);
-        if switchingPointRelError > config.switchingPointRelTolWarningThreshold
-            switchingPointRelErrorPrinted = true;
-            relErrorWarning = 'Relative error of numerically computed switching point exceeds threshold: %.16g > %.16g\n';
-            warning('IFDIFF:switchingPointRelError', relErrorWarning, switchingPointRelError, config.switchingPointRelTolWarningThreshold);
-        end
+    % Throw error if error of numerically computed switching point relative to integrated interval exceeds threshold.
+    diffT2 = data.SWP_detection.t2 - originalT2;
+    integratedInterval = originalT2 - data.SWP_detection.tspan(1);
+    % Note: integratedInterval cannot be zero since we need to make at least one integration step to detect a switch.
+    % Therefore, the below division is safe.
+    switchingPointError = abs(diffT2 / integratedInterval);
+    if switchingPointError > config.switchingPointErrorThreshold
+        errorMsg = 'Relative error of numerically computed switching point exceeds threshold: %.16g > %.16g\n';
+        error('IFDIFF:switchingPointErrorThreshold', errorMsg, switchingPointError, config.switchingPointErrorThreshold);
     end
 
     iter = iter + 1;

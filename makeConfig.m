@@ -27,8 +27,8 @@ config.debugMode = false;
 % Largest power of ten which is added to the switching time when searching for a new signature.
 config.switchingPointMaxPower = 13;
 
-% Print warning if relative error of numerically computed switching point exceeds threshold.
-config.switchingPointRelTolWarningThreshold = 1e-3;
+% Throw error if error of numerically computed switching point exceeds threshold.
+config.switchingPointErrorThreshold = 1e-2;
 
 % Chunk size used for preallocation when updating the signature in a ctrlif to avoid frequent resizing of arrays.
 config.ctrlif_signaturePreallocationChunkSize = 30;
