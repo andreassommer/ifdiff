@@ -1,5 +1,5 @@
 function [mtreeobj,ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index)
-% transform all abs into max, i.e. ('id est; latin for: that means, that is to say')
+% transform all abs into ctrlif, e.g.:
 % b = abs(a);
 %
 % is changed into
@@ -7,15 +7,11 @@ function [mtreeobj,ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_ind
 % new_variable = a; 
 % b = ctrlif(new_variable >= 0, new_variable, -new_variable, ...)
 %
-%
 
-% notation:
-% cIndex -> column index; refers to a property type
-% rIndex -> row index of some object; refers to the entire row.
 cIndex = mtree_cIndex();
 rIndex = mtree_rIndex(mtreeobj);
 
-% check if there are any abs in mtreeobj, if not cancel calculation
+% check if there are any abs in mtreeobj, if not we are done
 if ~isfield(rIndex.BODY, 'abs')
     % nothing to do
     return
@@ -23,10 +19,8 @@ end
 
 config = makeConfig();
 
-% when no '=' before 'abs', extract abs function into new line above
+% when no '=' before 'abs', extract abs function into new line that assigns it to a variable
 mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.abs_call, config.absCallPrefix);
-
-
 
 rIndex = mtree_rIndex(mtreeobj);
 
@@ -60,26 +54,4 @@ for i = 1:length(rIndex.BODY.abs)
         ['-', abs_argument_character_string]);
         ctrlif_index = ctrlif_index + 1; 
 end
-
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

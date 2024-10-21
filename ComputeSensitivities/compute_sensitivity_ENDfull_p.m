@@ -20,42 +20,19 @@ function dy_p = compute_sensitivity_ENDfull_p(datahandle, sol, t_sort_unique, FD
    
    dim_y = length(initialvalues);
    dim_p = length(parameters);
-   length_t = length(t_sort_unique);
    h_p = FDstep.dir;
    
    % If no directions for directional derivatives were given then the usual sensitivities are calculated
    if isscalar(directions_p) && directions_p == 0
       directions_p = eye(dim_p);
-      
-      % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-      % the derivative or it can be set to an absolute value. 
-      if FDstep.p_rel
-         point_p = abs(parameters);
-         h_p = max(FDstep.p_min, point_p .* FDstep.p);
-      else
-         h_p = FDstep.p;
-      end   
+      h_p = fdStep_getH_p(FDstep, parameters);
    end
    
    dim_directions_p = size(directions_p, 2);
    
    eval_disturb_p = cell(1, dim_directions_p); 
-   dy_p = cell(1, length_t);
+   dy_p = cell(1, length(t_sort_unique));
 
-   % We assume that the initial values are given values that do not depend on p. Therefore the derivatives at tspan(1) are 0 for all parameters
-   % and no calculations are necessary.
-   save = 1;
-   if t_sort_unique(1) == tspan(1)
-      dy_p{1} = zeros(dim_y, dim_directions_p);
-      length_t = length_t - 1;
-      if length_t == 0
-         return
-      else
-         t_sort_unique = t_sort_unique(2:end);
-         save = 2;
-      end
-   end
-   
    y = repmat(deval(sol,t_sort_unique), [1, dim_directions_p]);
    
    tspan_new = [tspan(1), t_sort_unique(end)];
@@ -69,9 +46,13 @@ function dy_p = compute_sensitivity_ENDfull_p(datahandle, sol, t_sort_unique, FD
    diff = reshape((cell2mat(eval_disturb_p) - y), [], dim_directions_p);
    
    count = 1 : dim_y : size(diff, 1);
-   for i = 1:length_t
-      dy_p{save} = diff(count(i):i*dim_y, 1:dim_directions_p)./reshape(h_p, 1, []);
-      save = save + 1;
+   for i = 1:length(t_sort_unique)
+      dy_p{i} = diff(count(i):i*dim_y, 1:dim_directions_p)./reshape(h_p, 1, []);
+   end
+   if t_sort_unique(1) == tspan(1)
+       % Gp(t_0, t_0)=0. But since we apply our h-disturbance to the initial values, our solution will not reflect
+       % this. Here, we correct this case.
+       dy_p{1} = zeros(dim_y, dim_directions_p);
    end
    
    % Set pertubaded values to the initial ones to be able to use the datahandle with the original data again

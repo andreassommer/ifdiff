@@ -25,35 +25,13 @@ function dy_y0 = compute_sensitivity_ENDfull_y(datahandle, sol, t_sort_unique, F
    % If no directions for directional derivatives were given then the usual sensitivities are calculated
    if isscalar(directions_y) && directions_y == 0
       directions_y = eye(dim_y);
-      
-      % Set the step size for calculating finite differences. It can be either calculated relativ to the point where you are calculating
-      % the derivative or it can be set to an absolute value. 
-      if FDstep.y_rel
-         point_y = abs(initialvalues);
-         h_y = max(FDstep.y_min, point_y .* FDstep.y);
-      else
-         h_y = FDstep.y;
-      end   
+      h_y = fdStep_getH_y(FDstep, initialvalues);
    end
    
    dim_directions_y = size(directions_y, 2);
 
    eval_disturb_y0 = cell(1, dim_directions_y); 
    dy_y0 = cell(1, length_t);
-   
-   % The derivatives w.r.t. the initial values at tspan(1) equal the directions in which the derivatives are calculated. 
-   % If the usual sensitivities are calculated that equals the identity matrix. No calculations are necessary here.
-   save = 1;
-   if t_sort_unique(1) == tspan(1)
-      dy_y0{1} = directions_y;
-      length_t = length_t - 1;
-      if length_t == 0
-         return
-      else
-         t_sort_unique = t_sort_unique(2:end);
-         save = 2;
-      end
-   end
    
    y = repmat(deval(sol,t_sort_unique), [1, dim_directions_y]);
    
@@ -69,8 +47,12 @@ function dy_y0 = compute_sensitivity_ENDfull_y(datahandle, sol, t_sort_unique, F
    
    count = 1 : dim_y : size(diff, 1);
    for i = 1:length_t
-      dy_y0{save} = diff(count(i):i*dim_y, 1:dim_directions_y)./reshape(h_y, 1, []);
-      save = save + 1;
+      dy_y0{i} = diff(count(i):i*dim_y, 1:dim_directions_y)./reshape(h_y, 1, []);
+   end
+   if t_sort_unique(1) == tspan(1)
+       % G(t_0, t_0) = directions_y. But since we apply our disturbance to the initial value, our solution will not
+       % reflect this. So, just force dy_y0{1} = directions_y in this special case.
+       dy_y0{1} = directions_y;
    end
    
    % Set pertubaded values to the initial ones to be able to use the datahandle with the original data again

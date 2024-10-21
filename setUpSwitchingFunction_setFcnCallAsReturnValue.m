@@ -1,27 +1,26 @@
-function [switchingFcn, fcnCallIndex] = ...
-    setUpSwitchingFunction_setFcnCallAsReturnValue(switchingFcn, nCurrentFunction, function_index_index)
+function switchingFcn = setUpSwitchingFunction_setFcnCallAsReturnValue(switchingFcn, mtree_i, function_index_index)
 % Modify the mtree specified by nCurrentFunction such that its return value is the value of the function call
 % indicated by function_index_index.
+    mtreeobj = switchingFcn.mtreeobj_switchingFcn{3,mtree_i};
+    cIndex = mtree_cIndex();
+    rIndex = struct('HEAD', struct(), 'BODY', struct());
+    rIndex.HEAD = mtree_rIndex_head(mtreeobj, rIndex.HEAD);
+    rIndex_fcn = switchingFcn.mtreeobj_switchingFcn{5,mtree_i};
 
-config = makeConfig();
-cIndex = mtree_cIndex();
-n = nCurrentFunction;
+    u = find(function_index_index == switchingFcn.mtreeobj_switchingFcn{4,mtree_i});
 
-rIndex = struct('HEAD', struct(), 'BODY', struct());
-rIndex.HEAD = mtree_rIndex_head(switchingFcn.mtreeobj_switchingFcn{3,n}, rIndex.HEAD);
-u = (function_index_index == switchingFcn.mtreeobj_switchingFcn{4,n});
-rIndex_fcn = switchingFcn.mtreeobj_switchingFcn{5,n};
+    [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
+        rIndex_fcn.Equals(u), ...                 % from
+        cIndex.indexLeftchild, ...                % from_type
+        {mtreeobj.K.ID, switchingFcn.outputVariable});
 
-[switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
-    rIndex_fcn.Equals(u), ...                 % from
-    cIndex.indexLeftchild, ...                % from_type
-    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingFunctionOutputName});
+    % new output for function in mtree_switchingFcn
+    [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
+        rIndex.HEAD.HEAD, ...             % from
+        cIndex.indexLeftchild, ...        % from_type
+        {mtreeobj.K.ID, switchingFcn.outputVariable});
 
-% new output for function in mtree_switchingFcn
-[switchingFcn.mtreeobj_switchingFcn{3,n}, ~] = mtree_createAndAdd_NewNode(switchingFcn.mtreeobj_switchingFcn{3,n}, ...
-    rIndex.HEAD.HEAD, ...             % from
-    cIndex.indexLeftchild, ...        % from_type
-    {switchingFcn.mtreeobj_switchingFcn{3,n}.K.ID, config.switchingFunctionOutputName});
+    mtreeobj = setUpSwitchingFunction_traceReturnStatementToInputs(mtreeobj, rIndex_fcn.Expr(u));
 
-fcnCallIndex = u; 
+    switchingFcn.mtreeobj_switchingFcn{3,mtree_i} = mtreeobj;
 end

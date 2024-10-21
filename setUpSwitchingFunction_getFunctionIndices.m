@@ -24,17 +24,21 @@ out_rIndex = mtree_rIndex_functionByExprNode(mtreeobj, expr_node);
 
 % if second argument of setFunctionIndex is -1, then we are in rhs
 
-% get second argument
-Arg2 = str2double(mtreeobj.C(mtreeobj.T(updateFunctionIndex_Arg2, cIndex.stringTableIndex)))';
-
-rhsTrue = (Arg2 == -1); 
- if rhsTrue 
+% get second argument - if it is -1, that means we are in the RHS. -1 can be either expressed as UMINUS(INT 1)
+% or just as INT -1. Both cases are covered here.
+if mtreeobj.T(updateFunctionIndex_Arg2, cIndex.kindOfNode) == mtreeobj.K.UMINUS
+    rhsTrue = 1;
+else
+    Arg2 = str2double(mtreeobj.C(mtreeobj.T(updateFunctionIndex_Arg2, cIndex.stringTableIndex)))';
+    rhsTrue = (Arg2 == -1); 
+end
+if rhsTrue 
     Arg1 = str2double(mtreeobj.C(mtreeobj.T(updateFunctionIndex_Arg1, cIndex.stringTableIndex)))'; 
     out = Arg1; 
- else
+else
     % if not function_index is stored in second variable
     out = Arg2; 
- end 
+end 
 
  
 

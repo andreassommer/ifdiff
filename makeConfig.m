@@ -1,4 +1,4 @@
-function config_out = makeConfig()
+function config_out = makeConfig(varargin)
 %MAKECONFIG Retrieve a struct containing various constants used to configure the behavior of IFDIFF.
 %   Modify this function to adjust the settings to your needs.
 %
@@ -11,6 +11,12 @@ function config_out = makeConfig()
 
 % Only generate the config once and reuse on subsequent calls to improve performance.
 persistent config
+
+if nargin > 0
+    config_out = config;
+    config = varargin{1};
+    return;
+end
 
 if ~isempty(config)
     config_out = config;
@@ -80,6 +86,7 @@ config.switchingFunctionsDirectoryName    = 'SwitchingFunctions';
 % A condition will be ignored by IFDIFF if it contains at least one of the following strings:
 config.forbiddenConditionStrings = {'nargin', 'nargout', 'isempty', 'isnan', 'isnumeric'};
 
+
 % Used to find certain types of nodes in an mtree.
 % These are derived from MATLABs internal implementation of the mtree and should not be changed!
 config.mtree_rIndex_function.Suffix_expr   = '_expr';
@@ -89,6 +96,13 @@ config.mtree_rIndex_function.Suffix_out    = '_Out';
 config.mtree_rIndex_function.Suffix_fname  = '_Fname';
 % ==================================================================================
 
+config.jump.specifyingFunction              = 'ifdiff_jumpif';
+config.jump.internalFunction                = 'ctrljump';
+config.jump.jumpFunctionNamePrefix          = 'jump_';
+config.jump.jumpFunctionOutputName          = 'jump_increment';
+config.jump.jumpFunctionsDirectoryName      = 'JumpFunctions';
+% set this to turn off jump handling
+config.jump.disable                         = false;
 
 config_out = config;
 end

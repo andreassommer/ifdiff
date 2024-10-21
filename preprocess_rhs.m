@@ -1,7 +1,7 @@
 function preprocessed = preprocess_rhs(preprocessed)
 % preprocess rhs, i.e. transform all possible lines of code that could lead to a switch. 
 % 
-% obejcts of intereset: max, min, abs, sign and if-clauses. 
+% obejcts of intereset: max, min, abs, sign, if-clauses. 
 % either in the rhs or in a function that is being called within the rhs. 
 % transform each of those elements of code such that it fits in the ctrlif
 % structure. 
@@ -31,6 +31,7 @@ end
 
 
 if isempty(preprocessed.fcn)
+    preprocessed.rhs{3,1} = mtreeplus(preprocessed.rhs{3,1}.tree2str);
     return
 end
 
@@ -43,12 +44,8 @@ for i = 1:l
         preprocessed.fcn{3,i}, 0, preprocessed.fcn, preprocessed.function_index);
 end
 
-
-
-
-
+preprocessed.rhs{3,1} = mtreeplus(preprocessed.rhs{3,1}.tree2str);
+for i = 1:l
+    preprocessed.fcn{3,i} = mtreeplus(preprocessed.fcn{3,i}.tree2str);
 end
-
-
-
-
+end

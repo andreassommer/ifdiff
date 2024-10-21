@@ -1,9 +1,11 @@
-function mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, z, rIndex)
+function mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, z)
 % given an mtree and a node index z, walk backward through the mtree starting from z. On encountering an if/else,
 % delete the if/else and replace it with the body of the branch that contains z. That is, we are assuming that
 % the if/elses will all branch in exactly such a way that z ends up getting executed, and condensing the
 % function accordingly.
-    cIndex = mtree_cIndex(); 
+    cIndex = mtree_cIndex();
+    rIndex = struct('HEAD', struct(), 'BODY', struct());
+    rIndex.HEAD = mtree_rIndex_head(mtreeobj, rIndex.HEAD);
     
     while z ~= rIndex.HEAD.FUNCTION
         zNodeKind = mtreeobj.T(z, cIndex.kindOfNode);
