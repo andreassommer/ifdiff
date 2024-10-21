@@ -31,6 +31,7 @@ end
 
 
 if isempty(preprocessed.fcn)
+    preprocessed.rhs{3,1} = mtreeplus(preprocessed.rhs{3,1}.tree2str);
     return
 end
 
@@ -43,12 +44,8 @@ for i = 1:l
         preprocessed.fcn{3,i}, 0, preprocessed.fcn, preprocessed.function_index);
 end
 
-
-
-
-
+preprocessed.rhs{3,1} = mtreeplus(preprocessed.rhs{3,1}.tree2str);
+for i = 1:l
+    preprocessed.fcn{3,i} = mtreeplus(preprocessed.fcn{3,i}.tree2str);
 end
-
-
-
-
+end
