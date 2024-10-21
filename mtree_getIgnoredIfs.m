@@ -5,12 +5,12 @@ function nodeIndices = mtree_getIgnoredIfs(mtreeobj)
     rIndex = mtree_rIndex(mtreeobj);
     cIndex = mtree_cIndex();
 
+    nodeIndices = [];
     if ~isfield(rIndex.BODY, 'IF')
         % nothing to do
         return
     end
 
-    nodeIndices = [];
     for i = 1:length(rIndex.BODY.IF)
         ifIndex = rIndex.BODY.IF(i);
         selected = select(mtreeobj, ifIndex);
