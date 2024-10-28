@@ -2,13 +2,13 @@ sigArray = SwitchingFunctionSignature.empty;
 
 % Normal canonical example
 rhsName = 'canonicalExampleRHS';
-sigArray(end + 1) = SwitchingFunctionSignature(rhsName, true, 1, {0});
+sigArray(end + 1) = SwitchingFunctionSignature(rhsName, false, 1, {0});
 sigArray(end + 1) = SwitchingFunctionSignature(rhsName, [false, true], [1, 2], {0, 0});
 
 % Canonical example with a helper function
 %rhsName = 'helperCanonicalExampleRHS';
-%sigArray(end + 1) = SwitchingFunctionSignature(rhsName, true, 1, {0});
-%sigArray(end + 1) = SwitchingFunctionSignature(rhsName, [false, true], [1, 2], {0, 0});
+%sigArray(end + 1) = SwitchingFunctionSignature(rhsName, false, 1, {0});
+%sigArray(end + 1) = SwitchingFunctionSignature(rhsName, [true, false], [1, 2], {0, 1});
 
 datahandle = prepareDatahandleForIntegration(rhsName);
 data = datahandle.getData();
