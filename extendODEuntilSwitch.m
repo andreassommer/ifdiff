@@ -31,10 +31,21 @@ switchingIndices = getSwitchingIndices(datahandle, 0);
 % The numerically computed switching point may still be part of the old model due to inaccuracies.
 % In that case, slightly increment the switching point and reintegrate with forced branching.
 % Repeat this process until a new signature is detected.
-originalT2 = data.SWP_detection.t2;
+t2FromRootFinding = data.SWP_detection.t2;
 baseOffset = 16*eps(data.SWP_detection.t2);
 iter = 0;
 while isempty(switchingIndices)
+    data = datahandle.getData();
+
+    % Throw error if error of switching point obtained from root finding relative to tspan exceeds threshold.
+    % Note: No risk of division by zero since we need to make at least one integration step to detect a switch.
+    switchingPointError = abs((data.SWP_detection.t2 - t2FromRootFinding) ...
+        / (data.SWP_detection.tspan(end) - data.SWP_detection.tspan(1)));
+    if switchingPointError > config.switchingPointErrorThreshold
+        errorMsg = 'Relative error of numerically computed switching point exceeds threshold: %.16g > %.16g\n';
+        error('IFDIFF:switchingPointErrorThreshold', errorMsg, switchingPointError, config.switchingPointErrorThreshold);
+    end
+
     % Increase t2 and integrate again starting from t1.
     % We can not start integrating from the old t2 because this would result in integration over a tiny
     % interval whose result would vanish due to limited floating point accuracy.
@@ -43,19 +54,7 @@ while isempty(switchingIndices)
     extendODEuntilSwitch_t1_to_t2(datahandle);
 
     % Check if there is a new signature.
-    data = datahandle.getData();
     switchingIndices = getSwitchingIndices(datahandle, 0);
-
-    % Throw error if error of numerically computed switching point relative to integrated interval exceeds threshold.
-    diffT2 = data.SWP_detection.t2 - originalT2;
-    integratedInterval = originalT2 - data.SWP_detection.tspan(1);
-    % Note: integratedInterval cannot be zero since we need to make at least one integration step to detect a switch.
-    % Therefore, the below division is safe.
-    switchingPointError = abs(diffT2 / integratedInterval);
-    if switchingPointError > config.switchingPointErrorThreshold
-        errorMsg = 'Relative error of numerically computed switching point exceeds threshold: %.16g > %.16g\n';
-        error('IFDIFF:switchingPointErrorThreshold', errorMsg, switchingPointError, config.switchingPointErrorThreshold);
-    end
 
     iter = iter + 1;
 end
