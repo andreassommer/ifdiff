@@ -11,16 +11,18 @@ function [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif
         return
     end
 
-    fcnCallNodes = rIndex.BODY.([jumpSpec '_call']);
+    jumpSpecNodes = rIndex.BODY.(jumpSpec);
     argNodes     = rIndex.BODY.([jumpSpec '_Arg']);
 
     cIndex = mtree_cIndex();
-    for i=1:length(rIndex.BODY.(jumpSpec))
+    for i=1:length(jumpSpecNodes)
+        jumpSpecNode = jumpSpecNodes(i);
+        [ifhead, ~] = replaceJumpifByCtrlif_parseJumpSpec(mtreeobj, jumpSpecNode, jumpSpec);
+        ifRoot = mtreeobj.T(ifhead, cIndex.indexParentNode);
         if config.jump.disable
             % if jump treatment is disabled, just remove the jump statement
-            lineStart = mtree_findBeginOfLine(mtreeobj, fcnCallNodes(i), mtreeobj.K.EXPR);
-            parent = mtreeobj.T(lineStart, cIndex.indexParentNode);
-            child = mtreeobj.T(lineStart, cIndex.indexNextNode);
+            parent = mtreeobj.T(ifRoot, cIndex.indexParentNode);
+            child = mtreeobj.T(ifRoot, cIndex.indexNextNode);
             if child == 0
                 mtreeobj.T(parent, cIndex.indexNextNode) = 0;
             else
@@ -28,12 +30,11 @@ function [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif
             end
             continue;
         end
-        lineStart = mtree_findBeginOfLine(mtreeobj, fcnCallNodes(i), mtreeobj.K.EXPR);
         argSwitchingFunction = argNodes(i, 1);
         argDirectionFlag     = argNodes(i, 2);
-        argJumpIncrement     = argNodes(i, 3);
+
         % add a line conditionvalue = ctrlif(...)
-        [mtreeobj, ctrlifExpr]   = mtree_addNewExprNode(mtreeobj, lineStart);
+        [mtreeobj, ctrlifExpr]   = mtree_addNewExprNode(mtreeobj, ifRoot);
         [mtreeobj, ctrlifEquals] = mtree_createAndAdd_NewNode(mtreeobj, ...
             ctrlifExpr, ...                        % from
             cIndex.indexLeftchild, ...           % from_type
@@ -50,21 +51,20 @@ function [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif
             'false');
 
         % replace the jump specifier with the internal function
-        jumpCall = mtreeobj.T(lineStart, cIndex.indexLeftchild);
+        % if ifdiff_jumpif(switchingFunction, direction) -> if ctrljump(direction, ctrlif_index)
+        [mtreeobj, jumpCall] = mtree_createAndAdd_NewNode(mtreeobj, ...
+            ifhead, ...
+            cIndex.indexLeftchild, ...
+            mtreeobj.K.CALL);
         [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
             jumpCall, ...
             cIndex.indexLeftchild, ...
             {mtreeobj.K.ID, jumpFunc});
-        mtreeobj = mtree_connectNodes(mtreeobj, jumpCall, argJumpIncrement, cIndex.indexRightchild);
-        mtreeobj = mtree_connectNodes(mtreeobj, argJumpIncrement, argDirectionFlag, cIndex.indexNextNode);
-        [mtreeobj, ctrlifIndexArg] = mtree_createAndAdd_NewNode(mtreeobj, ...
-            argDirectionFlag, ...
-            cIndex.indexNextNode, ...
+        [mtreeobj, argCtrlifIndex] = mtree_createAndAdd_NewNode(mtreeobj, ...
+            jumpCall, ...
+            cIndex.indexRightchild, ...
             {mtreeobj.K.INT, sprintf('%d', ctrlif_index)});
-        [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
-            ctrlifIndexArg, ...
-            cIndex.indexNextNode, ...
-            {mtreeobj.K.ID, config.ctrlif.outputName});
+        mtreeobj = mtree_connectNodes(mtreeobj, argCtrlifIndex, argDirectionFlag, cIndex.indexNextNode);
 
         % and don't forget to update ctrlif index
         ctrlif_index = ctrlif_index + 1;

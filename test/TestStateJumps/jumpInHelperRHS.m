@@ -6,4 +6,3 @@ function dx = jumpInHelperRHS(t, x, p)
         dx = jumpInHelper2(t, x, p);
     end
 end
-

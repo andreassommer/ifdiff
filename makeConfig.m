@@ -106,6 +106,7 @@ config.mtree_rIndex_function.Suffix_fname  = '_Fname';
 % ==================================================================================
 
 config.jump.specifyingFunction              = 'ifdiff_jumpif';
+config.jump.updateFunction                  = 'ifdiff_update';
 config.jump.internalFunction                = 'ctrljump';
 config.jump.jumpFunctionNamePrefix          = 'jump_';
 config.jump.jumpFunctionOutputName          = 'jump_increment';

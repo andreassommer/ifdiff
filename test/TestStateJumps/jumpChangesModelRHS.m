@@ -12,6 +12,8 @@ function dx = jumpChangesModelRHS(~, x, p)
             dx(2) = -p(1);
         end
     end
-    ifdiff_jumpif(x(1)-4, 1, [9; 0]);
+    if ifdiff_jumpif(x(1) - 4, 1)
+        ifdiff_update([9; 0]);
+    end
 end
 

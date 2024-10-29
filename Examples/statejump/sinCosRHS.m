@@ -7,6 +7,8 @@ function dx = sinCosRHS(~, x, ~)
     % convenient: when the sine hits 0 from above, cosine is -1, and if it hits it from below, cosine is 1.
     % ... well, guess it isn't so much of an opportunity to experiment after all. but it indicates that using
     % these jumps is going to be more convenient than i thought.
-    ifdiff_jumpif(x(1), 0, x(2)*[sqrt(1/2); sqrt(1/2)-1]);
+    if ifdiff_jumpif(x(1), 0)
+        ifdiff_update(x(2)*[sqrt(1/2); sqrt(1/2)-1]);
+    end
 end
 

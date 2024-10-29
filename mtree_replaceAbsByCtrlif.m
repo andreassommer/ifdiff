@@ -1,4 +1,4 @@
-function [mtreeobj,ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index)
+function [mtreeobj,ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index, ignores)
 % transform all abs into ctrlif, e.g.:
 % b = abs(a);
 %
@@ -25,6 +25,9 @@ mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.abs_c
 rIndex = mtree_rIndex(mtreeobj);
 
 for i = 1:length(rIndex.BODY.abs)
+    if ismember(rIndex.BODY.abs(i), ignores)
+        continue;
+    end
     
     % new line above abs fcn call
     beginn_of_line = mtree_findBeginOfLine(mtreeobj, rIndex.BODY.abs_call(i), mtreeobj.K.EXPR);

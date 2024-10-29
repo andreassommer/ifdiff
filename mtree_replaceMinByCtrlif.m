@@ -1,4 +1,4 @@
-function [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index)
+function [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index, ignores)
 % obj = replaceminByctrlif(mtreeobj)
 %
 % replace all min, min calls by ctrlif calls;
@@ -45,6 +45,9 @@ rIndex = mtree_rIndex(mtreeobj);
 % rIndex.BODY.minmin contains all indices of all min and min in a column vector
 % map through this column vector, min and min can be handled simultaneously
 for i = 1:length(rIndex.BODY.min)
+    if ismember(rIndex.BODY.min(i), ignores)
+        continue;
+    end
     
     % Procedure: w.l.o.g (without loss of generality) let's consider a min functon call
     %

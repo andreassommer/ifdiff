@@ -16,12 +16,15 @@ function dx = bounceballZenoRHS(~, x, p)
     else
         dx = [x(2); -p(1)];
         if p(2)^2 * e < p(3)
-            ifdiff_jumpif(x(1), -1, -x);
+            if ifdiff_jumpif(x(1), -1)
+                ifdiff_update(-x);
+            end
         else
-            ifdiff_jumpif(x(1), -1, [ ...
-                eps(1)*(1/p(1)) * p(2)^2*x(2)^2 - x(1); ...
-                -(1+p(2))*x(2) ...
-            ]);
+            if ifdiff_jumpif(x(1), -1)
+                deltaH = -x(1) + eps(1)*(1/p(1)) * p(2)^2*x(2)^2;
+                deltaV = -(1+p(2))*x(2);
+                ifdiff_update([deltaH; deltaV]);
+            end
         end
     end
 end

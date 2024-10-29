@@ -233,6 +233,22 @@ classdef TestStateJumps < matlab.unittest.TestCase
             end
         end
 
+        function testTwoUpdates(testCase)
+            % Test an RHS with an update block that contains two different update statements
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'twoUpdatesRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [0 7], 0, 0);
+            testCase.verifyEqual(length(sol.switches), 2);
+            testCase.verifyEqual(sol.switches(1), 3, 'AbsTol', 1e-8);
+            testCase.verifyEqual(deval(sol, sol.switches(1)), 5, 'AbsTol', 1e-8);
+            testCase.verifyEqual(sol.switches(2), 6, 'AbsTol', 1e-8);
+            testCase.verifyEqual(deval(sol, sol.switches(2)), 11, 'AbsTol', 1e-8);
+
+        end
         function testSensitivitiesSimpleVDE(testCase)
             % Test sensitivity computation across jumps using the simple, one-dimensional jumpSensitivityRHS.
             integrator = TestStateJumps.defaultIntegrator;

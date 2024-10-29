@@ -37,7 +37,7 @@ end
 % Replace the ctrljump with a return statement
 function_index_sI = jumpFcn.function_index_t1{jumpFcn.sI};
 if function_index_sI(1) == 0
-    jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, 1, jumpFcn.sI);
+    jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(datahandle, jumpFcn, 1, jumpFcn.sI);
 else
     currentFcn = 1;
     % again, we may need to modify intermediate function calls. This time, they also need to have their return
@@ -48,7 +48,7 @@ else
         jumpFcn = setUpSwitchingFunction_setFcnCallAsReturnValue(jumpFcn, currentFcn, function_index_j);
         currentFcn = nextFcn;
     end
-    jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(jumpFcn, currentFcn, jumpFcn.sI);
+    jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(datahandle, jumpFcn, currentFcn, jumpFcn.sI);
 end
 
 % export jump functions as source code and return the handle to the main jump function

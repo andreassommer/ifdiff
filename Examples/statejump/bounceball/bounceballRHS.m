@@ -12,6 +12,7 @@ function dx = bounceballRHS(~, x, p)
 % Continuing this, the total distance traveled after the k-th bounce is
 % (1 + gamma + gamma^2 + ... + gamma^(k-1)) * 2*v0/g, converging to (1/(1-gamma))*2*v0/g as the number of bounces goes
 % to infinity. The other way round: within the time horizon (1/(1-gamma))*2*v0/g, there are infinitely many bounces.
+% For any shorter time horizon, the problem can be solved.
 
 % For the state jump: if the height goes from positive to negative, jump to [0, -gamma*v].
 
@@ -20,7 +21,7 @@ function dx = bounceballRHS(~, x, p)
 % multiple of v+^2 lets us pull v+ out of the square root and get a geometric series after all. The initial value
 % should also be not [0, v0], but instead [eps*v0^2, v0]
 % Refinement 2: instead of eps*v+^2, set h+ to (1/g)*eps*v+^2 because the error in v+ depends on
-% g. Then the initial value should also be this also leads to some nice canceling out in the derivation of
+% g. Then the initial value should also be (1/g)*eps*v0^2, which leads to some nice canceling out in the derivation of
 % the Zeno limit.
 % Now, the k-th bounce occurs after
 % (1 + gamma~ + gamma~^2 + ... + gamma~^(k-1)) * (1+sqrt(1+2eps))*v0/g, where gamma~ = sqrt(1+2eps)gamma
@@ -28,5 +29,9 @@ function dx = bounceballRHS(~, x, p)
 % Since sqrt(1+2eps)=1+eps and eps(2) = 2eps(1), 1+sqrt(1+2eps)) will reduce to 2 in the machine.
 
     dx = [x(2); -p(1)];
-    ifdiff_jumpif(x(1), -1, [eps(1)*(1/p(1)) * p(2)^2*x(2)^2 - x(1); -(1+p(2))*x(2)]);
+    if ifdiff_jumpif(x(1), -1)
+        deltaH = -x(1) + eps(1)*(1/p(1)) * p(2)^2*x(2)^2;
+        deltaV = -(1+p(2))*x(2);
+        ifdiff_update([deltaH; deltaV]);
+    end
 end

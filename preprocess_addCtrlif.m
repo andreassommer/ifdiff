@@ -7,7 +7,11 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % used for constructing switching functions after a switch is found.
 % if/else, min, max, abs/ sign, and IIf can be replaced by ctrlif.
 % State jumps, signaled by the dummy function ifdiff_statejump, are also translated to ctrlif.
+
+% Determine which nondifferentiabilities should not be preprocessed
 ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
+jumpUpdateignores = mtree_getJumpUpdateIgnores(mtreeobj);
+
 % adjust If conditions s.th. it is compatible with the ctrlif structure,
 % e.g.
 % if a >= b 
@@ -20,7 +24,7 @@ ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
 % if cond
 % ...
 % end 
-[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, ignoredIfs);
+[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, [ignoredIfs jumpUpdateignores]);
 
 % replace Abs by Crtlif, 
 % e.g.
@@ -30,7 +34,7 @@ ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
 % 
 % temp_abs_value = a; 
 % b = ctrlif(temp_abs_value >= 0, temp_abs_value, -temp_abs_value, ...)
-[mtreeobj, ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index);
+[mtreeobj, ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
 
 % replace sign by ctrlif
 % e.g.
@@ -42,7 +46,7 @@ ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
 % b = ctrlif(temp_abs_value >= 0, 1, -1, ...) 
 % 
 % note that sign(0) = 0 is modified to sign(0) = 1; user will be warned
-[mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index);
+[mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
 
 % replace Max, Min by Ctrlif
 % e.g.
@@ -53,8 +57,8 @@ ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
 % temp_arg1 = a; 
 % temp_arg2 = b; 
 % c = ctrlif( temp_arg1 - temp_arg2 >= 0, temp_arg1, temp_arg2, ...)
-[mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index);
-[mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index);
+[mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
+[mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
 
 % State jumps: replace e.g.
 % ifdiff_jumpif(a - b, 1, 20)

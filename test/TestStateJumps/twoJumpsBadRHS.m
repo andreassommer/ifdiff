@@ -3,6 +3,10 @@ function dx = twoJumpsBadRHS(~, x, ~)
 % flagged appropriately by IFDIFF.
 % Start with a positive x value.
     dx = -1;
-    ifdiff_jumpif(x(1), -1, [-10]);
-    ifdiff_jumpif(-x(1), 0, [-5]);
+    if ifdiff_jumpif(x(1), -1)
+        ifdiff_update(-10);
+    end
+    if ifdiff_jumpif(-x(1), 0)
+        ifdiff_update(-5);
+    end
 end
