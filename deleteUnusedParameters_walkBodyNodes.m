@@ -87,10 +87,10 @@ function [mtreeobj, idStringArray] = ...
                 % could solve it by first collecting the variables from the loop head and body, then running
                 % deleteUnusedParameters_walkBodyNodes on the loop body and using these additional variables. For now,
                 % though, we'll just collect all variables and not prune any code.
-                loopSubtree = subtree(select(mtreeobj, outerLoopIndex));
-                subIdIndexList = mtree_mtfind(loopSubtree, 'Kind', helpTree.K.ID); 
+                loopSubtree = subtree(select(mtreeobj, lastNextNode));
+                subIdIndexList = mtree_mtfind(loopSubtree, 'Kind', loopSubtree.K.ID); 
                 newIDArray = mtreeobj.C{mtreeobj.T(subIdIndexList, cIndex.stringTableIndex)};
-                newIDArray(~ismember(newIDArray, idStringArray))
+                newIDArray = newIDArray(~ismember(newIDArray, idStringArray));
                 idStringArray = vertcat(idStringArray, newIDArray);
             otherwise
                 warning('deleteUnusedParameters_walkBodyNodes: found unknown node type %s', mtreeobj.KK{lastNextNodeKind});
