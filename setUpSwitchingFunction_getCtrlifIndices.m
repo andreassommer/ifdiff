@@ -22,7 +22,8 @@ l = size(switchingFcn.mtreeobj, 2);
 
 for i = 1:l
     rIndex = struct('HEAD', struct(), 'BODY', struct());
-    rIndex.BODY = mtree_rIndex_function(switchingFcn.mtreeobj{3,i}, rIndex.BODY, config.ctrlif.functionName);
+    rIndex.HEAD = mtree_rIndex_head(switchingFcn.mtreeobj{3,i}, rIndex.HEAD);
+    rIndex.BODY = mtree_rIndex_function(switchingFcn.mtreeobj{3,i}, rIndex.HEAD, rIndex.BODY, config.ctrlif.functionName);
     if ~isfield(rIndex.BODY, config.ctrlif.functionName)
         switchingFcn.mtreeobj{6, i} = [];
         switchingFcn.mtreeobj{7, i} = [];

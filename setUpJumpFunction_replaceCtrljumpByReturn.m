@@ -39,11 +39,11 @@ function jumpFcn = setUpJumpFunction_replaceCtrljumpByReturn(datahandle, jumpFcn
         cIndex.indexLeftchild, ...                % from_type
         {mtreeobj.K.ID, jumpFcn.outputVariable});      % new variable
 
-    updateExprs = rIndex_update.BODY.([updateSpec '_expr']);
+    updateCalls = rIndex_update.BODY.([updateSpec config.mtree_rIndex_function.Suffix_call]);
     updateArgs  = rIndex_update.BODY.([updateSpec '_Arg']);
-    for i = 1:length(updateExprs)
+    for i = 1:length(updateCalls)
         % create assignment statement that assigns the increment to the return value
-        expr_rIndex   = updateExprs(i);
+        expr_rIndex = mtreeobj.T(updateCalls(i), cIndex.indexParentNode);
         update_rIndex = updateArgs(i);
         [mtreeobj, new_equal] = mtree_createAndAdd_NewNode(mtreeobj, ...
             expr_rIndex, ...                        % from

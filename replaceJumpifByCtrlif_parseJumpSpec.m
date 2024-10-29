@@ -36,6 +36,7 @@ function [ifhead, rIndex_ifbody] = replaceJumpifByCtrlif_parseJumpSpec(mtreeobj,
     config = makeConfig();
     cIndex = mtree_cIndex();
     update = config.jump.updateFunction;
+    call = [config.jump.updateFunction config.mtree_rIndex_function.Suffix_call];
 
     ifhead = mtree_findBeginOfLine(mtreeobj, jumpifNode, mtreeobj.K.IFHEAD);
     rIndex_ifhead = mtree_rIndex(subtree(select(mtreeobj, mtreeobj.T(ifhead, cIndex.indexLeftchild))));
@@ -51,8 +52,11 @@ function [ifhead, rIndex_ifbody] = replaceJumpifByCtrlif_parseJumpSpec(mtreeobj,
     end
 
     rIndex_ifbody = mtree_rIndex(subtree(select(mtreeobj, ifhead)));
-    if ~isfield(rIndex_ifbody.BODY, update)
+    body = rIndex_ifbody.BODY;
+    if ~isfield(body, update)
         throw(badFormatException(['no update specified (no uses of ' update ')']));
+    elseif any(mtreeobj.T(mtreeobj.T(body.(call), cIndex.indexParentNode), cIndex.kindOfNode) ~= mtreeobj.K.EXPR)
+        throw(badFormatException([update ' is not called as a statement']));
     end
     
     function e = badFormatException(message)
