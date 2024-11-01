@@ -62,7 +62,7 @@ function [filippov, sliding_switches] = solveODE_recognizeFilippovSwitching(data
         % add the switching ctrlif to list of ctrlif's involved in switches
         % marked as possible filippov event by this function
         ctrlif_index = datahandle.getData().SWP_detection.signature.ctrlif_index{end};
-        sliding_switches(end+1) = ctrlif_index;
+        sliding_switches = ctrlif_index;
 
     end
 
