@@ -38,11 +38,15 @@ end
 % handle each if node seperately
 for i = 1:length(rIndex.BODY.IF)
     
-    
-    cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond); % TODO: There should be an index: rIndex.BODY.cond --> rIndex.BODY.cond(i)
-    if ~cond_feasible
+    if mtree_ifdiff_ignore(mtreeobj, rIndex.BODY.IF(i))
+        % skip this if-statement if the user specified so
         continue
-        % TODO: Warn about skipping the if when the condition is not feasible. 
+    end
+    
+    cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond(i));
+    if ~cond_feasible
+        warning('IFDIFF:INFEASIBLE_IF_CONDITION', 'An if condition is not feasible and was not replaced by a ctrlif.');
+        continue
     end
     % add ctrlif before the if
     

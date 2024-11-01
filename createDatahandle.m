@@ -19,7 +19,9 @@ addpath(genpath(preprocessed.path));
 % export rhs
 filepath_rhs = fullfile(preprocessed.path, [preprocessed.rhs{2,1}, '.m']);
 tempFile = fopen(filepath_rhs, 'w');
-fprintf(tempFile, preprocessed.rhs{3,1}.tree2str);
+treeStr = preprocessed.rhs{3,1}.tree2str;
+% fprintf doesn't write the raw chars by default, which we want here however
+fprintf(tempFile, '%s\n', treeStr);
 fclose(tempFile);
 
 
@@ -32,7 +34,9 @@ if ~isempty(preprocessed.fcn)
         filepath = fullfile(preprocessed.path, [filename, '.m']);
         fcn = preprocessed.fcn{3,i}; 
         tempFile = fopen(filepath, 'w');
-        fprintf(tempFile, fcn.tree2str);
+        treeStr = fcn.tree2str;
+        % fprintf doesn't write the raw chars by default, which we want here however
+        fprintf(tempFile, '%s\n', treeStr);
         fclose(tempFile);
     end
 end
@@ -58,26 +62,3 @@ data.caseCtrlif = config.caseCtrlif.default;
 datahandle = makeClosure(data);
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

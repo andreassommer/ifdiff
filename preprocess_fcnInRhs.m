@@ -22,7 +22,7 @@ fcn_with_switch = zeros(1,l);
 
 for i = 1:l
     
-    mtree_fcn = mtreeplus([preprocessed.fcn{1,i}, '.m'], '-file');
+    mtree_fcn = mtreeplus([preprocessed.fcn{1,i}, '.m'], '-file', '-comments');
     
     [mtree_fcn, ctrlif_new] = preprocess_addCtrlif(mtree_fcn, preprocessed.ctrlif_index);
     
