@@ -1,4 +1,4 @@
-function mtree = replaceCtrlifByTrueOrFalse(ctrlif_index, switch_cond, mtree)
+function mtree = replaceCtrlifByTrueOrFalse(mtree, ctrlif_index, switch_cond)
 %REPLACECTRLIFBYTRUEORFALSE Replace a ctrlif with its true/false part.
 
 

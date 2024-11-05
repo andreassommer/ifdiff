@@ -1,4 +1,4 @@
-function mtree = replaceCtrlifByReturn(ctrlif_index, mtree)
+function mtree = replaceCtrlifByReturn(mtree, ctrlif_index)
 %REPLACECTRLIFBYRETURN  Replace a ctrlif with a return statement containing its evaluated condition
 config = makeConfig();
 cIndex = mtree_cIndex;
