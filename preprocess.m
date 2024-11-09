@@ -11,11 +11,11 @@ function preprocessed = preprocess(filename)
 config = makeConfig(); 
 
 % RHS data: original function name, name of preprocessed function, and syntax tree
-preprocessed.rhs = cell(3,1);
+preprocessed.rhs = cell(4,1);
 preprocessed.rhs{1,1} = filename;
 preprocessed.rhs{2,1} = [config.preprocessedRhsNamePrefix, filename];
 preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file', '-comments');
-
+preprocessed.rhs{4,1} = [mtree_getIgnoredIfs(preprocessed.rhs{3,1}) mtree_getJumpUpdateIgnores(preprocessed.rhs{3,1})];
 
 % get all paths that are required to execute filename.m (we want to
 % identify all functions that are being called within the rhs) 

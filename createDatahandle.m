@@ -43,8 +43,8 @@ if ~isempty(preprocessed.fcn)
 end
 
 data.mtreeplus = cell(3,1 + size(preprocessed.fcn,2));
-data.mtreeplus(:,1) = preprocessed.rhs;
-data.mtreeplus(:,2:end) = preprocessed.fcn;
+data.mtreeplus(:,1) = preprocessed.rhs(1:3,:);
+data.mtreeplus(:,2:end) = preprocessed.fcn(1:3,:);
 
 data.paths.preprocessed_rhs = preprocessed.path;
 data.paths.preprocessed_switchingFunction = preprocessed.SwitchingFunctions_path;

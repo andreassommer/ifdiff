@@ -11,10 +11,10 @@ function [fnames, rhs_path] =  preprocess_getNamesOfFcn(rhs_name)
 
 % check if there are any helper functions
 l = length(fList);
-fnames = cell(3,l-1);
+fnames = cell(4,l-1);
 if l == 1
     % there is only the RHS. We need its path, but fnames is only for helper functions, so it stays empty
-    fnames = {};
+    fnames = cell(4, 0);
 end
 
 i = 1; 
