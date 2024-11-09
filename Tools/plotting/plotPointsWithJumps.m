@@ -112,10 +112,3 @@ function p = plotPointsWithJumps(T, X, jumps, label, color, varargin)
         hold off;
     end
 end
-function value = getOrDefault(struct, key, default)
-    if isfield(struct, key)
-        value = struct.(key);
-    else
-        value = default;
-    end
-end

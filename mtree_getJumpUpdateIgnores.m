@@ -31,12 +31,4 @@ function nodeIndices = mtree_getJumpUpdateIgnores(mtreeobj)
 
         nodeIndices = [nodeIndices ifNode ifs iifs abs max min sign];
     end
-
-    function value = getOrDefault(s, key, default)
-        if isfield(s, key)
-            value = s.(key);
-        else
-            value = default;
-        end
-    end
 end
