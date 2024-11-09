@@ -1,14 +1,21 @@
 function [fcn_index, fcn_index_rIndex] = getFunctionIndex(mtree)
-% when the function index is set, (in the ctrlif)
-% find out in which order which function (with its corresponding index)
-% occurs in the function
+% How it works: 
+% 1. Get all nodes corresponding to setFunctionIndex calls
+% 2. Extract the arguments.
+% 2a. If the second argument is a -1, then we are in the RHS and the function index is stored in the first argument
+% 2b. Otherwise, we are in a helper function and the second argument holds the function_index
+% 3. Get the expression node of the actual helper function call.
+% 4. From there collect more useful nodes for the helper function, i.e. the EXPR, EQUALS, CALL, FNAME, and ARG (if any) nodes.
+% Return: For all helper functions, their function index and rIndex of nodes relevant to the function call.
+
 config = makeConfig();
 cIndex = mtree_cIndex();
 
-
+% Find all subtrees of setFunctionIndex calls and get their row indices
 fname_subtree = mtree.mtfind('String', config.function_indexUpdateFunctionName);
 fname = fname_subtree.indices;
 
+% There are no setFunctionIndex calls
 if isempty(fname)
     fcn_index = [];
     fcn_index_rIndex = [];

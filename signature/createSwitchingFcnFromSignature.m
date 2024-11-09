@@ -25,6 +25,15 @@ isMtreeModified(1) = true;
 % Record which function indices were already handled
 processedFunctionIndices = [];
 
+% Collect information about helper function calls for an mtree
+mtreeFunctionCallInfo = struct( ...
+    'function_index', cell(1, length(mtreeArray)), ...
+    'Expr', [], ...
+    'Call', [], ...
+    'Fname', [], ...
+    'Arg', [] ...
+    );
+
 
 % All ctrlifs before the ctrlif whose condition value has changed are replaced by their true/false part
 numCtrlif = length(signature.switch_cond);
@@ -67,11 +76,24 @@ for idxCtrlif = 1:numCtrlif-1
 end
 
 % Replace the last ctrlif (i.e. the one whose condition value has changed) by a return
-if signature.function_index{end} == 0
-    mtreeArray{1} = replaceCtrlifByReturn(mtreeArray{1}, signature.ctrlif_index(end));
-else
-    error('Helper functions not implemented yet!');
+idxMtree = 1;
+function_index = signature.function_index{end};
+if function_index(1) ~= 0
+    error("Helper function not implemented yet!")
+    % again, we may need to modify intermediate function calls. This time, they also need to have their return
+    % statements modified
+    for idxFunctionIndex = 1:length(function_index)
+        [switchingFcn, nextFcn]      = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
+        [switchingFcn, fcnCallIndex] = setUpSwitchingFunction_setFcnCallAsReturnValue(...
+            switchingFcn, currentFcn, function_index_j);
+        % delete all code after the newly created return statement
+        fcnCallRIndex                = switchingFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
+        switchingFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
+        currentFcn = nextFcn;
+    end
 end
+mtreeArray{idxMtree} = replaceCtrlifByReturn(mtreeArray{idxMtree}, signature.ctrlif_index(end));
+
 
 % Remove variables that do not contribute to the return value for all functions
 for idxCtrlif=1:length(mtreeArray)
