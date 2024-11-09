@@ -1,15 +1,7 @@
-function [mtreeobj, function_index] = preprocess_adjustFcnCallsRhs(mtreeobj, is_mtreeobj_rhs, preprocessed_name, function_index)
-% handle every function call of the function with the name in
-% preprocessed_name
-% add function_index and add datahandle as input variable
-% create new line above the function call and set (functionindexX = updateFunctionIndex())
-%
+function [mtreeobj, function_index] = preprocess_adjustFcnCallsRhs(mtreeobj, ignored, is_mtreeobj_rhs, preprocessed_name, function_index)
+% For calls to helper functions, replace the function names (since the helper functions will also have been
+% exported to new files with modified names) and also add a call to updateFunctionIndex().
 
-
-
-% notation:
-% cIndex -> column index; refers to a property type
-% rIndex -> row index of some object; refers to the entire row.
 cIndex = mtree_cIndex();
 config = makeConfig();
 rIndex = mtree_rIndex(mtreeobj, preprocessed_name);
@@ -20,22 +12,19 @@ else
     return
 end
 
-
-
-
-
-
 for i = 1:length(fields(rIndex.Fcn))
     rIndex_Fcn_i = rIndex.Fcn.(field_names{i});
     Fname = mtreeobj.C{mtreeobj.T(rIndex_Fcn_i.Fname,cIndex.stringTableIndex)};
     
-    mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex_Fcn_i.Call, Fname);
-    
-    new_rIndex = struct();
-    rIndex_Fcn_i = mtree_rIndex_fcn(mtreeobj, Fname, new_rIndex);
-    rIndex_Fcn_i = rIndex_Fcn_i.(Fname);
-    
     for j = 1:length(rIndex_Fcn_i.Fname)
+        if ismembertol(rIndex_Fcn_i.Fname(j), ignored)
+            continue;
+        end
+
+        mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex_Fcn_i.Call(j), Fname);
+
+        rIndex_Fcn_i = mtree_rIndex_fcn(mtreeobj, Fname, struct());
+        rIndex_Fcn_i = rIndex_Fcn_i.(Fname);
         
         newFname = preprocess_setUpNewFcnName(Fname); 
         
@@ -135,33 +124,4 @@ for i = 1:length(fields(rIndex.Fcn))
         function_index = function_index + 1;
     end
 end
-
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

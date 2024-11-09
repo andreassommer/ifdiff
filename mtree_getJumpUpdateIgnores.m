@@ -22,6 +22,7 @@ function nodeIndices = mtree_getJumpUpdateIgnores(mtreeobj)
         [ifhead, jumpRIndex] = replaceJumpifByCtrlif_parseJumpSpec(mtreeobj, jumpNodes(i), jumpSpec);
         ifNode = mtreeobj.T(ifhead, cIndex.indexParentNode);
         body = jumpRIndex.BODY;
+
         ifs  = getOrDefault(body, 'IF', []);
         iifs = getOrDefault(body, 'Iif', []);
         abs  = getOrDefault(body, 'abs', []);
@@ -29,6 +30,11 @@ function nodeIndices = mtree_getJumpUpdateIgnores(mtreeobj)
         min  = getOrDefault(body, 'min', []);
         sign  = getOrDefault(body, 'sign', []);
 
-        nodeIndices = [nodeIndices ifNode ifs iifs abs max min sign];
+        % find all function calls
+        mtreeobj_if = Tree(select(mtreeobj, ifhead));
+        calls = find(mtfind(mtreeobj_if, 'Kind', 'CALL').IX);
+        functions = mtreeobj_if.T(calls, cIndex.indexLeftchild)';
+
+        nodeIndices = [nodeIndices ifNode ifs iifs abs max min sign functions];
     end
 end

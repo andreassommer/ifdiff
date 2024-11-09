@@ -26,7 +26,8 @@ preprocessed = preprocess_fcnInRhs(preprocessed);
 
 
 if ~isempty(preprocessed.fcn)
-    [preprocessed.rhs{3,1}, preprocessed.function_index] = preprocess_adjustFcnCallsRhs(preprocessed.rhs{3,1}, 1, preprocessed.fcn, 1);
+    [preprocessed.rhs{3,1}, preprocessed.function_index] = preprocess_adjustFcnCallsRhs( ...
+        preprocessed.rhs{3,1}, preprocessed.rhs{4,1}, true, preprocessed.fcn, 1);
 end
 
 
@@ -41,7 +42,7 @@ for i = 1:l
     preprocessed.fcn{3,i} = preprocess_handleNargin(preprocessed.fcn{3,i}, 2);
     
     [preprocessed.fcn{3,i}, preprocessed.function_index] = preprocess_adjustFcnCallsRhs(...
-        preprocessed.fcn{3,i}, 0, preprocessed.fcn, preprocessed.function_index);
+        preprocessed.fcn{3,i}, preprocessed.fcn{4,i}, false, preprocessed.fcn, preprocessed.function_index);
 end
 
 preprocessed.rhs{3,1} = mtreeplus(preprocessed.rhs{3,1}.tree2str);

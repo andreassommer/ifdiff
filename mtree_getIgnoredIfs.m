@@ -29,7 +29,13 @@ function nodeIndices = mtree_getIgnoredIfs(mtreeobj)
                 max  = getOrDefault(subtreeRIndex.BODY, 'max', []);
                 min  = getOrDefault(subtreeRIndex.BODY, 'min', []);
                 sign  = getOrDefault(subtreeRIndex.BODY, 'sign', []);
-                nodeIndices = [nodeIndices ifs iifs abs max min sign];
+
+                % find all function calls
+                ifSubtree = Tree(select(mtreeobj, bodyIndex));
+                calls = find(mtfind(ifSubtree, 'Kind', 'CALL').IX);
+                functions = ifSubtree.T(calls, cIndex.indexLeftchild)';
+
+                nodeIndices = [nodeIndices ifs iifs abs max min sign functions];
                 bodyIndex = mtreeobj.T(bodyIndex, cIndex.indexNextNode);
             end
         end

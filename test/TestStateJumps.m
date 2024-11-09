@@ -365,6 +365,53 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(Gy{4}, Gy2(tEnd) * Uy1 * Gy1(t1Minus), 'RelTol', rtol2);
             testCase.verifyEqual(Gp{4}, Gy2(tEnd) * (Uy1 * Gp1(t1Minus) + Up1) + Gp2(tEnd), 'RelTol', rtol2);
         end
+        function testHelperInJump(testCase)
+            % Test an RHS with a jump that uses a helper function to compute the update - the helper should
+            % not be preprocessed
+            integrator = TestStateJumps.defaultIntegrator;
+            options = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+
+            t0 = 0;
+            tF = 5;
+            p = 0;
+            x0 = [0; 0];
+
+            
+            datahandle = prepareDatahandleForIntegration( ...
+                'helperInJumpRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tF], x0, p);
+
+            testCase.verifyEqual(length(sol.switches), 2);
+            testCase.verifyEqual(deval(sol, sol.x(end), 1), 5, 'RelTol', 1e-6);
+
+            data = datahandle.getData();
+            % Test that the helper did not get preprocessed
+            testCase.verifyEqual(size(data.mtreeplus, 2), 1);
+        end
+
+        function testHelperInJumpInHelper(testCase)
+            % Test an RHS where is a jump in a helper function, and that jump has another helper function
+            % called inside it. The point is that the second helper should not be preprocessed.
+            integrator = TestStateJumps.defaultIntegrator;
+            options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            datahandle = prepareDatahandleForIntegration( ...
+                'helperInJumpInHelperRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            t0 = 0;
+            tEnd = 3;
+            p = 0;
+            x0 = 0;
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+
+            testCase.verifyEqual(deval(sol, sol.x(end), 1), 5, 'RelTol', 1e-6);
+
+            data = datahandle.getData();
+            % Test that the second helper did not get preprocessed
+            testCase.verifyEqual(size(data.mtreeplus, 2), 2);
+        end
     end
     methods
         function expectedSwitches = getBounceballSwitches(~, numSwitches, v0, g, gamma)

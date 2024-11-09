@@ -104,6 +104,51 @@ classdef TestIgnore < matlab.unittest.TestCase
             testCase.verifyEqual(length(sol.switches), 0);
             testCase.verifyEqual(deval(sol, tF), 15, 'RelTol', 0.1);
         end
+        function testHelperInIgnore(testCase)
+            % Verify that a helper function that is called (only) inside an ignored if block is not preprocessed
+            options = odeset();
+            solver = @ode45;
+            t0 = 0;
+            tF = 10;
+            x0 = 0;
+            p  = 0;
+            
+            datahandle = prepareDatahandleForIntegration('helperInIgnoreRHS', ...
+                'solver', func2str(solver), ...
+                'options', options);
+            data = datahandle.getData();
+
+            % ensure only one of the two ifs got turned into a ctrlif
+            testCase.verifyEqual(size(data.mtreeplus, 2), 1);
+
+            % ensure the ctrlif did not lead to a switching event
+            sol = solveODE(datahandle, [t0 tF], x0, p);
+            testCase.verifyEqual(length(sol.switches), 0);
+            testCase.verifyEqual(deval(sol, tF), 15, 'RelTol', 0.1);
+        end
+        function testIgnoreAndNotIgnore(testCase)
+            % Test a RHS that calls a helper function twice: once in an ignored if, once without ignore.
+            % IFDIFF should preprocess the helper function, but only modify the second call.
+            options = odeset();
+            solver = @ode45;
+            t0 = 0;
+            tF = 10;
+            x0 = 0;
+            p  = 0;
+            
+            datahandle = prepareDatahandleForIntegration('ignoreAndNotIgnoreRHS', ...
+                'solver', func2str(solver), ...
+                'options', options);
+            data = datahandle.getData();
+
+            % ensure only one of the two ifs got turned into a ctrlif
+            testCase.verifyEqual(size(data.mtreeplus, 2), 2);
+
+            % ensure the ctrlif did not lead to a switching event
+            sol = solveODE(datahandle, [t0 tF], x0, p);
+            testCase.verifyEqual(length(sol.switches), 0);
+            testCase.verifyEqual(deval(sol, tF), 15, 'RelTol', 0.1);
+        end
     end
     
 end
