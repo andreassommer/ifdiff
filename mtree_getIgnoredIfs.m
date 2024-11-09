@@ -22,9 +22,14 @@ function nodeIndices = mtree_getIgnoredIfs(mtreeobj)
             while bodyIndex ~= 0
                 bodySubtree = Tree(select(mtreeobj, mtreeobj.T(bodyIndex, cIndex.indexRightchild)));
                 subtreeRIndex = mtree_rIndex(bodySubtree);
-                if isfield(subtreeRIndex.BODY, 'IF')
-                    nodeIndices = [nodeIndices subtreeRIndex.BODY.IF];
-                end
+
+                ifs  = getOrDefault(subtreeRIndex.BODY, 'IF', []);
+                iifs = getOrDefault(subtreeRIndex.BODY, 'Iif', []);
+                abs  = getOrDefault(subtreeRIndex.BODY, 'abs', []);
+                max  = getOrDefault(subtreeRIndex.BODY, 'max', []);
+                min  = getOrDefault(subtreeRIndex.BODY, 'min', []);
+                sign  = getOrDefault(subtreeRIndex.BODY, 'sign', []);
+                nodeIndices = [nodeIndices ifs iifs abs max min sign];
                 bodyIndex = mtreeobj.T(bodyIndex, cIndex.indexNextNode);
             end
         end

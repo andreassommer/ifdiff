@@ -1,4 +1,4 @@
-function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index) 
+function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index, ignore_list)
 % Replace nondifferentiabilities in RHS with ctrlif ('control-if'). ctrlif is a function that takes the
 % condition of an if. In the simplest case, it just returns true or false depending on the condition - in this
 % case, the preprocessed RHS is equivalent to the original. It can also be set to store the true/false value
@@ -7,10 +7,8 @@ function [mtreeobj, ctrlif_index] = preprocess_addCtrlif(mtreeobj, ctrlif_index)
 % used for constructing switching functions after a switch is found.
 % if/else, min, max, abs/ sign, and IIf can be replaced by ctrlif.
 % State jumps, signaled by the dummy function ifdiff_statejump, are also translated to ctrlif.
-
-% Determine which nondifferentiabilities should not be preprocessed
-ignoredIfs = mtree_getIgnoredIfs(mtreeobj);
-jumpUpdateignores = mtree_getJumpUpdateIgnores(mtreeobj);
+% ignore_list is a list of if statements, other nondifferentiabilities, and function calls that should be
+% excluded from preprocessing.
 
 % adjust If conditions s.th. it is compatible with the ctrlif structure,
 % e.g.
@@ -24,7 +22,7 @@ jumpUpdateignores = mtree_getJumpUpdateIgnores(mtreeobj);
 % if cond
 % ...
 % end 
-[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, [ignoredIfs jumpUpdateignores]);
+[mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, ignore_list);
 
 % replace Abs by Crtlif, 
 % e.g.
@@ -34,7 +32,7 @@ jumpUpdateignores = mtree_getJumpUpdateIgnores(mtreeobj);
 % 
 % temp_abs_value = a; 
 % b = ctrlif(temp_abs_value >= 0, temp_abs_value, -temp_abs_value, ...)
-[mtreeobj, ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
+[mtreeobj, ctrlif_index] = mtree_replaceAbsByCtrlif(mtreeobj, ctrlif_index, ignore_list);
 
 % replace sign by ctrlif
 % e.g.
@@ -46,7 +44,7 @@ jumpUpdateignores = mtree_getJumpUpdateIgnores(mtreeobj);
 % b = ctrlif(temp_abs_value >= 0, 1, -1, ...) 
 % 
 % note that sign(0) = 0 is modified to sign(0) = 1; user will be warned
-[mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
+[mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index, ignore_list);
 
 % replace Max, Min by Ctrlif
 % e.g.
@@ -57,18 +55,21 @@ jumpUpdateignores = mtree_getJumpUpdateIgnores(mtreeobj);
 % temp_arg1 = a; 
 % temp_arg2 = b; 
 % c = ctrlif( temp_arg1 - temp_arg2 >= 0, temp_arg1, temp_arg2, ...)
-[mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
-[mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index, jumpUpdateignores);
+[mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index, ignore_list);
+[mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index, ignore_list);
 
 % State jumps: replace e.g.
-% ifdiff_jumpif(a - b, 1, 20)
+% if ifdiff_jumpif(a - b, 1)
+%     ifdiff_update(20)
+% end
 %
 % with
 % 
-% ctrlif(a - b >= 0, true, false, ...)
-% ctrljump(20, 0, ...)
+% ctrlif(a - b >= i, true, false, ...)
+% if ctrljump(i, 1)
+%     ifdiff_update(20)
+% end
 % 
-% the ctrljump is never executed, it only serves to find the correct ctrlif for the later task of constructing the
-% jump function
+% when the created ctrlif switches, the update passed to ifdiff_update is applied to the state
 [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif_index);
 end

@@ -2,14 +2,11 @@ function preprocessed = preprocess_fcnInRhs(preprocessed)
 % preprocess functions that are called in the rhs (first functions;
 % filename)
 % preprocess them (adapt all fcn calls & set ctrlif % set ctrlif and function index)
-%
-%
 
 if isempty(preprocessed.fcn)
     % nothing to do
     return
 end
-
 
 % replace abs, min, max, iif etc. by ctrlif
 % add preprocessed_ to function name and add datahandle/function_handle as input variable
@@ -23,9 +20,10 @@ fcn_with_switch = zeros(1,l);
 for i = 1:l
     
     mtree_fcn = mtreeplus([preprocessed.fcn{1,i}, '.m'], '-file', '-comments');
-    
-    [mtree_fcn, ctrlif_new] = preprocess_addCtrlif(mtree_fcn, preprocessed.ctrlif_index);
-    
+
+    fcnIgnores = [mtree_getIgnoredIfs(mtree_fcn), mtree_getJumpUpdateIgnores(mtree_fcn)];
+    [mtree_fcn, ctrlif_new] = preprocess_addCtrlif(mtree_fcn, preprocessed.ctrlif_index, fcnIgnores);
+
     % check whether any ctrlif has been set, if not remove function
     if preprocessed.ctrlif_index ~= ctrlif_new
         preprocessed.ctrlif_index = ctrlif_new;
@@ -62,13 +60,5 @@ for i = 1:size(fcn2,2)
     end
 end
 
-
 preprocessed.fcn = fcn;
-
-
 end
-
-
-
-
-
