@@ -1,4 +1,4 @@
-function [mtree, functionCallIndex] = setFunctionCallAsReturnValue(mtree, function_index)
+function mtree = setFunctionCallAsReturnValue(mtree, function_index)
 
 config = makeConfig();
 cIndex = mtree_cIndex();
@@ -20,4 +20,7 @@ functionCallIndex = (function_index == mtree_functionIndex);
     rIndex.HEAD.HEAD, ...             % from
     cIndex.indexLeftchild, ...        % from_type
     {mtree.K.ID, config.switchingFunctionOutputName});
+
+% Delete everything after the new return
+mtree.T(mtree_rIndexFunctionIndex.Expr(functionCallIndex), mtree_cIndex().indexNextNode) = 0;
 end

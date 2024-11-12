@@ -11,32 +11,32 @@ function [fcn_index, fcn_index_rIndex] = getFunctionIndex(mtree)
 config = makeConfig();
 cIndex = mtree_cIndex();
 
-% Find all subtrees of setFunctionIndex calls and get their row indices
-fname_subtree = mtree.mtfind('String', config.function_indexUpdateFunctionName);
-fname = fname_subtree.indices;
+% Find all subtrees of updateFunctionIndex calls and get their row indices
+rIndexUpdateFunctionIndex = mtree.mtfind('String', config.function_indexUpdateFunctionName).indices;
 
-% There are no setFunctionIndex calls
-if isempty(fname)
+% There are no updateFunctionIndex calls
+if isempty(rIndexUpdateFunctionIndex)
     fcn_index = [];
     fcn_index_rIndex = [];
     return
 end
 
-% get Arg1 and Arg2
-updateFunctionIndex_Call = mtree.T(fname, cIndex.indexParentNode)';
-updateFunctionIndex_Arg1 = mtree.T(updateFunctionIndex_Call, cIndex.indexRightchild)';
-updateFunctionIndex_Arg2 = mtree.T(updateFunctionIndex_Arg1, cIndex.indexNextNode)';
+% Get the first and second argument of the updateFunctionIndex call
+rIndexUpdateFunctionIndexCall = mtree.T(rIndexUpdateFunctionIndex, cIndex.indexParentNode)';
+rIndexUpdateFunctionIndexArg1 = mtree.T(rIndexUpdateFunctionIndexCall, cIndex.indexRightchild)';
+rIndexUpdateFunctionIndexArg2 = mtree.T(rIndexUpdateFunctionIndexArg1, cIndex.indexNextNode)';
 
-exprNodeOf_updateFunctionIndex_Call = mtree_findNode(mtree, updateFunctionIndex_Call, mtree.K.EXPR);
-expr_node = mtree.T(exprNodeOf_updateFunctionIndex_Call, cIndex.indexNextNode)';
-fcn_index_rIndex = mtree_rIndex_functionByExprNode(mtree, expr_node);
+% Get the expression node of the actual helper function call
+rIndexUpdateFunctionIndexExpr = mtree_findNode(mtree, rIndexUpdateFunctionIndexCall, mtree.K.EXPR);
+rIndexHelperFunctionExpr = mtree.T(rIndexUpdateFunctionIndexExpr, cIndex.indexNextNode)';
+fcn_index_rIndex = mtree_rIndex_functionByExprNode(mtree, rIndexHelperFunctionExpr);
 
 
-Arg2 = str2double(mtree.C(mtree.T(updateFunctionIndex_Arg2, cIndex.stringTableIndex)))';
+Arg2 = str2double(mtree.C(mtree.T(rIndexUpdateFunctionIndexArg2, cIndex.stringTableIndex)))';
 
 % if second argument of setFunctionIndex is -1, then we are in rhs
 if Arg2 == -1
-    Arg1 = str2double(mtree.C(mtree.T(updateFunctionIndex_Arg1, cIndex.stringTableIndex)))';
+    Arg1 = str2double(mtree.C(mtree.T(rIndexUpdateFunctionIndexArg1, cIndex.stringTableIndex)))';
     fcn_index = Arg1;
 else
     % if not function_index is stored in second variable

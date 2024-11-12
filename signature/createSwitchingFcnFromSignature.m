@@ -9,7 +9,7 @@ function switchingFcnHandle = createSwitchingFcnFromSignature(signature, mtreeAr
 
 
 % Start building the switching function from the mtree of the RHS.
-name = createSwitchingFcnNewName(signature.hash, signature.rhsName);
+name = createSwitchingFcnNewName(signature.hash, functionNameArray{1});
 
 % Change name of the switching function in mtree.
 mtreeArray{1} = mtree_changeFcnName(mtreeArray{1}, name);
@@ -23,16 +23,10 @@ isMtreeModified = false(1, length(mtreeArray));
 isMtreeModified(1) = true;
 
 % Record which function indices were already handled
-processedFunctionIndices = [];
+functionIndexToMtreeIndex = containers.Map('KeyType', 'int32', 'ValueType', 'uint32');
 
 % Collect information about helper function calls for an mtree
-mtreeFunctionCallInfo = struct( ...
-    'function_index', cell(1, length(mtreeArray)), ...
-    'Expr', [], ...
-    'Call', [], ...
-    'Fname', [], ...
-    'Arg', [] ...
-    );
+% mtreeFunctionCallInfoArray(length(mtreeArray)) = mtreeFunctionCallInfo;
 
 
 % All ctrlifs before the ctrlif whose condition value has changed are replaced by their true/false part
@@ -45,9 +39,8 @@ for idxCtrlif = 1:numCtrlif-1
     if function_index(1) ~= 0
         for idxFunctionIndex = 1:length(function_index)
             % Already handled that function call before, skip
-            if ismember(processedFunctionIndices, function_index(idxFunctionIndex))
-                % Need some way to get the name of a function from the function index
-                error("Not Implemented: Need some way to get the name of a function from the function index")
+            if iskey(functionIndexToMtreeIndex, function_index(idxFunctionIndex))
+                idxMtree = functionIndexToMtreeIndex(function_index(idxFunctionIndex));
                 continue
             end
 
@@ -58,10 +51,11 @@ for idxCtrlif = 1:numCtrlif-1
                 signature.hash ...
                 );
             idxMtree = functionNameToIndex(oldName);
+            functionIndexToMtreeIndex(function_index(idxFunctionIndex)) = idxMtree;
 
             % If the helper function doesn't exist yet, then create it
             if ~isMtreeModified(idxMtree)
-                mtreeArray(idxMtree) = createHelperSwitchingFunction(mtreeArray(idxMtree), newName);
+                mtreeArray{idxMtree} = createHelperSwitchingFunction(mtreeArray{idxMtree}, newName);
                 isMtreeModified(idxMtree) = true;
             end
             % Proceed with next function_index and corresponding caller mtree
@@ -79,43 +73,57 @@ end
 idxMtree = 1;
 function_index = signature.function_index{end};
 if function_index(1) ~= 0
-    error("Helper function not implemented yet!")
     % again, we may need to modify intermediate function calls. This time, they also need to have their return
     % statements modified
     for idxFunctionIndex = 1:length(function_index)
-        [switchingFcn, nextFcn]      = setUpSwitchingFunction_setUpFcnCall(switchingFcn, currentFcn, function_index_j);
-        [switchingFcn, fcnCallIndex] = setUpSwitchingFunction_setFcnCallAsReturnValue(...
-            switchingFcn, currentFcn, function_index_j);
-        % delete all code after the newly created return statement
-        fcnCallRIndex                = switchingFcn.mtreeobj_switchingFcn{5,currentFcn}.Expr(fcnCallIndex);
-        switchingFcn.mtreeobj_switchingFcn{3,currentFcn}.T(fcnCallRIndex, mtree_cIndex().indexNextNode) = 0;
-        currentFcn = nextFcn;
+        % Already handled that function call before, skip
+        if isKey(functionIndexToMtreeIndex, function_index(idxFunctionIndex))
+            idxMtree = functionIndexToMtreeIndex(function_index(idxFunctionIndex));
+            continue
+        end
+
+        % Modify the helper function call (i.e. remove function_index and change name)
+        [mtreeArray{idxMtree}, oldName, newName] = modifyFunctionCall( ...
+            mtreeArray{idxMtree}, ...
+            function_index(idxFunctionIndex), ...
+            signature.hash ...
+            );
+
+        idxMtreeOld = idxMtree;
+        idxMtree = functionNameToIndex(oldName);
+        functionIndexToMtreeIndex(function_index(idxFunctionIndex)) = idxMtree;
+
+        % If the helper function doesn't exist yet, then create it
+        if ~isMtreeModified(idxMtree)
+            mtreeArray{idxMtree} = createHelperSwitchingFunction(mtreeArray{idxMtree}, newName);
+            isMtreeModified(idxMtree) = true;
+        end
+
+        % For the caller mtree, we can set the result of the function call as the output
+        mtreeArray{idxMtreeOld} = setFunctionCallAsReturnValue( ...
+            mtreeArray{idxMtreeOld}, ...
+            function_index(idxFunctionIndex));
     end
 end
 mtreeArray{idxMtree} = replaceCtrlifByReturn(mtreeArray{idxMtree}, signature.ctrlif_index(end));
 
 
 % Remove variables that do not contribute to the return value for all functions
-for idxCtrlif=1:length(mtreeArray)
-    sortedMtree = mtreeplus(mtreeArray{idxCtrlif}.tree2str);
-    mtreeArray{idxCtrlif} = deleteUnusedParameters(sortedMtree);
+exportMtree = find(isMtreeModified);
+for idxMtree=exportMtree
+    sortedMtree = mtreeplus(mtreeArray{idxMtree}.tree2str);
+    mtreeArray{idxMtree} = deleteUnusedParameters(sortedMtree);
 end
 
 % Export the created mtrees to files
-for idxCtrlif=1:length(mtreeArray)
-    if idxCtrlif == 1
-        suffix = '';
-    else
-        suffix = ['_', idxCtrlif];
-    end
+for idxMtree=exportMtree
+    filename = [createSwitchingFcnNewName(signature.hash, functionNameArray{idxMtree}) '.m'];
 
-    filename = fullfile(writePath, [name, suffix, '.m']);
-    file = fopen(filename, 'w');
-    fprintf(file, '%s\n', mtreeArray{idxCtrlif}.tree2str);
+    filepath = fullfile(writePath, filename);
+    file = fopen(filepath, 'w');
+    fprintf(file, '%%%s\n%s\n', signature.str, mtreeArray{idxMtree}.tree2str);
     fclose(file);
 end
 
 switchingFcnHandle = str2func(name);
-
 end
-
