@@ -39,6 +39,9 @@ Arguments(callIndices, 1)  = mtreeobj.T(calls(callIndices), cIndex.indexRightchi
 Arguments(~callIndices, 1) = 0;
 i = 1;
 while any(Arguments(:,i) ~= 0)
+    % if a function is called different times with varying numbers of arguments, then you will end up
+    % doing mtreeobj.T(0, cIndex.indexNextNode), which crashes. We need to assume that every function
+    % call has the same number of arguments.
     Arguments(callIndices,i + 1)   = mtreeobj.T(Arguments(callIndices,i), cIndex.indexNextNode);
     Arguments(~callIndices, i + 1) = 0;
     i = i + 1; 
