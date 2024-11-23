@@ -1,5 +1,5 @@
 function dG = VDE_RHS_y(datahandle, sol, functionRHS, t, G, parameters, options)
-   % dG = VDE_RHS_y(sol, functionRHS_simple, t, G, parameters, options)
+   % dG = VDE_RHS_y(datahandle, sol, functionRHS, t, G, parameters, options)
    %
    % Calculates the RHS of the VDE (Variaional differential equation) for the sensitivity calculation
    % with respect to y0

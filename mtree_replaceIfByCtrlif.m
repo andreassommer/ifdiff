@@ -1,4 +1,4 @@
-function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, ignore)
+function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_index, ignores)
 % add ctrlif before every if condition
 %
 % Example:
@@ -38,7 +38,7 @@ end
 % handle each if node seperately
 for i = 1:length(rIndex.BODY.IF)
 
-    if ismember(rIndex.BODY.IF(i), ignore)
+    if ismember(rIndex.BODY.IF(i), ignores)
         continue
     end
     

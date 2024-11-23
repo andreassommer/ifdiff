@@ -21,7 +21,3 @@ datahandle.setData(data);
 
 % object now ready for the first integration and for the switching point detection/ handling
 end
-
-
-
-

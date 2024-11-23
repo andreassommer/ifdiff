@@ -1,5 +1,5 @@
 function Updates = getGy_Gp_update(datahandle, startModel, endModel, Gp_flag, options)
-    % Updates = generateGmatrices_Updates(datahandle, amountG, modelNum, Gp_flag, options)
+    % Updates = getGy_Gp_update(datahandle, startModel, endModel, Gp_flag, options)
     %
     % Calculates the update-matrices for the sensitivitiy calculation with END_piecewise or VDE.
     %

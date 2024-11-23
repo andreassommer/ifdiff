@@ -6,7 +6,7 @@ function jumpCtrlifs = solveODE_getJumpIndices(datahandle)
     if isfield(data.SWP_detection, 'jumpConditions')
         jumps = data.SWP_detection.jumpConditions;
     else
-        jumps = getJumpIndices_getJumpConditions(datahandle);
+        jumps = getJumpIndices_getJumpConditions(data.mtreeplus(3,:));
         data.SWP_detection.jumpConditions = jumps;
         datahandle.setData(data);
     end

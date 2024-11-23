@@ -33,28 +33,16 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    data = datahandle.getData();
 
    % default settings
-   integrator                  = data.integratorSettings.numericIntegrator;
-   integrator_options          = data.integratorSettings.options;
-   method                      = 'VDE';
-   Gmatrices_intermediate_flag = false;
-   Gy_flag                     = true;
-   directions_y                = 0;
-   Gp_flag                     = true;
-   directions_p                = 0;
-   save_intermediates          = true;
+   integrator                  = olGetOption(varargin, 'integrator',             data.integratorSettings.numericIntegrator);
+   integrator_options          = olGetOption(varargin, 'integrator_options',     data.integratorSettings.options);
+   method                      = olGetOption(varargin, 'method',                 'VDE');
+   Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate', false);
+   Gy_flag                     = olGetOption(varargin, 'calcGy',                 true);
+   directions_y                = olGetOption(varargin, 'directions_y',           0);
+   Gp_flag                     = olGetOption(varargin, 'calcGp',                 true);
+   directions_p                = olGetOption(varargin, 'directions_p',           0);
+   save_intermediates          = olGetOption(varargin, 'save_intermediates',     true);
 
-   if olHasOption(varargin, 'integrator'),                 integrator = olGetOption(varargin, 'integrator'); end
-   if olHasOption(varargin, 'integrator_options'), integrator_options = olGetOption(varargin, 'integrator_options'); end
-   if olHasOption(varargin, 'calcGy'),                        Gy_flag = olGetOption(varargin, 'calcGy'); end
-   if olHasOption(varargin, 'calcGp'),                        Gp_flag = olGetOption(varargin, 'calcGp'); end
-   if olHasOption(varargin, 'method'),                         method = olGetOption(varargin, 'method'); end
-   if olHasOption(varargin, 'Gmatrices_intermediate')
-                                        Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate');
-   end
-   if olHasOption(varargin, 'save_intermediates'), save_intermediates = olGetOption(varargin, 'save_intermediates'); end
-   if olHasOption(varargin, 'directions_y'),             directions_y = olGetOption(varargin, 'directions_y'); end
-   if olHasOption(varargin, 'directions_p'),             directions_p = olGetOption(varargin, 'directions_p'); end
-   
    methodCoded.END_piecewise = 1;
    methodCoded.VDE           = 2;
    methodCoded.END_full      = 3;

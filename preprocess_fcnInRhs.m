@@ -28,7 +28,7 @@ for i = 1:l
     containsNondifferentiability(i) = preprocessed.ctrlif_index ~= ctrlif_new;
     % check if all calls to the function are ignored. If so, it should not be preprocessed.
     callsInRhs = find(mtfind(preprocessed.rhs{3,1}, 'Fun', preprocessed.fcn{1, i}).IX);
-    occursUnignored(i) = ~all(ismembertol(callsInRhs, preprocessed.rhs{4, 1}));
+    occursUnignored(i) = ~all(ismember(callsInRhs, preprocessed.rhs{4, 1}));
 
     preprocessed.ctrlif_index = ctrlif_new;
     fcn{2,i} = preprocess_setUpNewFcnName(fcn{1,i});
@@ -51,7 +51,7 @@ for i = 1:l
             continue
         end
         callsInFcn = find(mtfind(fcn{3,i}, 'Fun', fcn{1, j}).IX);
-        allOccurrencesIgnored = all(ismembertol(callsInFcn, fcn{4, i}));
+        allOccurrencesIgnored = all(ismember(callsInFcn, fcn{4, i}));
         if ~allOccurrencesIgnored
             includeInPreprocessing(i) = 1;
             includeInPreprocessing(j) = 1;

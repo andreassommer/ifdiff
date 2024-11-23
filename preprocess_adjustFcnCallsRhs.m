@@ -17,7 +17,7 @@ for i = 1:length(fields(rIndex.Fcn))
     Fname = mtreeobj.C{mtreeobj.T(rIndex_Fcn_i.Fname,cIndex.stringTableIndex)};
     
     for j = 1:length(rIndex_Fcn_i.Fname)
-        if ismembertol(rIndex_Fcn_i.Fname(j), ignored)
+        if ismember(rIndex_Fcn_i.Fname(j), ignored)
             continue;
         end
 
