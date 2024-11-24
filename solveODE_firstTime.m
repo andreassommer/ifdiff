@@ -1,7 +1,5 @@
 function solveODE_firstTime(datahandle)
-% solve the ODE for the first time and stop the integration if a switch
-% occures.
-% 
+% solve the ODE for the first time and stop the integration if a switch occurs
 %
 % INPUT:
 % datahandle:   datahandle by prepareDatahandleForIntegration and

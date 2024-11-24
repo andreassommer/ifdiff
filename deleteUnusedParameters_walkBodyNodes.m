@@ -8,6 +8,7 @@ function [mtreeobj, idStringArray] = ...
     % so, all variables used in the assignment's RHS are added to idStringArray. If not, the assignment
     % is deleted from the mtree. When handling a body node that is if, for, or while, the function calls
     % itself recursively to process the body of the if/for/while.
+    config = makeConfig();
     cIndex = mtree_cIndex();
     trueParent = mtreeobj.T(lastNextNode, cIndex.trueParent);
     while lastNextNode ~= trueParent
@@ -15,9 +16,7 @@ function [mtreeobj, idStringArray] = ...
         leftChild = mtreeobj.T(lastNextNode, cIndex.indexLeftchild);
         switch lastNextNodeKind
             case mtreeobj.K.EXPR
-                if mtreeobj.T(leftChild, cIndex.kindOfNode) ~= mtreeobj.K.EQUALS
-                    % expression is not an assignment, better not mess with it
-                else
+                if mtreeobj.T(leftChild, cIndex.kindOfNode) == mtreeobj.K.EQUALS
                     assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
                     assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
     
@@ -37,6 +36,14 @@ function [mtreeobj, idStringArray] = ...
                         % ... and if not, we delete this assignment statement:
                         mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
                     end
+                elseif mtreeobj.T(leftChild, cIndex.kindOfNode) == mtreeobj.K.CALL
+                    % remove jump statements
+                    funcNameNode = mtreeobj.T(leftChild, cIndex.indexLeftchild);
+                    if strcmp(mtreeobj.C{mtreeobj.T(funcNameNode, cIndex.stringTableIndex)}, config.jump.internalFunction)
+                        mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
+                    end
+                else
+                    % unknown expression type, best not mess with it
                 end
             case mtreeobj.K.IF
                 currentBranch = mtreeobj.T(lastNextNode, cIndex.indexLeftchild);
@@ -80,10 +87,10 @@ function [mtreeobj, idStringArray] = ...
                 % could solve it by first collecting the variables from the loop head and body, then running
                 % deleteUnusedParameters_walkBodyNodes on the loop body and using these additional variables. For now,
                 % though, we'll just collect all variables and not prune any code.
-                loopSubtree = subtree(select(mtreeobj, outerLoopIndex));
-                subIdIndexList = mtree_mtfind(loopSubtree, 'Kind', helpTree.K.ID); 
+                loopSubtree = subtree(select(mtreeobj, lastNextNode));
+                subIdIndexList = mtree_mtfind(loopSubtree, 'Kind', loopSubtree.K.ID); 
                 newIDArray = mtreeobj.C{mtreeobj.T(subIdIndexList, cIndex.stringTableIndex)};
-                newIDArray(~ismember(newIDArray, idStringArray))
+                newIDArray = newIDArray(~ismember(newIDArray, idStringArray));
                 idStringArray = vertcat(idStringArray, newIDArray);
             otherwise
                 warning('deleteUnusedParameters_walkBodyNodes: found unknown node type %s', mtreeobj.KK{lastNextNodeKind});

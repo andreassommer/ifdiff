@@ -30,12 +30,15 @@ rIndex.BODY = mtree_rIndex_lastNextNodeOfBody(mtreeobj, rIndex.BODY, rIndex.HEAD
 %rIndex.BODY = mtree_rIndex_Ctrlif(mtreeobj, rIndex.BODY); 
 rIndex.BODY = mtree_rIndex_If(mtreeobj, rIndex.BODY); 
 
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, config.ctrlif.functionName);
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'IIf'); 
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'abs'); 
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'max'); 
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'min'); 
-rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.BODY, 'sign');
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, config.ctrlif.functionName);
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, 'IIf'); 
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, 'abs'); 
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, 'max'); 
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, 'min'); 
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, 'sign');
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, config.jump.specifyingFunction);
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, config.jump.updateFunction);
+rIndex.BODY = mtree_rIndex_function(mtreeobj, rIndex.HEAD, rIndex.BODY, config.jump.internalFunction);
 
 if ~isempty(varargin)
       fcn_names = varargin{1};

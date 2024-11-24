@@ -29,18 +29,28 @@ end
 
 % preallocate Arg
 chunk = 10; 
-Arguments = NaN(length(index.(field)),chunk); 
+Arguments = NaN(length(index.(field)),chunk);
+% For those instances of the function which are not function calls (e.g. being passed as a function handle),
+% there can be no arguments, so these entries remain zero.
+callIndices = index.(field) ~= 0;
+calls = index.(field);
 
-Arguments(:,1) = mtreeobj.T(index.(field), cIndex.indexRightchild);
+Arguments(callIndices, 1)  = mtreeobj.T(calls(callIndices), cIndex.indexRightchild);
+Arguments(~callIndices, 1) = 0;
 i = 1;
-while Arguments(1,i) ~= 0
-    Arguments(:,i + 1) = mtreeobj.T(Arguments(:,i), cIndex.indexNextNode);
+while any(Arguments(:,i) ~= 0)
+    % if a function is called different times with varying numbers of arguments, then you will end up
+    % doing mtreeobj.T(0, cIndex.indexNextNode), which crashes. We need to assume that every function
+    % call has the same number of arguments.
+    Arguments(callIndices,i + 1)   = mtreeobj.T(Arguments(callIndices,i), cIndex.indexNextNode);
+    Arguments(~callIndices, i + 1) = 0;
     i = i + 1; 
 end
 
-index.([name_prefix, 'Arg']) = Arguments(:,~isnan(Arguments(1,:))); 
+index.([name_prefix, 'Arg']) = Arguments(callIndices,~isnan(Arguments(1,:))); 
 
-% keep Arg1 (when it does not exist, Arg1 is zero
+% The loop will always add a final zero to the array. If there are no args, we want to keep this, but if there are,
+% then the zero should be removed.
 if i > 1 
     index.([name_prefix, 'Arg']) = index.([name_prefix, 'Arg'])(:,1:end-1);
 end 

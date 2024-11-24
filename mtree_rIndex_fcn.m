@@ -48,9 +48,9 @@ for i = 1:length(fields(fcn_name))
     % get equals node
     index.(name).Equals = mtreeobj.T(index.(name).Expr, cIndex.indexLeftchild)';
     
-    index.(name).LineBeforeFcnCall_Expr = mtreeobj.T(index.(name).Expr, cIndex.indexParentNode);
+    index.(name).LineBeforeFcnCall_Expr = mtreeobj.T(index.(name).Expr, cIndex.indexParentNode)';
     
-    index.(name).LineBeforeFcnCall_Equals = mtreeobj.T(index.(name).LineBeforeFcnCall_Expr, cIndex.indexLeftchild);
+    index.(name).LineBeforeFcnCall_Equals = mtreeobj.T(index.(name).LineBeforeFcnCall_Expr, cIndex.indexLeftchild)';
     
     if index.(name).LineBeforeFcnCall_Equals ~= 0
         index.(name).LineBeforeFcnCall_Function_Index = mtreeobj.T(index.(name).LineBeforeFcnCall_Equals, cIndex.indexLeftchild);
