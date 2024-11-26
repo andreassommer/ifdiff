@@ -1,0 +1,9 @@
+function newFunctionName = createSwitchingFunctionName(oldFunctionName, hash)
+DELIMITER = '_';
+config = makeConfig();
+
+newFunctionName = [ ...
+    config.switchingFunctionNamePrefix, DELIMITER, ...
+    oldFunctionName, DELIMITER, ...
+    hash ];
+end
