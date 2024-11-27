@@ -10,15 +10,69 @@ classdef MtreeHelperFunctionCallInfo
         rIndexArgs
     end
     properties (SetAccess=private)
-        functionIndexToIdxMap = {};
+        activeIndex = [];
     end
     methods
         % Constructor
-        function obj = MtreeHelperFunctionCallInfo()
-            
+        function obj = MtreeHelperFunctionCallInfo(functionIndex)
+            if nargin == 0
+                return
+            end
+
+            obj.functionIndex = functionIndex;
+            obj.activeIndex = functionIndex;
         end
-        function index = functionIndexToIdxRIndex(this, functionIndex)
+
+        function index = functionIndexToActiveIndex(this, functionIndex)
             index = find(functionIndex == this.functionIndex);
+        end
+       
+
+        function this = setActiveIndex(this, functionIndex)
+            this.activeIndex = this.functionIndexToActiveIndex(functionIndex);
+        end
+    end
+
+    % Getters
+    methods
+        function rIndex = get.rIndexExpr(this)
+            if isempty(this.activeIndex)
+                rIndex = this.rIndexExpr;
+            else
+                rIndex = this.rIndexExpr(this.activeIndex);
+            end
+        end
+
+        function rIndex = get.rIndexEquals(this)
+            if isempty(this.activeIndex)
+                rIndex = this.rIndexEquals;
+            else
+                rIndex = this.rIndexEquals(this.activeIndex);
+            end
+        end
+
+        function rIndex = get.rIndexCall(this)
+            if isempty(this.activeIndex)
+                rIndex = this.rIndexCall;
+            else
+                rIndex = this.rIndexCall(this.activeIndex);
+            end
+        end
+
+        function rIndex = get.rIndexFname(this)
+            if isempty(this.activeIndex)
+                rIndex = this.rIndexFname;
+            else
+                rIndex = this.rIndexFname(this.activeIndex);
+            end
+        end
+
+        function rIndex = get.rIndexArgs(this)
+            if isempty(this.activeIndex)
+                rIndex = this.rIndexArgs;
+            else
+                rIndex = this.rIndexArgs(this.activeIndex, :);
+            end
         end
     end
 end
