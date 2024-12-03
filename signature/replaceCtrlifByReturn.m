@@ -39,6 +39,5 @@ mtree.T(rIndex_ctrlif.ctrlif_expr(idx),cIndex.indexNextNode) = 0;
 % If the return-statement-ex-ctrlif was inside other if/else blocks, remove these and replace with
 % the return statement. After all, we replaced all the preceding ctrlifs with true/false, and their values
 % are such that this return statement does get executed.
-mtree = setUpSwitchingFunction_replaceIfElseByBody(...
-    mtree, rIndex_ctrlif.ctrlif_expr(idx), rIndex);
+mtree = setUpSwitchingFunction_replaceIfElseByBody(mtree, rIndex_ctrlif.ctrlif_expr(idx));
 end

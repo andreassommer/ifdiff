@@ -3,9 +3,9 @@ function [ctlrif_rIndex, ctrlif_pos] = getCtrlifIndex(mtree)
 cIndex = mtree_cIndex();
 config = makeConfig();
 
-
 rIndex = struct('HEAD', struct(), 'BODY', struct());
-rIndex.BODY = mtree_rIndex_function(mtree, rIndex.BODY, config.ctrlif.functionName);
+rIndex.HEAD = mtree_rIndex_head(mtree, rIndex.HEAD);
+rIndex.BODY = mtree_rIndex_function(mtree, rIndex.HEAD, rIndex.BODY, config.ctrlif.functionName);
 if ~isfield(rIndex.BODY, config.ctrlif.functionName)
     error('Ctrlif not found!');
 end

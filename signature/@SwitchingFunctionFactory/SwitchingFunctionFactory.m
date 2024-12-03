@@ -29,6 +29,21 @@ classdef SwitchingFunctionFactory < handle
             obj.helperFunctionCallInfoArray = cell(1, length(mtreeArray));
         end
 
+        switchingFunctionHandle = create(this, signature);
+
+        function switchingFunctionHandle = get(this, signature)
+            name = createSwitchingFunctionName(signature.rhsName, signature.hash);
+            if exist(name, 'file')
+                fprintf('[DEBUG] Reusing switching function with name "%s"\n', name)
+                switchingFunctionHandle = str2func(name);
+            else
+                fprintf('[DEBUG] Switching function with name "%s" not found\n', name)
+                switchingFunctionHandle = this.create(signature);
+            end
+        end
+    end
+
+    methods (Access=private)
         function idxMtree = functionIndexToIdxMtree(this, functionIndex, idxCallerMtree)
             if this.functionIndexToIdxMtreeMap.isKey(functionIndex)
                 idxMtree = this.functionIndexToIdxMtreeMap(functionIndex);

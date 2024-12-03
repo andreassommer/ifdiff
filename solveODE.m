@@ -21,11 +21,19 @@ initDatahandleFields(datahandle, tspan, initialvalues, parameters);
 solveODE_firstTime(datahandle)
 switch_detected = checkForSwitchingIndices(datahandle);
 
+if switch_detected
+    data = datahandle.getData();
+    mtreeArray = data.mtreeplus(3, :);
+    functionNameArray = data.mtreeplus(2, :);
+    writePath = data.paths.preprocessed_switchingFunction;
+    switchingFunctionFactory = SwitchingFunctionFactory(mtreeArray, functionNameArray, writePath);
+end
+
 while switch_detected
     % cut last step in solution_until_t3 and it becomes solution_until_t1
     solveODE_solution_until_t1(datahandle)
 
-    solveODE_computeSwitchingFunction(datahandle);
+    solveODE_computeSwitchingFunction(datahandle, switchingFunctionFactory);
 
     solveODE_computeSwitchingPoint(datahandle);
     

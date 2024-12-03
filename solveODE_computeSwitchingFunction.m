@@ -1,4 +1,4 @@
-function solveODE_computeSwitchingFunction(datahandle)
+function solveODE_computeSwitchingFunction(datahandle, factory)
 % set up function index. 
 % 
 % input: datahandle with switchingIndices (probably more than one). 
@@ -19,7 +19,13 @@ for i = 1:numberOfSwitchingIndices
     % export them as source code 
     % return function handle
     sI = data.SWP_detection.switchingIndices(i);
-    switchingfunctionhandles{i} = setUpSwitchingFunction(datahandle, sI);
+    signature = SwitchingFunctionSignature( ...
+        data.mtreeplus{2,1}, ...
+        data.SWP_detection.switch_cond_t1(1:sI), ...
+        data.SWP_detection.ctrlif_index_t1(1:sI), ...
+        data.SWP_detection.function_index_t1(1:sI) ...
+        );
+    switchingfunctionhandles{i} = factory.get(signature);
 end
 
 % store function handle in datahandle
