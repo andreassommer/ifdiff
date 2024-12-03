@@ -13,39 +13,30 @@ isMtreeModified(1) = true;
 rhsNewName = createSwitchingFunctionName(this.functionNameArray{1}, signature.hash);
 mtreeArray{1} = mtree_changeFcnName(mtreeArray{1}, rhsNewName);
 
+% Processed function calls
+processedFunctionIndexSet = 0; % 0 means the ctrlif call occured in the RHS function
+
 % All ctrlifs before the ctrlif whose condition value has changed are replaced by their true/false part
 numCtrlif = length(signature.ctrlif_index);
 for idxCtrlif = 1:numCtrlif-1
     % Always start by looking at the RHS function
     idxCallerMtree = 1;
     % Check if the actual ctrlif was called in the RHS or a helper function
-    functionIndexArray = signature.function_index{idxCtrlif};
-    if functionIndexArray(1) ~= 0
-        for idxFunctionIndex = 1:length(functionIndexArray)
-            functionIndex = functionIndexArray(idxFunctionIndex);
-            idxCalleeMtree = this.functionIndexToIdxMtree(functionIndex, idxCallerMtree);
-
-            helperFunctionInfo = this.getHelperFunctionCallInfo(idxCallerMtree);
-            idxHelperFunctionInfo = helperFunctionInfo.functionIndexToIdxRIndex(functionIndex);
-            
-            newHelperFunctionName = createSwitchingFunctionName(this.functionNameArray{idxCalleeMtree}, signature.hash);
-            mtreeArray{idxCallerMtree} = SwitchingFunctionFactory.adjustFunctionCall( ...
-                mtreeArray{idxCallerMtree}, ...
-                newHelperFunctionName, ...
-                helperFunctionInfo.rIndexCall(idxHelperFunctionInfo), ...
-                helperFunctionInfo.rIndexArgs(idxHelperFunctionInfo, 3) ...
-            );
-
-
-            % If the helper function doesn't exist yet, then create it
-            if ~isMtreeModified(idxCalleeMtree)
-                mtreeArray{idxCalleeMtree} = createHelperSwitchingFunction(mtreeArray{idxCalleeMtree}, newHelperFunctionName);
-                isMtreeModified(idxCalleeMtree) = true;
-            end
-            % Proceed with next function_index and corresponding caller mtree
-            idxCallerMtree = idxCalleeMtree;
-            idxCalleeMtree = [];
+    for functionIndex = signature.function_index{idxCtrlif}
+        if functionIndex == 0, break, end
+        if ismember(functionIndex, processedFunctionIndexSet)
+            idxCallerMtree = this.functionIndexToIdxMtree(functionIndex, idxCallerMtree);
+            continue
         end
+
+        [mtreeArray{idxCallerMtree}, idxMtreeFunction] = this.processFunctionIndex( ...
+            functionIndex, idxCallerMtree, mtreeArray{idxCallerMtree}, true, false, signature.hash ...
+            );
+        
+        isMtreeModified(idxMtreeFunction) = true;
+        processedFunctionIndexSet = union(processedFunctionIndexSet, functionIndex);
+
+        idxCallerMtree = idxMtreeFunction;
     end
     % TODO: Clean up the replaceCtrlifByTrueOrFalse function
     mtreeArray{idxCallerMtree} = replaceCtrlifByTrueOrFalse( ...
@@ -59,40 +50,17 @@ end
 % Always start by looking at the RHS function
 idxCallerMtree = 1;
 % Check if the actual ctrlif was called in the RHS or a helper function
-functionIndexArray = signature.function_index{end};
-if functionIndexArray(1) ~= 0
-    for idxFunctionIndex = 1:length(functionIndexArray)
-        functionIndex = functionIndexArray(idxFunctionIndex);
-        idxCalleeMtree = this.functionIndexToIdxMtree(functionIndex, idxCallerMtree);
+for functionIndex = signature.function_index{end}
+    if functionIndex == 0, break, end
+    isFunctionCallAdjusted = ismember(functionIndex, processedFunctionIndexSet);
 
-        helperFunctionInfo = this.getHelperFunctionCallInfo(idxCallerMtree);
-        idxHelperFunctionInfo = helperFunctionInfo.functionIndexToIdxRIndex(functionIndex);
-        
-        newHelperFunctionName = createSwitchingFunctionName(this.functionNameArray{idxCalleeMtree}, signature.hash);
-        mtreeArray{idxCallerMtree} = SwitchingFunctionFactory.adjustFunctionCall( ...
-            mtreeArray{idxCallerMtree}, ...
-            newHelperFunctionName, ...
-            helperFunctionInfo.rIndexCall(idxHelperFunctionInfo), ...
-            helperFunctionInfo.rIndexArgs(idxHelperFunctionInfo, 3) ...
+    [mtreeArray{idxCallerMtree}, idxMtreeFunction] = this.processFunctionIndex( ...
+        functionIndex, idxCallerMtree, mtreeArray{idxCallerMtree}, ~isFunctionCallAdjusted, true, signature.hash ...
         );
-
-
-        % If the helper function doesn't exist yet, then create it
-        if ~isMtreeModified(idxCalleeMtree)
-            mtreeArray{idxCalleeMtree} = createHelperSwitchingFunction(mtreeArray{idxCalleeMtree}, newHelperFunctionName);
-            isMtreeModified(idxCalleeMtree) = true;
-        end
-
-        % For the caller mtree, we can set the result of the function call as the output
-        mtreeArray{idxCallerMtree} = SwitchingFunctionFactory.setFunctionCallAsReturnValue( ...
-            mtreeArray{idxCallerMtree}, ...
-            helperFunctionInfo.rIndexEquals(idxHelperFunctionInfo), ...
-            helperFunctionInfo.rIndexExpr(idxHelperFunctionInfo));
-
-        % Proceed with next function_index and corresponding caller mtree
-        idxCallerMtree = idxCalleeMtree;
-        idxCalleeMtree = [];
-    end
+    
+    isMtreeModified(idxMtreeFunction) = true;
+    processedFunctionIndexSet = union(processedFunctionIndexSet, functionIndex);
+    idxCallerMtree = idxMtreeFunction;
 end
 mtreeArray{idxCallerMtree} = replaceCtrlifByReturn(mtreeArray{idxCallerMtree}, signature.ctrlif_index(end));
 
@@ -100,6 +68,11 @@ mtreeArray{idxCallerMtree} = replaceCtrlifByReturn(mtreeArray{idxCallerMtree}, s
 % Remove variables that do not contribute to the return value for all functions
 exportMtree = find(isMtreeModified);
 for idxMtree=exportMtree
+    % Adjust name and remove datahandle, function_index args for helper functions
+    if idxMtree ~= 1
+        helperFunctionName = createSwitchingFunctionName(this.functionNameArray{idxMtree}, signature.hash);
+        mtreeArray{idxMtree} = createHelperSwitchingFunction(mtreeArray{idxMtree}, helperFunctionName);
+    end
     sortedMtree = mtreeplus(mtreeArray{idxMtree}.tree2str);
     mtreeArray{idxMtree} = deleteUnusedParameters(sortedMtree);
 end

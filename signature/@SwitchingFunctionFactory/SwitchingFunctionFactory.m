@@ -40,25 +40,26 @@ classdef SwitchingFunctionFactory < handle
             this.functionIndexToIdxMtreeMap(functionIndex) = idxMtree;
         end
 
-        function helperFunctionCallInfo = getHelperFunctionCallInfo(this, idxMtree)
+        function helperFunctionCallInfo = getHelperFunctionCallInfo(this, idxMtree, varargin)
             helperFunctionCallInfo = this.helperFunctionCallInfoArray{idxMtree};
-            if ~isempty(helperFunctionCallInfo)
-                return
+            if isempty(helperFunctionCallInfo)
+                helperFunctionCallInfo = SwitchingFunctionFactory.createHelperFunctionCallInfo(this.mtreeArray{idxMtree});
+                this.helperFunctionCallInfoArray{idxMtree} = helperFunctionCallInfo;
             end
 
-            helperFunctionCallInfo = SwitchingFunctionFactory.createHelperFunctionCallInfo(this.mtreeArray{idxMtree});
-            this.helperFunctionCallInfoArray{idxMtree} = helperFunctionCallInfo;
+            if nargin > 0
+                functionIndex = varargin{1};
+                helperFunctionCallInfo = helperFunctionCallInfo.setActiveIndex(functionIndex);
+            end
         end
 
         function functionName = functionIndexToFunctionName(this, functionIndex, idxCallerMtree)
             cIndex = mtree_cIndex;
 
-            helperFunctionCallInfo = this.getHelperFunctionCallInfo(idxCallerMtree);
-            idxHelperFunctionCallInfo = helperFunctionCallInfo.functionIndexToIdxRIndex(functionIndex);
-            rIndexFname = helperFunctionCallInfo.rIndexFname(idxHelperFunctionCallInfo);
+            helperFunctionCallInfo = this.getHelperFunctionCallInfo(idxCallerMtree, functionIndex);
 
             callerMtree = this.mtreeArray{idxCallerMtree};
-            functionName = callerMtree.C{callerMtree.T(rIndexFname, cIndex.stringTableIndex)};
+            functionName = callerMtree.C{callerMtree.T(helperFunctionCallInfo.rIndexFname, cIndex.stringTableIndex)};
         end
 
         
