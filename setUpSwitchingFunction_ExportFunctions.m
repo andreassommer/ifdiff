@@ -9,7 +9,7 @@ l = size(switchingFcn.mtreeobj_switchingFcn,2);
 for i = 1:l
     name = switchingFcn.mtreeobj_switchingFcn{1,i};    
     newfile = fopen(fullfile(switchingFcn.path, [name, '.m']), 'w');
-    fprintf(newfile, switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str);
+    fprintf(newfile, '%s', switchingFcn.mtreeobj_switchingFcn{3,i}.tree2str);
     fclose(newfile);
 end
 

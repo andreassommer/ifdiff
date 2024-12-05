@@ -1,4 +1,4 @@
-function [mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index)
+function [mtreeobj, ctrlif_index] = mtree_replaceMaxByCtrlif(mtreeobj, ctrlif_index, ignores)
 % obj = replacemaxByctrlif(mtreeobj)
 %
 % replace all max, max calls by ctrlif calls;
@@ -47,6 +47,9 @@ rIndex = mtree_rIndex(mtreeobj);
 % rIndex.BODY.maxmax contains all indices of all max and max in a column vector
 % map through this column vector, max and max can be handled simultaneously
 for i = 1:length(rIndex.BODY.max)
+    if ismember(rIndex.BODY.max(i), ignores)
+        continue;
+    end
     
     % Procedure: w.l.o.g (without loss of generality) let's consider a max functon call
     %

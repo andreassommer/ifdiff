@@ -10,25 +10,12 @@ function preprocessed = preprocess(filename)
 % get set of character strings
 config = makeConfig(); 
 
-% my way of storing mtree objects: 
-% cell of 5x1: 
-% 1: original filename; 
-% 2; new filename (we don't want to be working with the original file of the user; 
-% 3: mtreee object 
-% later in switching point generation there will be 4-7 with additional information
-
- % preallocate 
-preprocessed.rhs = cell(3,1);
-
-% original filename
-preprocessed.rhs{1,1} = filename; 
-
-% new name of rhs
+% RHS data: original function name, name of preprocessed function, and syntax tree
+preprocessed.rhs = cell(4,1);
+preprocessed.rhs{1,1} = filename;
 preprocessed.rhs{2,1} = [config.preprocessedRhsNamePrefix, filename];
-
-% store mtree
 preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file', '-comments');
-
+preprocessed.rhs{4,1} = [mtree_getIgnoredIfs(preprocessed.rhs{3,1}) mtree_getJumpUpdateIgnores(preprocessed.rhs{3,1})];
 
 % get all paths that are required to execute filename.m (we want to
 % identify all functions that are being called within the rhs) 

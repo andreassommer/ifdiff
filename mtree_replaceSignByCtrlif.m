@@ -1,4 +1,4 @@
-function [mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index)
+function [mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index, ignores)
 % transform all sign into max, i.e. ('id est; latin for: that means, that is to say')
 % b = sign(a);
 %
@@ -28,6 +28,9 @@ mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.sign_
 rIndex = mtree_rIndex(mtreeobj);
 
 for i = 1:length(rIndex.BODY.sign)
+    if ismember(rIndex.BODY.sign(i), ignores)
+        continue;
+    end
     
     [mtreeobj, ~] = preprocess_setUpCtrlif(mtreeobj,...
         rIndex.BODY.sign_Equals(i), ...         % equals node for ctrlif

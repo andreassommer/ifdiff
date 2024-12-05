@@ -1,41 +1,34 @@
-function [fnames, rhs_path] =  preprocess_getNamesOfFcn(filename)
-% Function to get all names of function that are used in the function in
-% filename.
-% This function is important to implement the function_index. 
-% 
-% INPUT: filename, name of a function
-% OUTPUT: fnames, cell array with a characterstring in each;
-% rhs_path: path of the rhs 
+function [fnames, rhs_path] =  preprocess_getNamesOfFcn(rhs_name)
+% Function to get all names of function that are used in the function in rhs_name.
+% INPUT: rhs_name, name of a function
+% OUTPUT: fnames, cellstring of helper functions' names (does not include rhs_name itself);
+% rhs_path: path of rhs_name
 
 
-% get List of all paths that are required when filename.m is executed
-[fList,~] = matlab.codetools.requiredFilesAndProducts([filename, '.m']);
+% get list of all paths that are required when rhs_name.m is executed
+[fList,~] = matlab.codetools.requiredFilesAndProducts([rhs_name, '.m']);
 
 
-% check if there are any functions 
+% check if there are any helper functions
 l = length(fList);
-fnames = cell(3,l-1);  % preallocate, 2nd for new name, 3rd row is for mtreeplus object
+fnames = cell(4,l-1);
 if l == 1
-    fnames = {};
+    % there is only the RHS. We need its path, but fnames is only for helper functions, so it stays empty
+    fnames = cell(4, 0);
 end
 
-% map through all paths; rhs_path is here included and we need special care for it
 i = 1; 
 for k = 1:l
-    % extract filename from path
     [a, z, ~] = fileparts(fList{k});
-    
-    % search for the original rhs filename 
-    condition = ~strcmp( z, filename); % do not save path of filename here
+
+    % if the function is the original rhs_name, save its path, which we will need later. If it is
+    % a different function, save it in fnames.
+    condition = ~strcmp( z, rhs_name);
     if condition
         fnames{1,i} = z;
         i = i + 1; 
     else
-        rhs_path = a;        % but here
+        rhs_path = a;
     end
 end
-
-
-
-
 end

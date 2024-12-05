@@ -41,7 +41,7 @@ dim_p  = length(parameters);
 FDstep = generateFDstep(dim_y,dim_p);
 
 % Generate Sensitivity function that can be evaluated at specific time points, configuration by name-value pairs
-sensitivity_function = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE');
+sensitivity_function = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', 'calcGp', false);
 
 % Evaluate the sensitivity function (accepts vectors)
 t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);

@@ -26,6 +26,7 @@ data = datahandle.getData();
 
 % Check if the numerically computed switching point is part of the new model.
 extendODEuntilSwitch_t1_to_t2(datahandle);
+extendODEuntilSwitch_updateSignature_t2(datahandle);
 switchingIndices = getSwitchingIndices(datahandle, 0);
 
 % The numerically computed switching point may still be part of the old model due to inaccuracies.
@@ -51,9 +52,10 @@ while isempty(switchingIndices)
     % interval whose result would vanish due to limited floating point accuracy.
     data.SWP_detection.t2 = data.SWP_detection.t2 + baseOffset * 10^min(iter, config.switchingPointMaxPower);
     datahandle.setData(data);
-    extendODEuntilSwitch_t1_to_t2(datahandle);
 
     % Check if there is a new signature.
+    extendODEuntilSwitch_t1_to_t2(datahandle);
+    extendODEuntilSwitch_updateSignature_t2(datahandle);
     switchingIndices = getSwitchingIndices(datahandle, 0);
 
     iter = iter + 1;
@@ -69,15 +71,6 @@ end
 
 % Add new switching point to history.
 data.SWP_detection.switchingpoints{end + 1} = data.SWP_detection.t2;
-
-% Get the new signature at t2 and add it to the signature history.
-[switch_cond, ctrlif_index, function_index] = ctrlif_getSignature(...
-    datahandle, ...
-    data.SWP_detection.t2, ...
-    deval(data.SWP_detection.solution_until_t2, data.SWP_detection.t2));
-data.SWP_detection.signature.switch_cond{end+1} = switch_cond;
-data.SWP_detection.signature.ctrlif_index{end+1} = ctrlif_index;
-data.SWP_detection.signature.function_index{end+1} = function_index;
 
 datahandle.setData(data)
 end

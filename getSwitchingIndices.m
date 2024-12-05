@@ -1,5 +1,8 @@
 function switchingIndices = getSwitchingIndices(datahandle, type)
-% get switching indices between timepoint t1 and t3;
+% get switching indices between timepoint t1 and t3 (type=1), or between t1 and t2 (type=0)
+% A switching index is an index into the switch_cond, ctrlif_index, and function_index arrays. A switching index
+% corresponds not to a ctrlif, but to one execution of a ctrlif, since a ctrlif can be executed multiple times in
+% a single evaluation of the RHS.
 % INPUT: datahandle with switch_cond_t1 and switch_cond_t3, as well as the
 % corresponding ctrlif_index
 % Since the function works by comparing switch_cond arrays element-by-element, it cannot work if they have different
