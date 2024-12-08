@@ -8,7 +8,6 @@ function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_ind
 % end
 %
 % is changed to
-%
 % conditionvalue = ctrlif(cond, true, false, index, datahandle);
 % if conditionvalue
 % ...
@@ -43,12 +42,40 @@ for i = 1:length(rIndex.BODY.IF)
     
     cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond(i));
     if ~cond_feasible
-        warning('IFDIFF:INFEASIBLE_IF_CONDITION', 'An if condition is not feasible and was not replaced by a ctrlif.');
+        warning(config.errors.infeasible_if_condition, 'An if condition is not feasible and was not replaced by a ctrlif.');
         continue
     end
-    % add ctrlif before the if
+
     
+    % Step 1: evaluate the switching function
+    % Goal: 
+    % switchingfunction_value = (s - offset)
+
+    % EXPR
+    [mtreeobj, rIndex.new.ctrlif_expr] = mtree_addNewExprNode(mtreeobj, rIndex.BODY.IF(i));
     
+    % Add: = (EQUALS)
+    % = ;
+    [mtreeobj, swfct_val_Equals] = mtree_createAndAdd_NewNode(mtreeobj,...
+        rIndex.new.ctrlif_expr, ...                         % from
+        cIndex.indexLeftchild, ...                          % from_type
+        mtreeobj.K.EQUALS);                                 % kind of new node
+    
+    % Add: variable
+    % child: ID
+    % switchEval = ;
+    [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj,...
+        swfct_val_Equals, ...                                    % from
+        cIndex.indexLeftchild, ...                            % from_type
+        {mtreeobj.K.ID, config.ctrlif.switchInputName});           % kind of new node
+
+    % Add: switching function evaluation
+    [mtreeobj, comparison_operator] = mtree_addSwitchEvaluation(mtreeobj, swfct_val_Equals, rIndex.BODY.cond(i));
+
+   
+    
+    % Step 2: Add ctrlif (before the existing if-statement)
+   
     % start with:
     % if condition
     % ...
@@ -56,7 +83,7 @@ for i = 1:length(rIndex.BODY.IF)
     
     
     
-    % add equals node
+    % Add: EQUALS
     %
     % = ;
     % if condition
@@ -67,13 +94,11 @@ for i = 1:length(rIndex.BODY.IF)
         mtreeobj.K.EQUALS);                                 % kind of new node
     
     
-    % add output variable of ctrlif
+    % Add: Output variable of ctrlif call
     %
     % conditionValue = ;
     % if condition
     % ...
-    
-    
     
     % node needs to be the expr node the ctrlif
     % only with if conditions
@@ -83,17 +108,18 @@ for i = 1:length(rIndex.BODY.IF)
         {mtreeobj.K.ID, config.ctrlif.outputName});           % kind of new node
     
     
-    % add call node for ctrlif function call with connection to condition
+    % Add: Call node for ctrlif function call; with connection to condition
     %
     % conditionValue = ctrlif(condition);
     % if condition
     % ...
     [mtreeobj, ~] = preprocess_setUpCtrlif(mtreeobj,...
         ctrlif_Equals, ...
-        ctrlif_index, ...
-        rIndex.BODY.cond(i), ...
+        ctrlif_index, ... 
+        config.ctrlif.switchInputName, ... % rIndex.BODY.cond(i), ...
         'true', ...
-        'false');
+        'false', ...
+        comparison_operator);
     ctrlif_index = ctrlif_index + 1; 
     
     % 'condition' -> 'conditionValue'

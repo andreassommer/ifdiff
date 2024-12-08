@@ -1,4 +1,4 @@
-function y = ctrlif(condition, truepart, falsepart, ctrlif_index, function_index, datahandle)
+function y = ctrlif(num, truepart, falsepart, ctrlif_index, function_index, datahandle)
     % function for:
     %
     % - supervising signature during integration (.active_SWP_detection = 1)
@@ -11,6 +11,8 @@ function y = ctrlif(condition, truepart, falsepart, ctrlif_index, function_index
 
     config = makeConfig();
     data = datahandle.getData();
+    
+    condition = (num >= 0);
 
     switch data.caseCtrlif
         case config.caseCtrlif.default

@@ -61,6 +61,7 @@ config.switchingFunctionOutputName = 'switching_value';
 
 % Names related to the ctrlif function.
 config.ctrlif.functionName = 'ctrlif';
+config.ctrlif.switchInputName = 'switchEval';
 config.ctrlif.outputName   = 'condition_value';
 
 % Make setting the mode a ctrlif operates in more readable.
@@ -103,6 +104,9 @@ config.mtree_rIndex_function.Suffix_call   = '_call';
 config.mtree_rIndex_function.Suffix_equals = '_Equals';
 config.mtree_rIndex_function.Suffix_out    = '_Out';
 config.mtree_rIndex_function.Suffix_fname  = '_Fname';
+
+% Error types
+config.errors.infeasible_if_condition = 'IFDIFF:INFEASIBLE_IF_CONDITION';
 % ==================================================================================
 
 config.jump.specifyingFunction              = 'ifdiff_jumpif';
