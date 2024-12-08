@@ -1,4 +1,4 @@
-function [mtreeobj, rIndex_new_row] = mtree_createAndAdd_NewNode(mtreeobj, varargin) 
+function [mtreeobj, rIndex_new_row] = mtree_createAndAdd_NewNode(mtreeobj, from, from_type, kind, varargin) 
 % create and add new nodes to a mtree. 
 % 
 % INPUT: 
@@ -54,13 +54,6 @@ function [mtreeobj, rIndex_new_row] = mtree_createAndAdd_NewNode(mtreeobj, varar
 % cIndex -> column index; refers to a property type
 cIndex = mtree_cIndex(); 
 
-% assign input 
-from = varargin{1}; 
-from_type = varargin{2}; 
-kind = varargin{3}; 
-
-
-
 % check whether to add variable/integer or other
 if length(kind) == 1
     % check input
@@ -81,18 +74,23 @@ else % add new variable
     % kindOfNode; ID if variable, INT for integer
     % sizOfNode: length of the character string
     % stringtableindex: position of the string in mtreeobj.C (array of all variables)
-    newNode = mtree_createMtreeNode('kindOfNode',  kindOfNode, ...
-                              'sizeOfNode', length(str), ...
-                        'stringTableIndex', index_new_node); 
+    newNode = mtree_createMtreeNode('kindOfNode', kindOfNode, ...
+                                    'sizeOfNode', length(str), ...
+                                    'stringTableIndex', index_new_node); 
 end
 
 % new row index
 rIndex_new_row = length(mtreeobj.IX) + 1; 
 
 % check if there is any input for to/to_type.
-if nargin >= 5
-    to = varargin{4};
-    to_type = varargin{5};
+if ~isempty(varargin) > 0
+    
+    if length(varargin) == 1
+        error('Got argument ''to'', but missing argument ''to_type''.');
+    end
+
+    to = varargin{1};
+    to_type = varargin{2};
     
     if to ~= 0 % caution Remark: extend compability with multiple values in to 
         

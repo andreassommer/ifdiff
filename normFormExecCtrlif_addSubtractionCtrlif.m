@@ -1,16 +1,16 @@
 function obj = normFormExecCtrlif_addSubtractionCtrlif(mtreeobj, idxRel, paren)
 % converting 'a>=b' into 'a-b>=0'
-% 'o': mtreeobject 
-% 'idxRel': index of relation
-% 'paren': optional parameter, if paren == 1 a node for parenthesis
-% have to be added
+% 'mtreeobj'        mtreeobject 
+% 'idxRel'          index of relation
+% 'paren'           optional parameter, if paren == 1 a node for parenthesis
+%                   have to be added
 if (nargin == 2)
     prths = 0;
 else
     prths = paren;
 end
 
-% create struct for o.T column access
+% create struct for mtreeobj.T column access
 cIndex = mtree_cIndex(); 
 
 if prths

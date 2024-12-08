@@ -1,7 +1,21 @@
-function [mtreeobj, Arg1] = preprocess_setUpCtrlif(mtreeobj, index, ctrlif_index, varargin)
-% function for adding crtlfif to mtreeobj at Node of rIndex
+function [mtreeobj, Arg1] = preprocess_setUpCtrlif(mtreeobj, index, ctrlif_index, condition, truepart, elsepart)
+% function for adding ctrlif to mtreeobj at Node of rIndex
 % Input and output depend on the chosen case and are explained there
 % This function tries to generalise the assembling of the ctrlif
+%
+% INPUT:
+% ´mtreeobj´            mtree
+% ´index´               Index at which to add the ctrlif. Has to be an EQUALS node.
+% ´ctrlif_index´        The ctrlif_index passed to the new ctrlif.
+% ´condition´           Index (integer) or name (chararray). 
+%                       Represents the if condition introducing the discontinuity.
+% ´truepart´            The truepart passed to the new ctrlif.
+% ´elsepart´            The elsepart passed to the new ctrlif.
+%
+% OUTPUT:
+% ´mtreeobj´            Edited mtree.
+% ´Arg1´
+
 cIndex = mtree_cIndex();
 
 config = makeConfig();
@@ -12,22 +26,22 @@ config = makeConfig();
 % a new variable or an index
 % new_index (output) is node of '>=' node, add Arg2 with nextNode to >=
 
-condition = varargin{1};
-truepart = varargin{2};
-elsepart = varargin{3};
-
+% add node; CALL
 [mtreeobj, call] = mtree_createAndAdd_NewNode(mtreeobj, ...
     index, ...                              % from
     cIndex.indexRightchild, ...             % from_type
     mtreeobj.K.CALL);                       % kind of Node; character string of new var
 
+% add node; ID: ctrlif
 [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
     call, ...                                              % from
     cIndex.indexLeftchild, ...                             % from_type
     {mtreeobj.K.ID, config.ctrlif.functionName});
 
+
 [operator_type, ~] = mtree_checkForComparisonOperator(mtreeobj, condition);
 
+% write (val - offset) >= 0 into first argument
 if ischar(condition)
     [mtreeobj, Arg1] = mtree_createAndAdd_NewNode(mtreeobj, ...
         call, ...                                         % from
@@ -43,7 +57,7 @@ if ischar(condition)
         cIndex.indexRightchild, ...                       % from_type
         {mtreeobj.K.ID, '0'});
 elseif operator_type == 0
-    
+    % No operator (<, >, <=, >=) has been found
     
     [mtreeobj, Arg1] = mtree_createAndAdd_NewNode(mtreeobj, ...
         call, ...                                         % from
@@ -56,9 +70,12 @@ elseif operator_type == 0
         Arg1, ...                                         % from
         cIndex.indexRightchild, ...                       % from_type
         {mtreeobj.K.ID, '0'});
-    
 elseif  operator_type ~= 0
+    % An operator has been found. Read the if condition from the existing mtreeobj.
+    % I.e., instead of manually writing the condition into the argument, it gets
+    % "copied" from index ´condition´ of the existing mtreeobj.
     mtreeobj = mtree_connectNodes(mtreeobj, call, condition,  cIndex.indexRightchild);
+    % edit the mtree further
     Arg1 = condition;
 end
 

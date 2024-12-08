@@ -37,7 +37,6 @@ end
 
 % handle each if node seperately
 for i = 1:length(rIndex.BODY.IF)
-
     if ismember(rIndex.BODY.IF(i), ignores)
         continue
     end
@@ -86,7 +85,7 @@ for i = 1:length(rIndex.BODY.IF)
     
     % add call node for ctrlif function call with connection to condition
     %
-    % conditionValue = ctrl(condition);
+    % conditionValue = ctrlif(condition);
     % if condition
     % ...
     [mtreeobj, ~] = preprocess_setUpCtrlif(mtreeobj,...
@@ -110,8 +109,3 @@ for i = 1:length(rIndex.BODY.IF)
 end
 
 end % finito
-
-
-
-
-
