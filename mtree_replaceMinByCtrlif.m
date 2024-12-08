@@ -52,6 +52,7 @@ for i = 1:length(rIndex.BODY.min)
     if ismember(rIndex.BODY.min(i), ignores)
         continue;
     end
+    
     % Start: c = min(a,b);
     % Write a and b into their own variables
     name_min_arg1 = [config.minCallPrefix, config.functionCallArgument1NameInfix, num2str(i)];

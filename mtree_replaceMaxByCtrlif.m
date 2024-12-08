@@ -51,6 +51,7 @@ for i = 1:length(rIndex.BODY.max)
     if ismember(rIndex.BODY.max(i), ignores)
         continue;
     end
+    
     % Start: c = max(a,b);
     % Write a and b into their own variables
     name_max_arg1 = [config.maxCallPrefix, config.functionCallArgument1NameInfix, num2str(i)];

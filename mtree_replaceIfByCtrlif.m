@@ -8,6 +8,7 @@ function [mtreeobj, ctrlif_index] = mtree_replaceIfByCtrlif(mtreeobj, ctrlif_ind
 % end
 %
 % is changed to
+%
 % conditionvalue = ctrlif(cond, true, false, index, datahandle);
 % if conditionvalue
 % ...
@@ -45,7 +46,7 @@ for i = 1:length(rIndex.BODY.IF)
         warning(config.errors.infeasible_if_condition, 'An if condition is not feasible and was not replaced by a ctrlif.');
         continue
     end
-
+    % add ctrlif before the if
     
     % Step 1: evaluate the switching function
     % Goal: 
@@ -100,6 +101,8 @@ for i = 1:length(rIndex.BODY.IF)
     % conditionValue = ;
     % if condition
     % ...
+    
+    
     
     % node needs to be the expr node the ctrlif
     % only with if conditions

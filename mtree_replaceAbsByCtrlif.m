@@ -58,5 +58,4 @@ for i = 1:length(rIndex.BODY.abs)
         0);
         ctrlif_index = ctrlif_index + 1; 
 end
-
 end
