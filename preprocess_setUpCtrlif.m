@@ -25,6 +25,8 @@ function [mtreeobj, Arg1] = preprocess_setUpCtrlif(mtreeobj, index, ctrlif_index
 % 'operator_type'       The type of operator that the switch contains 
 %                       in its original if-statement
 %                       (or equivalent formulation as if-statement).
+%                       TODO: Make optional?
+%                       Pass 0 if no comparison is involved (e.g. for abs).
 %
 %
 % OUTPUT:
@@ -51,7 +53,7 @@ config = makeConfig();
     cIndex.indexLeftchild, ...                             % from_type
     {mtreeobj.K.ID, config.ctrlif.functionName});
 
-% write (val - offset) >= 0 into first argument
+% write (val - offset) into first argument
 if ischar(switchInput)
     % switchInput gets interpreted as an identifier (ID).
     % Write 'switchInput' into first argument of ctrlif.
@@ -75,7 +77,7 @@ ctrlif_index_Arg4 = num2str(ctrlif_index);
 % In the ctrlif, truepart and elsepart need to be switched therefore, i.e.,
 % we switch their positions in the input arguments.
 if (operator_type == mtreeobj.K.LT || operator_type == mtreeobj.K.GT)
-        mtreeobj = normFormExecCtrlif_switchThenAndElsePart(mtreeobj, Arg1, Arg2, Arg3, Arg4); 
+        mtreeobj = preprocess_setUpCtrlif_switchThenAndElsePart(mtreeobj, Arg1, Arg2, Arg3, Arg4); 
 end
 
 

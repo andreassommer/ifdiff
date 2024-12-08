@@ -61,7 +61,7 @@ config.switchingFunctionOutputName = 'switching_value';
 
 % Names related to the ctrlif function.
 config.ctrlif.functionName = 'ctrlif';
-config.ctrlif.switchInputName = 'switchEval';
+config.ctrlif.switchEvalName = 'switchEval';
 config.ctrlif.outputName   = 'condition_value';
 
 % Make setting the mode a ctrlif operates in more readable.
