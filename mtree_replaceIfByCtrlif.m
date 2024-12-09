@@ -65,7 +65,7 @@ for i = 1:length(rIndex.BODY.IF)
     % Add: variable
     % child: ID
     % switchEval_i = ;
-    switchEvalName = [config.ctrlif.switchEvalName, '_', num2str(i)];
+    switchEvalName = [config.ctrlif.switchEvalName, '_if_', num2str(i)];
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj,...
         swfct_val_Equals, ...                               % from
         cIndex.indexLeftchild, ...              % from_type

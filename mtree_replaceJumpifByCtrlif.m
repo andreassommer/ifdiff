@@ -33,6 +33,26 @@ function [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif
         argSwitchingFunction = argNodes(i, 1);
         argDirectionFlag     = argNodes(i, 2);
 
+        % add a line switchEval_jumpif_i = argSwitchingFunction;
+        % EXPR
+        [mtreeobj, switchEval_expr] = mtree_addNewExprNode(mtreeobj, ifRoot);
+        % EQUALS
+        [mtreeobj, swfct_val_Equals] = mtree_createAndAdd_NewNode(mtreeobj,...
+        switchEval_expr, ...                    % from
+        cIndex.indexLeftchild, ...              % from_type
+        mtreeobj.K.EQUALS);                     % kind of new node
+        % ID
+        % switchEval_i = ;
+        switchEvalName = [config.ctrlif.switchEvalName, '_jumpif_', num2str(i)];
+        [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj,...
+        swfct_val_Equals, ...                   % from
+        cIndex.indexLeftchild, ...              % from_type
+        { mtreeobj.K.ID, switchEvalName });     % kind of new node: {kind, name}
+        % switchEval_jumpif_i = argSwitchingFunction;
+        parent = swfct_val_Equals;
+        child  = argSwitchingFunction;
+        mtreeobj = mtree_connectNodes(mtreeobj, parent, child, cIndex.indexRightchild);
+
         % add a line conditionvalue = ctrlif(...)
         [mtreeobj, ctrlifExpr]   = mtree_addNewExprNode(mtreeobj, ifRoot);
         [mtreeobj, ctrlifEquals] = mtree_createAndAdd_NewNode(mtreeobj, ...
@@ -46,9 +66,10 @@ function [mtreeobj, ctrlif_index] = mtree_replaceJumpifByCtrlif(mtreeobj, ctrlif
         [mtreeobj,    ~] = preprocess_setUpCtrlif(mtreeobj,...
             ctrlifEquals, ...
             ctrlif_index, ...
-            argSwitchingFunction, ...
+            switchEvalName, ...
             'true', ...
-            'false');
+            'false', ...
+            0);
 
         % replace the jump specifier with the internal function
         % if ifdiff_jumpif(switchingFunction, direction) -> if ctrljump(direction, ctrlif_index)
