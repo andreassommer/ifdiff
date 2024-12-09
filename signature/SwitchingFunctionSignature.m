@@ -17,7 +17,7 @@ classdef SwitchingFunctionSignature
     % allows us to cache certain results like the string representation or
     % hash. If you need to change the signature, simply construct a new instance
     % of this class.
-    properties (SetAccess=immutable)
+    properties (Access=public)
         rhsName
         switch_cond
         ctrlif_index
@@ -26,6 +26,14 @@ classdef SwitchingFunctionSignature
     properties (Dependent)
         str
         hash
+    end
+    properties (Constant, Hidden)
+        RHS_NAME_SUFFIX = ':';
+        SWITCH_COND_SUFFIX = '/';
+        CTRLIF_INDEX_SUFFIX = '/';
+        CTRLIF_INDEX_DELIMITER = '-';
+        FUNCTION_INDEX_SHRINKING_DELIMITER = '-';
+        FUNCTION_INDEX_CONCAT_DELIMITER = '_';
     end
 
     methods (Static, Access=private)
@@ -36,6 +44,16 @@ classdef SwitchingFunctionSignature
     methods
         function this = SwitchingFunctionSignature(rhsName, switch_cond, ctrlif_index, function_index)
             %SWITCHINGFUNCTIONSIGNATURE Construct signature from ctrlif data.
+            if nargin == 0
+                return
+            end
+
+            % Build from string representation
+            if nargin == 1
+                [this.rhsName, this.switch_cond, this.ctrlif_index, this.function_index] = this.strToSig(rhsName);
+                return
+            end
+
             this.rhsName = rhsName;
             this.switch_cond = switch_cond;
             this.ctrlif_index = ctrlif_index;
@@ -56,26 +74,20 @@ classdef SwitchingFunctionSignature
             %   elements separated by a delimiter.
             %   Then the results are concatenated with a (different)
             %   delimiter.
-            RHS_NAME_SUFFIX = ':';
-            SWITCH_COND_SUFFIX = '/';
-            CTRLIF_INDEX_SUFFIX = '/';
-            CTRLIF_INDEX_DELIMITER = '-';
-            FUNCTION_INDEX_SHRINKING_DELIMITER = '-';
-            FUNCTION_INDEX_CONCAT_DELIMITER = '_';
 
             switch_cond_string = sprintf('%d', this.switch_cond);
 
-            ctrlif_index_string = numericToCharJoin(this.ctrlif_index, CTRLIF_INDEX_DELIMITER);
+            ctrlif_index_string = numericToCharJoin(this.ctrlif_index, this.CTRLIF_INDEX_DELIMITER);
 
             % Convert each cell into a char array
-            convertCell = @(array) numericToCharJoin(array, FUNCTION_INDEX_SHRINKING_DELIMITER);
+            convertCell = @(array) numericToCharJoin(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
             function_index_string = cellfun(convertCell, this.function_index, 'UniformOutput', false);
 
-            function_index_string = strjoin(function_index_string, FUNCTION_INDEX_CONCAT_DELIMITER);
+            function_index_string = strjoin(function_index_string, this.FUNCTION_INDEX_CONCAT_DELIMITER);
 
-            str = [this.rhsName, RHS_NAME_SUFFIX, ...
-                switch_cond_string, SWITCH_COND_SUFFIX, ...
-                ctrlif_index_string, CTRLIF_INDEX_SUFFIX, ...
+            str = [this.rhsName, this.RHS_NAME_SUFFIX, ...
+                switch_cond_string, this.SWITCH_COND_SUFFIX, ...
+                ctrlif_index_string, this.CTRLIF_INDEX_SUFFIX, ...
                 function_index_string];
             % END OF MAIN FUNCTION
 
@@ -83,8 +95,30 @@ classdef SwitchingFunctionSignature
             % with a delimiter inserted between elements.
             function out = numericToCharJoin(array, delim)
                 % strjoin requires a cell array of char arrays/strings
-                array = num2cell(sprintf('%d', array));
+                array = arrayfun(@num2str, array, 'UniformOutput', false);
                 out = strjoin(array, delim);
+            end
+        end
+
+        function [rhsName, switchCondition, ctrlifIndex, functionIndex] = strToSig(this, str)
+            % Unpack string into representation of each property
+            [rhsName, str] = strtok(str, this.RHS_NAME_SUFFIX);
+            [switchCondition, str] = strtok(str, [this.RHS_NAME_SUFFIX, this.SWITCH_COND_SUFFIX]);
+            [ctrlifIndex, str] = strtok(str, [this.SWITCH_COND_SUFFIX, this.CTRLIF_INDEX_SUFFIX]);
+            functionIndex = strtok(str, [this.CTRLIF_INDEX_SUFFIX]);
+
+            % Process individual properties
+            switchCondition = arrayfun(@str2double, switchCondition);
+
+            ctrlifIndex = convertDelim(ctrlifIndex, this.CTRLIF_INDEX_DELIMITER);
+
+            functionIndex = strsplit(functionIndex, this.FUNCTION_INDEX_CONCAT_DELIMITER);
+            convertFunctionIndex = @(array) convertDelim(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
+            functionIndex = cellfun(convertFunctionIndex, functionIndex, 'UniformOutput', false);
+            % END OF MAIN FUNCTION
+
+            function str = convertDelim(array, delim)
+                str = str2double(strsplit(array, delim));
             end
         end
 
