@@ -1,9 +1,9 @@
-function [mtreeCaller, idxMtreeFunction] = processFunctionIndex(this, functionIndex, idxMtreeCaller, mtreeCaller, adjustFunctionCall, setReturnValue, hash)
+function [mtreeCaller, idxMtreeFunction] = processFunctionIndex(this, functionIndex, idxMtreeCaller, mtreeCaller, adjustFunctionCall, setReturnValue, hash, collisionIndex)
 
 helperFunctionInfo = this.getHelperFunctionCallInfo(idxMtreeCaller, functionIndex);
 idxMtreeFunction = this.functionIndexToIdxMtree(functionIndex, idxMtreeCaller);
 if adjustFunctionCall
-    newHelperFunctionName = createSwitchingFunctionName(this.functionNameArray{idxMtreeFunction}, hash);
+    newHelperFunctionName = createSwitchingFunctionName(this.functionNameArray{idxMtreeFunction}, hash, collisionIndex);
     mtreeCaller = SwitchingFunctionFactory.adjustFunctionCall( ...
         mtreeCaller, ...
         newHelperFunctionName, ...

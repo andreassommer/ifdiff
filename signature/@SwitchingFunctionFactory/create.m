@@ -1,4 +1,4 @@
-function switchingFunctionHandle = create(this, signature)
+function switchingFunctionHandle = create(this, signature, collisionIndex)
 %CREATESWITCHINGFCNFROMSIGNATURE    Create new switching function from a signature.
 
 
@@ -10,7 +10,7 @@ isMtreeModified = false(1, length(mtreeArray));
 isMtreeModified(1) = true;
 
 % We always export the RHS function, so update its name now
-rhsNewName = createSwitchingFunctionName(this.functionNameArray{1}, signature.hash);
+rhsNewName = createSwitchingFunctionName(this.functionNameArray{1}, signature.hash, collisionIndex);
 mtreeArray{1} = mtree_changeFcnName(mtreeArray{1}, rhsNewName);
 
 % Processed function calls
@@ -30,7 +30,7 @@ for idxCtrlif = 1:numCtrlif-1
         end
 
         [mtreeArray{idxCallerMtree}, idxMtreeFunction] = this.processFunctionIndex( ...
-            functionIndex, idxCallerMtree, mtreeArray{idxCallerMtree}, true, false, signature.hash ...
+            functionIndex, idxCallerMtree, mtreeArray{idxCallerMtree}, true, false, signature.hash, collisionIndex ...
             );
         
         isMtreeModified(idxMtreeFunction) = true;
@@ -55,7 +55,7 @@ for functionIndex = signature.function_index{end}
     isFunctionCallAdjusted = ismember(functionIndex, processedFunctionIndexSet);
 
     [mtreeArray{idxCallerMtree}, idxMtreeFunction] = this.processFunctionIndex( ...
-        functionIndex, idxCallerMtree, mtreeArray{idxCallerMtree}, ~isFunctionCallAdjusted, true, signature.hash ...
+        functionIndex, idxCallerMtree, mtreeArray{idxCallerMtree}, ~isFunctionCallAdjusted, true, signature.hash, collisionIndex ...
         );
     
     isMtreeModified(idxMtreeFunction) = true;
@@ -79,7 +79,11 @@ end
 
 % Export the created mtrees to files
 for idxMtree=exportMtree
-    filename = [createSwitchingFunctionName(this.functionNameArray{idxMtree}, signature.hash), '.m'];
+    if idxMtree == 1
+        filename = [rhsNewName '.m'];
+    else
+        filename = [createSwitchingFunctionName(this.functionNameArray{idxMtree}, signature.hash, collisionIndex), '.m'];
+    end
 
     filepath = fullfile(this.writePath, filename);
     file = fopen(filepath, 'w');
