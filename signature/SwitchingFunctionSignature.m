@@ -123,8 +123,7 @@ classdef SwitchingFunctionSignature
         end
 
         function hash = get.hash(this)
-            % Placeholder - Take ADLER32 of str
-            [~, hash] = adler32(this.str);
+            hash = fnv(this.str);
         end
     end
 end
