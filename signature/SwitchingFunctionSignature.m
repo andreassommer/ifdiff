@@ -77,10 +77,10 @@ classdef SwitchingFunctionSignature
 
             switch_cond_string = sprintf('%d', this.switch_cond);
 
-            ctrlif_index_string = numericToCharJoin(this.ctrlif_index, this.CTRLIF_INDEX_DELIMITER);
+            ctrlif_index_string = numericJoin(this.ctrlif_index, this.CTRLIF_INDEX_DELIMITER);
 
             % Convert each cell into a char array
-            convertCell = @(array) numericToCharJoin(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
+            convertCell = @(array) numericJoin(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
             function_index_string = cellfun(convertCell, this.function_index, 'UniformOutput', false);
 
             function_index_string = strjoin(function_index_string, this.FUNCTION_INDEX_CONCAT_DELIMITER);
@@ -89,15 +89,6 @@ classdef SwitchingFunctionSignature
                 switch_cond_string, this.SWITCH_COND_SUFFIX, ...
                 ctrlif_index_string, this.CTRLIF_INDEX_SUFFIX, ...
                 function_index_string];
-            % END OF MAIN FUNCTION
-
-            % Helper function that converts a numeric array to a char array
-            % with a delimiter inserted between elements.
-            function out = numericToCharJoin(array, delim)
-                % strjoin requires a cell array of char arrays/strings
-                array = arrayfun(@num2str, array, 'UniformOutput', false);
-                out = strjoin(array, delim);
-            end
         end
 
         function [rhsName, switchCondition, ctrlifIndex, functionIndex] = strToSig(this, str)
