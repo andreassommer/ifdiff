@@ -3,7 +3,8 @@ name_part1 = 'myrhs';
 % name_part2 = 'if';
 % name_part2 = 'abs';
 % name_part2 = 'min';
-name_part2 = 'sign';
+% name_part2 = 'sign';
+name_part2 = 'difficult';
 filename = strcat(name_part1, '_', name_part2);
 
 
