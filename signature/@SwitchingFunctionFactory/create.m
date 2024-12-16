@@ -79,10 +79,6 @@ end
 
 
 for idxExportMtree = 1:length(exportMtree)
-    % Remove variables that do not contribute to the return value for all functions
-    sortedMtree = mtreeplus(exportMtree{idxExportMtree}.tree2str);
-    exportMtree{idxExportMtree} = deleteUnusedParameters(sortedMtree);
-
     % Write the mtrees to files
     filepath = [exportFunctionNameArray{idxExportMtree} '.m'];
     filepath = fullfile(this.writePath, filepath);

@@ -106,8 +106,7 @@ classdef SwitchingFunctionFactory < handle
                 cIndex.indexLeftchild, ...
                 {mtree.K.ID, config.switchingFunctionOutputName});
             
-            % Delete everything after the new return
-            mtree.T(rIndexExpr, cIndex.indexNextNode) = 0;
+            mtree = traceReturnStatementToInputs(mtree, rIndexExpr);
         end
     end
 end
