@@ -25,8 +25,9 @@ config = makeConfig();
 rIndex = mtree_rIndex(mtreeobj);
 
 
-% logic
+% when no '=' before 'sign', extract sign function into new line that assigns it to a variable
 mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.sign_call, config.signCallPrefix);
+rIndex = mtree_rIndex(mtreeobj);
 
 for i = 1:length(rIndex.BODY.sign)
     if ismember(rIndex.BODY.sign(i), ignores)
