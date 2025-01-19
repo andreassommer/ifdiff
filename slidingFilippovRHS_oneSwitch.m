@@ -42,7 +42,7 @@ function dy = slidingFilippovRHS_oneSwitch(datahandle, ctrlif_index, switchingFu
    datahandle.setData(data);
    f_plus = datahandle.getData().integratorSettings.preprocessed_rhs(datahandle,t,y,p);
     
-   FDstep = generateFDstep(length(y), length(p));
+   FDstep = generateFDstep(length(y), length(p)); % TODO use relative finite differences (consider typical values of y and p)
    dsigma_y = diff_sigma_y(datahandle, switchingFunction, t, y, p, FDstep.y);
 
    % assemble alpha
