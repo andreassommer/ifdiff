@@ -83,8 +83,7 @@ end
 rIndex_new_row = length(mtreeobj.IX) + 1; 
 
 % check if there is any input for to/to_type.
-if ~isempty(varargin) > 0
-    
+if ~isempty(varargin)  
     if length(varargin) == 1
         error('Got argument ''to'', but missing argument ''to_type''.');
     end
