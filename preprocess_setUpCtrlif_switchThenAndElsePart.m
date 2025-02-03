@@ -1,6 +1,6 @@
-function mtreeobj = preprocess_setUpCtrlif_switchThenAndElsePart(mtreeobj, Arg1, Arg2, Arg3, Arg4) 
-% Switches the order of the nodes Arg1, ..., Arg4, swapping Arg2 and Arg3. 
-% For ctrlif, that means switching the arguments 'thenpart' and 'elsepart'. 
+function mtreeobj = preprocess_setUpCtrlif_switchThenAndElsePart(mtreeobj, Arg1, Arg2, Arg3, Arg4)
+% Switches the order of the nodes Arg1, ..., Arg4, swapping Arg2 and Arg3.
+% For ctrlif, that means switching the arguments 'thenpart' and 'elsepart'.
 % This function assumes the local tree-structure to be:
 %   Arg1 -next-> Arg2 -next-> Arg3 -next-> Arg4
 %
@@ -15,18 +15,11 @@ function mtreeobj = preprocess_setUpCtrlif_switchThenAndElsePart(mtreeobj, Arg1,
 % 'mtreeobj'    Edited mtree
 
 % create struct for o.T column access
-cIndex = mtree_cIndex(); 
-
-idxCall = mtreeobj.T(Arg1, cIndex.indexParentNode);
+cIndex = mtree_cIndex();
 
 % change the order of nodes to Arg1 -next-> Arg3 -next-> Arg2 -next-> Arg4
-mtreeobj.T(Arg1, cIndex.indexNextNode) = Arg3;
-mtreeobj.T(Arg3, cIndex.indexNextNode) = Arg2;
-mtreeobj.T(Arg2, cIndex.indexNextNode) = Arg4;
+mtreeobj.T([Arg1, Arg3, Arg2], cIndex.indexNextNode) = [Arg3, Arg2, Arg4];
 
 % adjust parent fields
-mtreeobj.T(Arg3, cIndex.indexParentNode) = mtreeobj.T(idxCall, cIndex.indexRightchild);
-mtreeobj.T(Arg2, cIndex.indexParentNode) = Arg3;
-mtreeobj.T(Arg4, cIndex.indexParentNode) = Arg2;
-
+mtreeobj.T([Arg3, Arg2, Arg4], cIndex.indexParentNode) = [Arg1, Arg3, Arg2];
 end
