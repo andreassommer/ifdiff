@@ -39,11 +39,11 @@ mtreeobj = mtree_connectNodes(mtreeobj, from, condition, cIndex.indexRightchild)
 
 % Switch a and b first if necessary.
 if operatorKind == mtreeobj.K.LE || operatorKind == mtreeobj.K.GT
-    mtreeobj = mtree_switchLeftRightChildren(mtreeobj,  rIndexOperator);
+    mtreeobj = mtree_switchLeftRightChildren(mtreeobj, rIndexOperator);
 end
 
 % Replace comparison operator by minus.
-mtreeobj = mtree_ctrlifNormFormTrafo_substituteComparison(mtreeobj, rIndexOperator, 1);
+mtreeobj = mtree_ctrlifNormFormTrafo_substituteComparison(mtreeobj, rIndexOperator);
 
 % preprocess_setUpCtrlif(...) takes care of the negation if necessary.
 end
