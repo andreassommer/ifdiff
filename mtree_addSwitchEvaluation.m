@@ -19,7 +19,7 @@ function [mtreeobj, comparison_operator] = mtree_addSwitchEvaluation(mtreeobj, f
 
 
 % Determine the operator involved in the switch condition
-[comparison_operator, comparison_operator_index] = mtree_checkForComparisonOperator(mtreeobj, condition);
+[comparison_operator, comparison_operator_index] = mtree_getFirstComparisonOperator(mtreeobj, condition);
 
 cIndex = mtree_cIndex();
 mtreeobj = mtree_connectNodes(mtreeobj, from, condition, cIndex.indexRightchild);
