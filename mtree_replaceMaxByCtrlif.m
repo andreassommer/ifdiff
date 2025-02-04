@@ -36,7 +36,7 @@ config = makeConfig();
 cIndex = mtree_cIndex();
 rIndex = mtree_rIndex(mtreeobj);
 
-% Is there any call to min in ´mtreeobj´?
+% Is there any call to max in ´mtreeobj´?
 if ~isfield(rIndex.BODY, 'max')
     % nothing to do
     return
