@@ -1,5 +1,5 @@
 function [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index, ignores)
-% [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index)
+% [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_index, ignores)
 %
 %
 % Replace all min(...) calls in ´mtreeobj´ by ctrlif calls.
@@ -21,7 +21,7 @@ function [mtreeobj, ctrlif_index] = mtree_replaceMinByCtrlif(mtreeobj, ctrlif_in
 %
 % OUTPUT:
 %       ´mtreeobj´:         Edited mtree. 
-%                           All min, min are replaced by ctrlif function calls.
+%                           All min calls are replaced by ctrlif function calls.
 %
 %       ´ctrlif_index´:     New ctrlif_index counter.
 %
