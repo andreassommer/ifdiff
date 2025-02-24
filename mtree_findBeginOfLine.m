@@ -1,6 +1,5 @@
-function output = mtree_findBeginOfLine(mtreeobj, start_node, node_index_to_find, varargin)
-% Function to either find a expr node are any other beginning of an line
-% for example if, while etc.
+function output = mtree_findBeginOfLine(mtreeobj, start_node, node_index_to_find)
+% Function to either find an expr node or any other beginning of a line, e.g. if, while etc.
 
 cIndex = mtree_cIndex();
 

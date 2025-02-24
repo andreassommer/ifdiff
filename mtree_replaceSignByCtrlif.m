@@ -1,12 +1,11 @@
 function [mtreeobj, ctrlif_index] = mtree_replaceSignByCtrlif(mtreeobj, ctrlif_index, ignores)
-% transform all sign into max, i.e. ('id est; latin for: that means, that is to say')
+% Replace every call of sign(...) by an (almost) equivalent call of ctrlif(...).
 % b = sign(a);
 %
 % is changed into
 %
 % new_variable = a; 
-% b = ctrlif(new_variable >= 0, new_variable, -new_variable, ...)
-%
+% b = ctrlif(new_variable, ...)
 %
 
 % notation:
@@ -19,47 +18,34 @@ if ~isfield(rIndex.BODY, 'sign')
     return
 end
 
+% prep
 warning('sign() function found, sign(0) = 0 is modified to sign(0) = 1')
 
 config = makeConfig();
+rIndex = mtree_rIndex(mtreeobj);
 
+
+% when no '=' before 'sign', extract sign function into new line that assigns it to a variable
 mtreeobj = mtree_createSeparateFunctionCallInNewLine(mtreeobj, rIndex.BODY.sign_call, config.signCallPrefix);
-
 rIndex = mtree_rIndex(mtreeobj);
 
 for i = 1:length(rIndex.BODY.sign)
     if ismember(rIndex.BODY.sign(i), ignores)
         continue;
     end
-    
-    [mtreeobj, ~] = preprocess_setUpCtrlif(mtreeobj,...
+
+    switchEvalName = [config.ctrlif.switchEvalName, '_sign_', num2str(i)];
+    [mtreeobj, ~] = mtree_extractArgIntoNewLineAbove(mtreeobj, rIndex.BODY.sign_Arg(i), switchEvalName); 
+
+    [mtreeobj, ~] = preprocess_setUpCtrlif( ...
+        mtreeobj,...
         rIndex.BODY.sign_Equals(i), ...         % equals node for ctrlif
         ctrlif_index, ...
-        rIndex.BODY.sign_Arg(i,1), ...           % condition in Arg 1
+        switchEvalName, ...                     % switchInput
         '1', ...                                % truepart
-        '-1');                                  % elsepart
+        '-1', ...                               % elsepart
+        0);                                  
     ctrlif_index = ctrlif_index + 1;
 end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

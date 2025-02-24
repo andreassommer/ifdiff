@@ -37,19 +37,47 @@ end
 
 % handle each if node seperately
 for i = 1:length(rIndex.BODY.IF)
-
     if ismember(rIndex.BODY.IF(i), ignores)
         continue
     end
     
     cond_feasible = mtree_checkFeasibilityOfCondition(mtreeobj, rIndex.BODY.cond(i));
     if ~cond_feasible
-        warning('IFDIFF:INFEASIBLE_IF_CONDITION', 'An if condition is not feasible and was not replaced by a ctrlif.');
+        warning(config.errors.infeasible_if_condition, 'An if condition is not feasible and was not replaced by a ctrlif.');
         continue
     end
     % add ctrlif before the if
     
+    % Step 1: evaluate the switching function
+    % Goal: 
+    % switchEval = (s - offset)
+
+    % EXPR
+    [mtreeobj, rIndex.new.ctrlif_expr] = mtree_addNewExprNode(mtreeobj, rIndex.BODY.IF(i));
     
+    % Add: = (EQUALS)
+    % = ;
+    [mtreeobj, swfct_val_Equals] = mtree_createAndAdd_NewNode(mtreeobj,...
+        rIndex.new.ctrlif_expr, ...             % from
+        cIndex.indexLeftchild, ...              % from_type
+        mtreeobj.K.EQUALS);                     % kind of new node
+    
+    % Add: variable
+    % child: ID
+    % switchEval_i = ;
+    switchEvalName = [config.ctrlif.switchEvalName, '_if_', num2str(i)];
+    [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj,...
+        swfct_val_Equals, ...                               % from
+        cIndex.indexLeftchild, ...              % from_type
+        { mtreeobj.K.ID, switchEvalName });     % kind of new node: {kind, name}
+
+    % Add: switching function evaluation
+    [mtreeobj, comparison_operator] = mtree_addSwitchEvaluation(mtreeobj, swfct_val_Equals, rIndex.BODY.cond(i));
+
+   
+    
+    % Step 2: Add ctrlif (before the existing if-statement)
+   
     % start with:
     % if condition
     % ...
@@ -57,18 +85,18 @@ for i = 1:length(rIndex.BODY.IF)
     
     
     
-    % add equals node
+    % Add: EQUALS
     %
     % = ;
     % if condition
     % ...
     [mtreeobj, ctrlif_Equals] = mtree_createAndAdd_NewNode(mtreeobj,...
-        rIndex.new.ctrlif_expr, ...                         % from
-        cIndex.indexLeftchild, ...                          % from_type
-        mtreeobj.K.EQUALS);                                 % kind of new node
+        rIndex.new.ctrlif_expr, ...             % from
+        cIndex.indexLeftchild, ...              % from_type
+        mtreeobj.K.EQUALS);                     % kind of new node
     
     
-    % add output variable of ctrlif
+    % Add: Output variable of ctrlif call
     %
     % conditionValue = ;
     % if condition
@@ -79,27 +107,28 @@ for i = 1:length(rIndex.BODY.IF)
     % node needs to be the expr node the ctrlif
     % only with if conditions
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj,...
-        ctrlif_Equals, ...                                    % from
-        cIndex.indexLeftchild, ...                            % from_type
-        {mtreeobj.K.ID, config.ctrlif.outputName});           % kind of new node
+        ctrlif_Equals, ...                              % from
+        cIndex.indexLeftchild, ...                      % from_type
+        {mtreeobj.K.ID, config.ctrlif.outputName});     % kind of new node
     
     
-    % add call node for ctrlif function call with connection to condition
+    % Add: Call node for ctrlif function call; with connection to condition
     %
-    % conditionValue = ctrl(condition);
+    % conditionValue = ctrlif(switchEval_i);
     % if condition
     % ...
     [mtreeobj, ~] = preprocess_setUpCtrlif(mtreeobj,...
         ctrlif_Equals, ...
-        ctrlif_index, ...
-        rIndex.BODY.cond(i), ...
+        ctrlif_index, ... 
+        switchEvalName, ... % rIndex.BODY.cond(i), ...
         'true', ...
-        'false');
+        'false', ...
+        comparison_operator);
     ctrlif_index = ctrlif_index + 1; 
     
     % 'condition' -> 'conditionValue'
     %
-    % conditionValue = ctrlif(condition)
+    % conditionValue = ctrlif(switchEval_i)
     % if conditionValue
     % ...
     [mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
@@ -110,8 +139,3 @@ for i = 1:length(rIndex.BODY.IF)
 end
 
 end % finito
-
-
-
-
-
