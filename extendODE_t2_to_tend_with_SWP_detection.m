@@ -3,10 +3,19 @@ function extendODE_t2_to_tend_with_SWP_detection(datahandle)
 
 data = datahandle.getData();
 
-ctrlif_setForcedBranchingSignature(datahandle, data.SWP_detection.t2, data.SWP_detection.x2{2});
+t = data.SWP_detection.solution_until_t2.x(end);
+x = deval(data.SWP_detection.solution_until_t2,  data.SWP_detection.solution_until_t2.x(end)); 
+ctrlif_setForcedBranchingSignature(datahandle, t, x);
+
+if isempty(data.integratorSettings.filippov_rhs)
+    rhs = @(t, y) data.integratorSettings.preprocessed_rhs(datahandle, t, y, data.SWP_detection.parameters);
+else
+    rhs = @(t, y) data.integratorSettings.filippov_rhs(datahandle, t, y, data.SWP_detection.parameters);
+end
+
 z = odextend(...
     data.SWP_detection.solution_until_t2,...
-    @(t, y) data.integratorSettings.preprocessed_rhs(datahandle, t, y, data.SWP_detection.parameters), ...
+    rhs, ...
     data.SWP_detection.tspan(2), ...
     data.SWP_detection.x2{2}, ... % conveniently, if this is identical to sol.y(end), odextend does not add a time point
     data.integratorSettings.optionsForcedBranching);
