@@ -13,31 +13,33 @@ function t = solveODE_backtrackChattering(datahandle)
     %        michi.strik@gmail.com
 
 
-    % get recognition parameters from makeConfig()
-    config = makeConfig();
-    swfreqtol           = config.swfreqtol;              % local switching frequency accepted
-    swfreqtol_checklast = config.swfreqtol_checklast;    % we are checking for Filippov switching on this many of the last switches
+    % get parameters
+    config              = makeConfig();
+    swfreqtol           = config.swfreqtol; % local switching frequency accepted
+    checklast           = config.swfreqtol_checklast; % we are checking for Filippov switching on this many of the last switches
 
-    % get switching data from datahandle
+    % get switching data
     SWP_detection   = datahandle.getData().SWP_detection;
     switchingpoints = SWP_detection.switchingpoints;
 
+    % compute statistical measures of switching frequencies
+    % based on the last 'checklast' switches
+    switching_frequencies = diff(switchingpoints);
+    swfreq_mean = mean(switching_frequencies(end-checklast+2:end));
+    swfreq_var  = var(switching_frequencies(end-checklast+2:end));
+    swfreq_sd   = sqrt(swfreq_var);
 
     % determine to which switch to go back
-    % We go back as long as switching frequence stays below swfreqtol.
-    i = length(switchingpoints);
-    while switchingpoints{i} - switchingpoints{i-1} < swfreqtol
-        i = i-1;
-
-        % break before exceeding the switches taken into account
-        % for Filippov switching recognition
-        if i-1 < length(switchingpoints) - swfreqtol_checklast + 1
+    % Idea: Go back until we see the time-distance between switches
+    % becoming much higher. Use sample standard deviation for decision.
+    n = length(switching_frequencies);
+    t = switchingpoints(1); 
+    % t is the algorithmically determined starting time of the chattering
+    for i=n:-1:1
+        if switching_frequencies(i) > swfreq_mean+3*swfreq_sd
+            t = switchingpoints(i+1);
             break;
         end
     end
-
-    % At t, switching at frequency below swfreqtol begins:
-    t = switchingpoints{i};
-
 
 end
