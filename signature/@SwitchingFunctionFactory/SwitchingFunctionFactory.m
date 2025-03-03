@@ -67,7 +67,7 @@ classdef SwitchingFunctionFactory < handle
             functionName = callerMtree.C{callerMtree.T(helperFunctionCallInfo.rIndexFname, cIndex.stringTableIndex)};
         end
 
-        
+        [idxMtreeCtrlif, exportMtreeArray, exportFunctionNameArray] = processFunctionIndex(this, functionIndex, exportMtreeArray, exportFunctionNameArray, rhsNewName, helperIndexToIdxMtreeMap, replaceByReturn);
     end
 
     methods (Static)
