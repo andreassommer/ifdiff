@@ -10,21 +10,63 @@ exportFunctionNameArray{1} = rhsNewName;
 
 helperIndexToIdxMtreeMap = HashMap(@(key) numericJoin(key, '-'));
 
-
 % Determine in which function each ctrlif was called
 % Also copy mtrees of relevant helper functions and adjust function calls along the way
 numCtrlif = length(signature.ctrlif_index);
 for idxCtrlif = 1:numCtrlif
     functionIndex = signature.function_index{idxCtrlif};
-    [idxMtreeCtrlif, exportMtreeArray, exportFunctionNameArray] ...
-        = this.processFunctionIndex(functionIndex, exportMtreeArray, exportFunctionNameArray, rhsNewName, helperIndexToIdxMtreeMap, idxCtrlif == numCtrlif);
+    idxMtreeCaller = 1;
+    idxMtreeExport = 1;
+    for idxFunctionIndex = 1:length(functionIndex)
+        % We are in the RHS, nothing left to do
+        if functionIndex(1) == 0
+            break
+        end
+        helperIndex = functionIndex(1:idxFunctionIndex);
+
+        % Find out which function is called
+        idxMtreeFunction = this.functionIndexToIdxMtree(helperIndex(end), idxMtreeCaller);
+        helperFunctionInfo = this.getHelperFunctionCallInfo(idxMtreeCaller, helperIndex(end));
+
+        % Check if this helper function call was already processed before
+        idxMtreeHelperNew = length(exportMtreeArray) + 1;
+        idxMtreeHelper = helperIndexToIdxMtreeMap.get(helperIndex, idxMtreeHelperNew);
+        if isempty(idxMtreeHelper)
+            % Create new helper function
+            idxMtreeHelper = idxMtreeHelperNew;
+            helperNewName = [rhsNewName '_' num2str(idxMtreeHelper)];
+            exportMtreeArray{idxMtreeHelper} = createHelperSwitchingFunction(this.mtreeArray{idxMtreeFunction}, helperNewName);
+            exportFunctionNameArray{idxMtreeHelper} = helperNewName; %#ok<AGROW>
+
+            % Adjust function call
+            exportMtreeArray{idxMtreeExport} = SwitchingFunctionFactory.adjustFunctionCall( ...
+                exportMtreeArray{idxMtreeExport}, ...
+                helperNewName, ...
+                helperFunctionInfo.rIndexCall, ...
+                helperFunctionInfo.rIndexArgs(3) ...
+                );
+        end
+
+        % On the last ctrlif, set the helper function call as the return value of the caller
+        if idxCtrlif == numCtrlif
+            exportMtreeArray{idxMtreeExport} = SwitchingFunctionFactory.setFunctionCallAsReturnValue( ...
+                exportMtreeArray{idxMtreeExport}, ...
+                helperFunctionInfo.rIndexEquals, ...
+                helperFunctionInfo.rIndexExpr ...
+                );
+        end
+
+        % Update mtreeIndex
+        idxMtreeCaller = idxMtreeFunction;
+        idxMtreeExport = idxMtreeHelper;
+    end
 
     % Replace the ctrlif
     if idxCtrlif == numCtrlif
-        exportMtreeArray{idxMtreeCtrlif} = replaceCtrlifByReturn(exportMtreeArray{idxMtreeCtrlif}, signature.ctrlif_index(end));
+        exportMtreeArray{idxMtreeExport} = replaceCtrlifByReturn(exportMtreeArray{idxMtreeExport}, signature.ctrlif_index(end));
     else
-        exportMtreeArray{idxMtreeCtrlif} = replaceCtrlifByTrueOrFalse( ...
-            exportMtreeArray{idxMtreeCtrlif}, ...
+        exportMtreeArray{idxMtreeExport} = replaceCtrlifByTrueOrFalse( ...
+            exportMtreeArray{idxMtreeExport}, ...
             signature.ctrlif_index(idxCtrlif), ...
             signature.switch_cond(idxCtrlif) ...
             );
@@ -44,5 +86,4 @@ end
 
 % Return function handle to the main switching function
 switchingFunctionHandle = str2func(rhsNewName);
-
 end
