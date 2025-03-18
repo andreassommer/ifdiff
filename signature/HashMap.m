@@ -19,15 +19,12 @@ classdef HashMap < handle
             end
         end
         
-        function val = get(obj, key, varargin)
+        function val = get(obj, key)
             key = obj.hash(key);
             if obj.map.isKey(key)
                 val = obj.map(key);
             else
                 val = [];
-                if nargin > 2
-                    obj.map(key) = varargin{1};
-                end
             end
         end
 
