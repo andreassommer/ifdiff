@@ -16,8 +16,8 @@ classdef SwitchingFunctionFactory < handle
             obj.functionData = PreprocessedFunctionData(mtreeArray, functionNameArray);            
         end
 
-        switchingFunctionHandle = create(this, signature, collisionIndex);
-        switchingFunctionHandle = get(this, signature);
+        switchingFunctionHandle = create(this, signature, collisionIndex, varargin);
+        switchingFunctionHandle = get(this, signature, varargin);
     end
 
     methods (Static)

@@ -48,7 +48,7 @@ while switch_detected
         data.SWP_detection.jumpFunction{end + 1} = [];
         datahandle.setData(data);
     else
-        data.SWP_detection.jumpFunction{end + 1} = setUpJumpFunction(datahandle, jumpCtrlifIndices);
+        data.SWP_detection.jumpFunction{end + 1} = solveODE_computeJumpFunction(datahandle, switchingFunctionFactory, jumpCtrlifIndices);
         datahandle.setData(data);
     end
 

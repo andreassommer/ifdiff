@@ -1,14 +1,13 @@
-function newFunctionName = createSwitchingFunctionName(oldFunctionName, hash, varargin)
+function newFunctionName = createSwitchingFunctionName(prefix, oldFunctionName, hash, varargin)
 DELIMITER = '_';
-config = makeConfig();
 
 collisionIndex = '';
-if nargin > 2
+if nargin > 3
     collisionIndex = num2str(varargin{1});
 end
 
 newFunctionName = [ ...
-    config.switchingFunctionNamePrefix, DELIMITER, ...
+    prefix, ...
     oldFunctionName, DELIMITER, ...
     hash, DELIMITER, ...
     collisionIndex];

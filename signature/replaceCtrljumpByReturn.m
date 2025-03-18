@@ -1,4 +1,4 @@
-function jumpFcn = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpArgs)
+function mtree = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpArgs)
 % SETUPJUMPFUNCTION_REPLACECTRLJUMPBYRETURN Replace the ctrlif and ctrljump that signal a jump with the body of the
 %     jump's update block, creating a function that returns the update.
 % A jump specification
@@ -74,6 +74,4 @@ function jumpFcn = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpArgs)
         cIndex.indexNextNode);
 
     mtree = setUpSwitchingFunction_traceReturnStatementToInputs(mtree, updateBlockLastNode);
-
-    jumpFcn.mtreeobj_switchingFcn{3, mtree_i} = mtree;
 end
