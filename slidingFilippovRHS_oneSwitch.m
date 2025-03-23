@@ -1,21 +1,22 @@
-function dy = slidingFilippovRHS_oneSwitch(datahandle, ctrlif_index, switchingFunction,t,y,p)
-   % Computes a Filippov right-hand-side w.r.t. the given 'ctrlif_index', i.e.,
-   % a convex-combination of the two models where the associated ctrlif 
-   % evaluates to 0 and 1, respectively. 
+function dy = slidingFilippovRHS_oneSwitch(datahandle, ctrlifCounter, switchingFunction,t,y,p)
+   % Computes a Filippov right-hand-side w.r.t. the given 'ctrlifCounter', 
+   % i.e., a convex-combination of the two models where the associated 
+   % ctrlif evaluates to 0 and 1, respectively. 
    % Read [1] or [2, Chapter 1] for mathematical details.
    % 
    % INPUT:
-   %    'datahandle'   --> Datahandle for a switched system.
-   %    'alpha'        -->  Parameter for convex-combination.
-   %    'ctrlif_index' -->  Switch for which the convex-combination should be
-   %                  	    computed.
-   %    't'            -->  time, passed to the preprocessed RHS
-   %    'y'            -->  state, passed to preprocessed RHS
-   %    'p'            -->  parameters, passed to preprocessed RHS
+   %    'datahandle'        --> Datahandle for a switched system.
+   %    'ctrlifCounter'     --> Switch for which the convex-combination should be
+   %                  	        computed.
+   %    'switchingFunction' --> Switching function of the switch that is 
+   %                            to be put in sliding mode (function handle).
+   %    't'                 --> time, passed to the preprocessed RHS
+   %    'y'                 --> state, passed to preprocessed RHS
+   %    'p'                 --> parameters, passed to preprocessed RHS
    %
    % OUTPUT:
-   %    'dy'           -->  Value of the Filippov-RHS, determined as 
-   %                        described above.
+   %    'dy'                --> Value of the Filippov-RHS, determined as 
+   %                            described above.
    %
    % Author: Michael Strik, Jun2024
    % Email:  michael.strik@stud.uni-heidelberg.de
@@ -26,28 +27,48 @@ function dy = slidingFilippovRHS_oneSwitch(datahandle, ctrlif_index, switchingFu
    % [2] A. Meyer. Numerical Solution of Optimal Control Problems with 
    % Explicit an Implicit Switches. PhD thesis, Ruprecht-Karls-Universität 
    % Heidelberg, 2020.
-    
-   % evaluate RHS for ctrlif=0 using forced branching
+   
+   % evaluate RHS for ctrlif=0 using forced branching 
    data = datahandle.getData();
-   data.ctlrifCase = 1; % QUESTION: Do I have to set it back to original in the end?
-
-   data.forcedBranching.switch_cond_forcedBranching(ctrlif_index) = 0;
+   data.forcedBranching.switch_cond_forcedBranching(ctrlifCounter) = 0;
    datahandle.setData(data);
    f_minus = datahandle.getData().integratorSettings.preprocessed_rhs(datahandle,t,y,p);
 
    % evaluate RHS for ctrlif=1
    data = datahandle.getData();
-
-   data.forcedBranching.switch_cond_forcedBranching(ctrlif_index) = 1;
+   data.forcedBranching.switch_cond_forcedBranching(ctrlifCounter) = 1;
    datahandle.setData(data);
    f_plus = datahandle.getData().integratorSettings.preprocessed_rhs(datahandle,t,y,p);
-    
+
    FDstep = generateFDstep(length(y), length(p)); % TODO use relative finite differences (consider typical values of y and p)
-   dsigma_y = diff_sigma_y(datahandle, switchingFunction, t, y, p, FDstep.y);
+   n = del_f_del_y(datahandle, switchingFunction, t, y, p, FDstep.y);
+   % n (= d/dy switchingFunction) is an outer normal of switching manifold that we want to slide on
 
    % assemble alpha
-   alpha = dot(dsigma_y,f_plus)/dot(dsigma_y,f_plus-f_minus);
+   alpha = dot(n,f_plus)./dot(n,f_plus-f_minus);
 
+   % SANITY CHECK
+   % dot(n,f_plus) and dot(n, f_minus) can't have the same sign. otherwise we 
+   % are not in sliding mode anymore and we can not rely on the formula for alpha 
+   n_dot_f_plus_times_n_dot_f_minus = dot(n,f_plus).*dot(n,f_minus);
+   if any(n_dot_f_plus_times_n_dot_f_minus >= 0)
+       % dot(n,f_plus) and dot(n,f_minus) have the same sign
+       same_sign = n_dot_f_plus_times_n_dot_f_minus >= 0;
+       n_dot_f_plus = dot(n,f_plus);
+       pos = n_dot_f_plus(same_sign)>0;
+       neg = n_dot_f_plus(same_sign)<0;
+       alpha(pos) = zeros(1,length(alpha(pos)));
+       % pos: n points into {swFct>=0}, so f_plus,f_minus point into {sigma>0}.
+       % we continue with f_plus, set alpha=0
+       alpha(neg) =  ones(1,length(alpha(neg)));
+       % neg: f_plus, f_minus point into {swFct<0}, continue with f_minus
+   end
+
+   % write alpha into datahandle
+   data = datahandle.getData();
+   data.sliding.alpha_temp = alpha;
+   datahandle.setData(data);
+   
    dy = alpha*f_minus + (1-alpha)*f_plus;
    
 end

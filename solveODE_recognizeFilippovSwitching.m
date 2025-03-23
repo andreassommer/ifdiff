@@ -1,4 +1,4 @@
-function [filippov, sliding_switches] = solveODE_recognizeFilippovSwitching(datahandle, sliding_switches)
+function chattering = solveODE_recognizeFilippovSwitching(datahandle)
     % This function evaluates the data in 'datahandle' to determine if a 
     % Filippov switching event possibly has occured. It does so by
     % calculating the local switching frequency and counting the total
@@ -11,14 +11,14 @@ function [filippov, sliding_switches] = solveODE_recognizeFilippovSwitching(data
     %               data.
     %
     % OUTPUT:
-    % 'filippov':   Flag if filippov switching has been detected or not. 
-    %               Is true or false.
+    % 'chattering': Flag if filippov switching, i.e. chattering has been 
+    %               detected or not. Is true or false.
     %
     % Author: Michael Strik, Feb2024
     % Email: michael.strik@stud.uni-heidelberg.de
     %        michi.strik@gmail.com
     
-    filippov = false;
+    chattering = false;
     
     % get recognition parameters from makeConfig()
     config = makeConfig();
@@ -38,32 +38,26 @@ function [filippov, sliding_switches] = solveODE_recognizeFilippovSwitching(data
     n_switches      = iend - istart + 1;
     swfreq          = n_switches/interval_length;
     if (swfreq > swfreqtol) && (n_switches >= swfreqtol_checklast)
-        filippov = true;
+        chattering = true;
     end
 
     % check total amount of switches
     n_switches_total = length(switchingpoints);
     if n_switches_total > swmax
-        filippov = true;
+        chattering = true;
     end
 
     % throw error / issue warning
-    if filippov
+    if chattering
         message = ['Switching frequency exceeds local or global tolerance, ' ...
                   'potential Filippov switching detected.\n ' ...
                   'Local switching frequency: %0.5g. Total switches: %i.'];
         switch config.swfreq_haltOnWarning
             case true
-                error(message, swfreq, n_switches_total);
+                error('IFDIFF:chattering', message, swfreq, n_switches_total);
             case false
-                warning(message, swfreq, n_switches_total');
+                warning('IFDIFF:chattering', message, swfreq, n_switches_total');
         end
-
-        % add the switching ctrlif to list of ctrlif's involved in switches
-        % marked as possible filippov event by this function
-        ctrlif_index = datahandle.getData().SWP_detection.signature.ctrlif_index{end};
-        sliding_switches = ctrlif_index;
-
     end
-
+    
 end 

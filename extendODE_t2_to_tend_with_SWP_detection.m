@@ -7,12 +7,7 @@ t = data.SWP_detection.solution_until_t2.x(end);
 x = deval(data.SWP_detection.solution_until_t2,  data.SWP_detection.solution_until_t2.x(end)); 
 ctrlif_setForcedBranchingSignature(datahandle, t, x);
 
-if isfield(data.integratorSettings, 'filippov_rhs') && ~isempty(data.integratorSettings.filippov_rhs)
-    rhs = @(t, y) data.integratorSettings.filippov_rhs(datahandle, t, y, data.SWP_detection.parameters);
-else
-    rhs = @(t, y) data.integratorSettings.preprocessed_rhs(datahandle, t, y, data.SWP_detection.parameters);
-end
-
+rhs = @(t, y) data.integratorSettings.preprocessed_rhs(datahandle, t, y, data.SWP_detection.parameters);
 z = odextend(...
     data.SWP_detection.solution_until_t2,...
     rhs, ...

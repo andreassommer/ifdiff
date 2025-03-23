@@ -19,7 +19,7 @@ if bisection.sw1 == 0
     if sw0 == 0
         bisection.sw1_isNotZero = 0;
     else
-        problemDetected = true;
+        %problemDetected = true;
     end
 end
 

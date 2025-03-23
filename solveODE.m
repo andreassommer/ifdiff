@@ -20,7 +20,6 @@ initDatahandleFields(datahandle, tspan, initialvalues, parameters);
 
 solveODE_firstTime(datahandle)
 switch_detected = checkForSwitchingIndices(datahandle);
-sliding_switches = [];
 
 % Prepare factory for switching and jump functions
 if switch_detected
@@ -53,11 +52,23 @@ while switch_detected
     % Set the starting value and signature for the next stage
     solveODE_prepareNextStage(datahandle);
 
-    % check for inconsistent switching
-    [filippov_switching, sliding_switches] = solveODE_recognizeFilippovSwitching(datahandle, sliding_switches);
-    % change the RHS to Filippov-type if needed
-    if filippov_switching
-        solveODE_setFilippovRHS(datahandle, sliding_switches);
+    % chattering/inconsistent switching? --> filippov regime
+    chattering = solveODE_recognizeFilippovSwitching(datahandle);
+    if chattering
+        solveODE_setFilippovRHS(datahandle);
+        % extend solution object from t2 ongoing until the filippov regime ends
+        extendODE_filippov_regime(datahandle);
+        
+        if checkForSwitchingIndices(datahandle)
+            warning('Switching during or right after Filippov mode.');
+        end
+        if datahandle.getData().SWP_detection.t2 == tspan(2)
+            % reached end of time span? --> integration complete
+            break;
+        else
+            fprintf('Left Filippov regime.\n');
+            solveODE_prepareNextStage(datahandle);
+        end
     end
     
     % extend solution object from t2 ongoing until the next switch occurs
@@ -66,8 +77,9 @@ while switch_detected
     switch_detected = checkForSwitchingIndices(datahandle);
 end
 
-% print sliding information if available
+sliding_switches = [];
 if ~isempty(sliding_switches)
+    % TODO: Update thie, retrieve info from datahandle.sliding
     fprintf("A warning/error for possible Filippov-switching has occurred " + ...
         "during integration.\n" + ...
         "The following ctrlif's have been involved in possible " + ...

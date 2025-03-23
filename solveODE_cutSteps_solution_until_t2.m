@@ -19,7 +19,7 @@ function solveODE_cutSteps_solution_until_t2(datahandle, k)
 data = datahandle.getData(); 
 
 % cut solution_until_t2
-data.SWP_detection.solution_until_t2 = data.SWP_detection.solution_until_t3; 
+% data.SWP_detection.solution_until_t2 = data.SWP_detection.solution_until_t3; % NOTE ????
 % get the solver that is used during the integration
 solver = data.SWP_detection.solution_until_t2.solver;
 
