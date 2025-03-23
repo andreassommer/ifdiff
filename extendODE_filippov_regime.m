@@ -25,8 +25,14 @@ data.SWP_detection.solution_until_t2 = z;
 data.SWP_detection.t2 = data.SWP_detection.solution_until_t2.x(end);
 
 % clear filippov data, serves also as indicator for inactive filippov mode
-% (this is prone to errors, come up with a better solution)
-extendODE_filippov_regime_cleanup(data.sliding);
+
+% extendODE_filippov_regime_cleanup(data.sliding);
+data.sliding.filippov_rhs   = [];
+data.sliding.alpha          = [];
+data.sliding.index          = [];
+data.sliding.ctrlif_index   = [];
+data.sliding.function_index = [];
+
 
 datahandle.setData(data);
 
