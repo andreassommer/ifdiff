@@ -1,5 +1,5 @@
 classdef SwitchingFunctionFactory < handle
-    %SWITCHINGFUNCTIONFACTORY Summary of this class goes here
+    %SWITCHINGFUNCTIONFACTORY   Retrieve existing switching/jump functions from signature or create new ones
     properties (Access=public)
         writePath = ''
         namePrefix = ''
@@ -13,8 +13,9 @@ classdef SwitchingFunctionFactory < handle
             if nargin == 0
                 return
             end
+            % Object of type PreprocessedFunctionData
             obj.functionData = functionData;
-            
+
             obj.writePath = writePath;
             obj.namePrefix = namePrefix;
             obj.outputName = outputName;
@@ -25,15 +26,15 @@ classdef SwitchingFunctionFactory < handle
     end
 
     methods (Static)
-        function mtree = adjustFunctionCall(mtree, newName, rIndexCall, rIndexArg3)          
+        function mtree = adjustFunctionCall(mtree, newName, rIndexCall, rIndexArg3)
             cIndex = mtree_cIndex();
-            
+
             % Adjust the function call
             [mtree, ~] = mtree_createAndAdd_NewNode(mtree, ...
                 rIndexCall, ...
                 cIndex.indexLeftchild, ...
                 {mtree.K.ID, newName});
-            
+
             mtree = mtree_connectNodes(...
                 mtree, ...
                 rIndexCall,...
@@ -43,20 +44,20 @@ classdef SwitchingFunctionFactory < handle
 
         function mtree = setFunctionCallAsReturnValue(mtree, outputName, rIndexEquals, rIndexExpr)
             cIndex = mtree_cIndex();
-                        
+
             rIndex = struct('HEAD', struct(), 'BODY', struct());
             rIndex.HEAD = mtree_rIndex_head(mtree, rIndex.HEAD);
-                        
+
             [mtree, ~] = mtree_createAndAdd_NewNode(mtree, ...
                 rIndexEquals, ...
                 cIndex.indexLeftchild, ...
                 {mtree.K.ID, outputName});
-            
+
             [mtree, ~] = mtree_createAndAdd_NewNode(mtree, ...
                 rIndex.HEAD.HEAD, ...
                 cIndex.indexLeftchild, ...
                 {mtree.K.ID, outputName});
-            
+
             mtree = traceReturnStatementToInputs(mtree, rIndexExpr);
         end
     end
