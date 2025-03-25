@@ -1,14 +1,8 @@
 function switchingFunctionHandle = get(this, signature, varargin)
-config = makeConfig();
+
 collisionIndex = 1;
 while true
-    % For jump functions
-    if nargin > 2
-        namePrefix = config.jump.jumpFunctionNamePrefix;
-    else
-        namePrefix = config.switchingFunctionNamePrefix;
-    end
-    name = createSwitchingFunctionName(namePrefix, signature.rhsName, signature.hash, collisionIndex);
+    name = createSwitchingFunctionName(this.namePrefix, signature.rhsName, signature.hash, collisionIndex);
     if exist(name, 'file')
         % Check if the signature is actually correct
         testSignature = readSignatureFromFile([name '.m']);

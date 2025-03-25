@@ -1,10 +1,10 @@
 function varargout = solveODE(datahandle, tspan, initialvalues, parameters)
 % Integrate the preprocessed RHS with switching point detection.
-% On detecting a SWP (marked by one or more ctrlifs changing value in a time step (t_i -> t_{i+1})), stop 
+% On detecting a SWP (marked by one or more ctrlifs changing value in a time step (t_i -> t_{i+1})), stop
 % integration, find the exact switching point t_s. Then, extend the solution to just slightly past t_s and
 % restart integration with the new model, checking for SWPs again.
 % Notation: when a SWP t_s is found in the time step (t_i -> t_{i+1}), we write t1 := t_i, t2 := t_s, t3 := t_{i+1}.
-% 
+%
 % INPUT:
 % 'datahandle':     data handle containing all the data
 %                   for the switching point detection (calulated by
@@ -16,27 +16,41 @@ function varargout = solveODE(datahandle, tspan, initialvalues, parameters)
 % nargout = 1 -> ode solution object
 % nargout = 2 -> ode solution object and datahandle with all data.
 
+config = makeConfig();
+
 initDatahandleFields(datahandle, tspan, initialvalues, parameters);
 
 solveODE_firstTime(datahandle)
 switch_detected = checkForSwitchingIndices(datahandle);
 
+% Prepare factory for switching and jump functions
 if switch_detected
     data = datahandle.getData();
     mtreeArray = data.mtreeplus(3, :);
     functionNameArray = data.mtreeplus(2, :);
-    writePath = data.paths.preprocessed_switchingFunction;
-    switchingFunctionFactory = SwitchingFunctionFactory(mtreeArray, functionNameArray, writePath);
+    functionData = PreprocessedFunctionData(mtreeArray, functionNameArray);
+    switchFactory = SwitchingFunctionFactory( ...
+        functionData, ...
+        data.paths.preprocessed_switchingFunction, ...
+        config.switchingFunctionNamePrefix, ...
+        config.switchingFunctionOutputName ...
+        );
+    jumpFactory = SwitchingFunctionFactory( ...
+        functionData, ...
+        data.paths.preprocessed_jumpFunction, ...
+        config.jump.jumpFunctionNamePrefix, ...
+        config.jump.jumpFunctionOutputName ...
+        );
 end
 
 while switch_detected
     % cut last step in solution_until_t3 and it becomes solution_until_t1
     solveODE_solution_until_t1(datahandle)
 
-    solveODE_computeSwitchingFunction(datahandle, switchingFunctionFactory);
+    solveODE_computeSwitchingFunction(datahandle, switchFactory);
 
     solveODE_computeSwitchingPoint(datahandle);
-    
+
     extendODEuntilSwitch(datahandle);
 
     % Determine state jump, if any
@@ -48,7 +62,7 @@ while switch_detected
         data.SWP_detection.jumpFunction{end + 1} = [];
         datahandle.setData(data);
     else
-        data.SWP_detection.jumpFunction{end + 1} = solveODE_computeJumpFunction(datahandle, switchingFunctionFactory, jumpCtrlifIndices);
+        data.SWP_detection.jumpFunction{end + 1} = solveODE_computeJumpFunction(datahandle, jumpFactory, jumpCtrlifIndices);
         datahandle.setData(data);
     end
 

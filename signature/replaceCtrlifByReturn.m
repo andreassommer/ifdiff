@@ -1,6 +1,5 @@
-function mtree = replaceCtrlifByReturn(mtree, ctrlif_index)
+function mtree = replaceCtrlifByReturn(mtree, outputName, ctrlif_index)
 %REPLACECTRLIFBYRETURN  Replace a ctrlif with a return statement containing its evaluated condition
-config = makeConfig();
 cIndex = mtree_cIndex;
 
 [rIndex_ctrlif, ctrlif_pos] = getCtrlifIndex(mtree);
@@ -15,7 +14,7 @@ ctrlif_cond = mtree.T(rIndex_ctrlif.ctrlif_Arg(idx,1), cIndex.indexLeftchild);
 [mtree, ~] = mtree_createAndAdd_NewNode(mtree, ...
     rIndex_ctrlif.ctrlif_Equals(idx), ...              % from
     cIndex.indexLeftchild, ...                       % from_type
-    {mtree.K.ID, config.switchingFunctionOutputName});
+    {mtree.K.ID, outputName});
 
 rIndex = struct('HEAD', struct(), 'BODY', struct());
 rIndex.HEAD = mtree_rIndex_head(mtree, rIndex.HEAD);
@@ -24,7 +23,7 @@ rIndex.HEAD = mtree_rIndex_head(mtree, rIndex.HEAD);
 [mtree, ~] = mtree_createAndAdd_NewNode(mtree, ...
     rIndex.HEAD.HEAD, ...                     % from
     cIndex.indexLeftchild, ...                % from_type
-    {mtree.K.ID, config.switchingFunctionOutputName});      % new variable
+    {mtree.K.ID, outputName});      % new variable
 
 % receive switching function from condition of ctrlif
 mtree = mtree_connectNodes(...

@@ -1,7 +1,6 @@
 function switchingFunctionHandle = create(this, signature, collisionIndex, varargin)
 %CREATESWITCHINGFCNFROMSIGNATURE    Create new switching function from a signature.
 
-config = makeConfig();
 
 if nargin > 3
     ctrljumpArgs = varargin{1};
@@ -12,12 +11,7 @@ end
 
 exportMtreeArray = this.functionData.mtreeArray(1);
 % Update RHS name
-if isJump
-    namePrefix = config.jump.jumpFunctionNamePrefix;
-else
-    namePrefix = config.switchingFunctionNamePrefix;
-end
-rhsNewName = createSwitchingFunctionName(namePrefix, this.functionData.functionNameArray{1}, signature.hash, collisionIndex);
+rhsNewName = createSwitchingFunctionName(this.namePrefix, this.functionData.functionNameArray{1}, signature.hash, collisionIndex);
 exportMtreeArray{1} = mtree_changeFcnName(exportMtreeArray{1}, rhsNewName);
 exportFunctionNameArray{1} = rhsNewName;
 
@@ -56,6 +50,7 @@ for idxCtrlif = 1:numCtrlif
         if idxCtrlif == numCtrlif
             exportMtreeArray{funIter.idxMtreeCallerExport} = SwitchingFunctionFactory.setFunctionCallAsReturnValue( ...
                 exportMtreeArray{funIter.idxMtreeCallerExport}, ...
+                this.outputName, ...
                 helperFunctionInfo.rIndexEquals, ...
                 helperFunctionInfo.rIndexExpr ...
                 );
@@ -80,6 +75,7 @@ for idxCtrlif = 1:numCtrlif
         if idxCtrlif == numCtrlif
             exportMtreeArray{funIter.idxMtreeCallerExport} = replaceCtrlifByReturn( ...
                 exportMtreeArray{funIter.idxMtreeCallerExport}, ...
+                this.outputName, ...
                 signature.ctrlif_index(end) ...
                 );
         else
@@ -90,18 +86,19 @@ for idxCtrlif = 1:numCtrlif
                 );
         end
     end
+end
 
 
-    for idxExportMtree = 1:length(exportMtreeArray)
-        % Write the mtrees to files
-        filepath = [exportFunctionNameArray{idxExportMtree} '.m'];
-        filepath = fullfile(this.writePath, filepath);
-        file = fopen(filepath, 'w');
-        % Add a signature header as comment
-        fprintf(file, '%%%s\n%s\n', signature.str, exportMtreeArray{idxExportMtree}.tree2str);
-        fclose(file);
-    end
+for idxExportMtree = 1:length(exportMtreeArray)
+    % Write the mtrees to files
+    filepath = [exportFunctionNameArray{idxExportMtree} '.m'];
+    filepath = fullfile(this.writePath, filepath);
+    file = fopen(filepath, 'w');
+    % Add a signature header as comment
+    fprintf(file, '%%%s\n%s\n', signature.str, exportMtreeArray{idxExportMtree}.tree2str);
+    fclose(file);
+end
 
-    % Return function handle to the main switching function
-    switchingFunctionHandle = str2func(rhsNewName);
+% Return function handle to the main switching function
+switchingFunctionHandle = str2func(rhsNewName);
 end
