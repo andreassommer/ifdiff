@@ -1,6 +1,6 @@
 classdef SwitchingFunctionSignature
-    %SWITCHINGFUNCTIONSIGNATURE
-    %   Three parameters are used to uniquely identify a switching function:
+    %SWITCHINGFUNCTIONSIGNATURE Uniquely identifies a model transition/switch
+    %   Three parameters are used for this purpose:
     %   - switch_cond: 1xN array of 0/1 containing the values of
     %   the conditions observed by ctrlifs before a switch. The
     %   i-th element of the array corresponds to the i-th ctrlif
@@ -13,20 +13,19 @@ classdef SwitchingFunctionSignature
     %   - Nx1 cell array of 1x? array of int containing function indices that
     %   were encountered before a switch.
 
-    % These properties should never be changed after initialization. This
-    % allows us to cache certain results like the string representation or
-    % hash. If you need to change the signature, simply construct a new instance
-    % of this class.
+
     properties (Access=public)
         rhsName
         switch_cond
         ctrlif_index
         function_index
     end
+
     properties (Dependent)
         str
         hash
     end
+
     properties (Constant, Hidden)
         RHS_NAME_SUFFIX = ':';
         SWITCH_COND_SUFFIX = '/';
@@ -36,21 +35,10 @@ classdef SwitchingFunctionSignature
         FUNCTION_INDEX_CONCAT_DELIMITER = '_';
     end
 
-    methods (Static, Access=private)
-        function hash = charToHash(array)
-            hash = sprintf('%d', array);
-        end
-    end
     methods
         function this = SwitchingFunctionSignature(rhsName, switch_cond, ctrlif_index, function_index)
             %SWITCHINGFUNCTIONSIGNATURE Construct signature from ctrlif data.
             if nargin == 0
-                return
-            end
-
-            % Build from string representation
-            if nargin == 1
-                [this.rhsName, this.switch_cond, this.ctrlif_index, this.function_index] = this.strToSig(rhsName);
                 return
             end
 
@@ -60,11 +48,9 @@ classdef SwitchingFunctionSignature
             this.function_index = function_index;
         end
 
-        % TODO: It might be possible to cache the string representation.
-        % Need to figure out if it's worth it and how it can be implemented.
         function str = get.str(this)
             %GET.STR Concatenate signature into one string.
-            %   Format: <switch_cond>a<ctrlif_index>b<function_index>
+            %   Format: <switch_cond><DELIM><ctrlif_index><DELIM><function_index>
             %   <switch_cond> - Concatenation of the array elements
             %   <ctrlif_index> - Concatenation of the array elements
             %   separated by a delimiter. This is required since
@@ -89,28 +75,6 @@ classdef SwitchingFunctionSignature
                 switch_cond_string, this.SWITCH_COND_SUFFIX, ...
                 ctrlif_index_string, this.CTRLIF_INDEX_SUFFIX, ...
                 function_index_string];
-        end
-
-        function [rhsName, switchCondition, ctrlifIndex, functionIndex] = strToSig(this, str)
-            % Unpack string into representation of each property
-            [rhsName, str] = strtok(str, this.RHS_NAME_SUFFIX);
-            [switchCondition, str] = strtok(str, [this.RHS_NAME_SUFFIX, this.SWITCH_COND_SUFFIX]);
-            [ctrlifIndex, str] = strtok(str, [this.SWITCH_COND_SUFFIX, this.CTRLIF_INDEX_SUFFIX]);
-            functionIndex = strtok(str, [this.CTRLIF_INDEX_SUFFIX]);
-
-            % Process individual properties
-            switchCondition = arrayfun(@str2double, switchCondition);
-
-            ctrlifIndex = convertDelim(ctrlifIndex, this.CTRLIF_INDEX_DELIMITER);
-
-            functionIndex = strsplit(functionIndex, this.FUNCTION_INDEX_CONCAT_DELIMITER);
-            convertFunctionIndex = @(array) convertDelim(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
-            functionIndex = cellfun(convertFunctionIndex, functionIndex, 'UniformOutput', false);
-            % END OF MAIN FUNCTION
-
-            function str = convertDelim(array, delim)
-                str = str2double(strsplit(array, delim));
-            end
         end
 
         function hash = get.hash(this)
