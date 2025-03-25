@@ -3,6 +3,7 @@ function switchingFunctionHandle = get(this, signature, varargin)
 collisionIndex = 1;
 while true
     name = createSwitchingFunctionName(this.namePrefix, signature.rhsName, signature.hash, collisionIndex);
+    name = getExportFunctionName(name, 1); % RHS always gets index 1
     if exist(name, 'file')
         % Check if the signature is actually correct
         testSignature = readSignatureFromFile([name '.m']);

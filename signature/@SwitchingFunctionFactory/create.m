@@ -12,8 +12,10 @@ end
 exportMtreeArray = this.functionData.mtreeArray(1);
 % Update RHS name
 rhsNewName = createSwitchingFunctionName(this.namePrefix, this.functionData.functionNameArray{1}, signature.hash, collisionIndex);
-exportMtreeArray{1} = mtree_changeFcnName(exportMtreeArray{1}, rhsNewName);
-exportFunctionNameArray{1} = rhsNewName;
+
+% Exported functions are named as: <rhsNewName>_<export mtree index>
+% RHS always gets index 1 in the export mtrees
+exportMtreeArray{1} = mtree_changeFcnName(exportMtreeArray{1}, getExportFunctionName(rhsNewName, 1));
 
 % Determine in which function each ctrlif was called
 % Also copy mtrees of relevant helper functions and adjust function calls along the way
@@ -33,8 +35,7 @@ for idxCtrlif = 1:numCtrlif
 
         if funIter.new
             % Create new helper
-            helperName = [rhsNewName '_' num2str(funIter.idxMtreeCallExport)];
-            exportFunctionNameArray{funIter.idxMtreeCallExport} = helperName;
+            helperName = getExportFunctionName(rhsNewName, funIter.idxMtreeCallExport);
             exportMtreeArray{funIter.idxMtreeCallExport} = createHelperSwitchingFunction(this.functionData.mtreeArray{funIter.idxMtreeCallOriginal}, helperName);
 
             % Also adjust the function name in the caller
@@ -88,7 +89,7 @@ end
 
 for idxExportMtree = 1:length(exportMtreeArray)
     % Write the mtrees to files
-    filepath = [exportFunctionNameArray{idxExportMtree} '.m'];
+    filepath = [getExportFunctionName(rhsNewName, idxExportMtree), '.m'];
     filepath = fullfile(this.writePath, filepath);
     file = fopen(filepath, 'w');
     % Add a signature header as comment
@@ -97,5 +98,5 @@ for idxExportMtree = 1:length(exportMtreeArray)
 end
 
 % Return function handle to the main switching function
-switchingFunctionHandle = str2func(rhsNewName);
+switchingFunctionHandle = str2func(getExportFunctionName(rhsNewName, 1));
 end
