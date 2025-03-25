@@ -1,7 +1,6 @@
 classdef HashMap < handle
-    %CACHE Summary of this class goes here
-    %   Detailed explanation goes here
-    
+    %HASHMAP    Store key-value pairs for keys with arbitrary type by providing a hashing function.
+
     properties (Access=private)
         map = [];
         hash = [];
@@ -10,7 +9,7 @@ classdef HashMap < handle
     properties (Dependent)
         size
     end
-    
+
     methods
         function obj = HashMap(hash)
             obj.map = containers.Map('KeyType', 'char', 'ValueType', 'any');
@@ -18,7 +17,7 @@ classdef HashMap < handle
                 obj.hash = hash;
             end
         end
-        
+
         function val = get(obj, key)
             key = obj.hash(key);
             if obj.map.isKey(key)
