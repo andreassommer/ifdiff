@@ -1,4 +1,7 @@
 classdef FunctionIterator
+    %FUNCTIONITERATOR   Trace function calls through the mtrees in which they appeared in by processing the function index.
+
+
     properties (Access=public)
         functionIndexArray = []
         functionIndex = []
@@ -18,6 +21,8 @@ classdef FunctionIterator
 
     methods
         function obj = FunctionIterator(functionData)
+            % Constructor - Takes an object of class PreproccesedFunctionData
+
             % RHS has function index 0 and gets export ID 1
             obj.functionIndexToIdxMtreeExportMap = HashMap(@(key) numericJoin(key, '-'));
             obj.functionIndexToIdxMtreeExportMap.set(0, 1)
@@ -54,7 +59,7 @@ classdef FunctionIterator
                 this.idxMtreeCallerExport = this.idxMtreeCallExport;
             end
 
-            % Stop Iteration
+            % Stop Iteration because there are no further function calls
             if isequal(this.functionIndexArray, 0) || this.idx > length(this.functionIndexArray)
                 this.stop = true;
                 return
@@ -80,4 +85,3 @@ classdef FunctionIterator
         end
     end
 end
-
