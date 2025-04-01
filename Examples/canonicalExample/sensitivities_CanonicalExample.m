@@ -42,58 +42,40 @@ t_plot = 0:0.01:20;
 %sensitivities_END_plot = sensitivities_function_ENDpiecewise(t_plot);
 sensitivities_END_plot = sensitivities_function_VDE(t_plot);
 
-figure(1)
-subplot(2,2,1)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(1,1), '.b')
-   hold on
-end
-hold off
-xlabel('t');
-ylabel('\partial y_1(t)/\partial y_{0,1}')
-title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
 
-subplot(2,2,2)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(1,2), '.b')
-   hold on
-end
-hold off
-xlabel('t');
-ylabel('\partial y_1(t)/\partial y_{0,2}')
-title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
+Gy11 = arrayfun(@(i) sensitivities_END_plot(i).Gy(1,1), 1:length(t_plot));
+Gy12 = arrayfun(@(i) sensitivities_END_plot(i).Gy(1,2), 1:length(t_plot));
+Gy21 = arrayfun(@(i) sensitivities_END_plot(i).Gy(2,1), 1:length(t_plot));
+Gy22 = arrayfun(@(i) sensitivities_END_plot(i).Gy(2,2), 1:length(t_plot));
 
-subplot(2,2,3)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(2,1), '.b')
-   hold on
-end
-hold off
-xlabel('t');
-ylabel('\partial y_2(t)/\partial y_{0,1}')
-title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
 
-subplot(2,2,4)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(2,2), '.b')
-   hold on
-end
-hold off
-xlabel('t');
-ylabel('\partial y_2(t)/\partial y_{0,2}')
-title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
+% setu plot
+figure(1); clf();
+fontsize = 22;
+
+ax = subplot(2,2,1); plot(ax, t_plot, Gy11, 'b.'); axis([0 20 0 20])
+xlabel(ax, 't'); ylabel(ax, '\partial y_1(t)/\partial y_{0,1}')
+title(ax, 'G_{y,11}(t; t_0)')
+set(ax, 'FontSize', fontsize);
+set(ax, 'Box', 'off');
+
+ax = subplot(2,2,2); plot(ax, t_plot, Gy12, 'b.'); axis([0 20 0 20])
+xlabel(ax, 't'); ylabel(ax, '\partial y_1(t)/\partial y_{0,2}')
+title(ax, 'G_{y,12}(t; t_0)')
+set(ax, 'FontSize', fontsize);
+set(ax, 'Box', 'off');
+
+ax = subplot(2,2,3); plot(ax, t_plot, Gy21, 'b.'); axis([0 20 0 20])
+xlabel(ax, 't'); ylabel(ax, '\partial y_2(t)/\partial y_{0,1}')
+title(ax, 'G_{y,21}(t; t_0)')
+set(ax, 'FontSize', fontsize);
+set(ax, 'Box', 'off');
+
+ax = subplot(2,2,4); plot(ax, t_plot, Gy22, 'b.'); axis([0 20 0 20])
+xlabel(ax, 't'); ylabel(ax, '\partial y_2(t)/\partial y_{0,2}')
+title(ax, 'G_{y,22}(t; t_0)')
+set(ax, 'FontSize', fontsize);
+set(ax, 'Box', 'off');
 
 %% Plot sensitivities parameters
 
