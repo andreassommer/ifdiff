@@ -73,5 +73,5 @@ function mtree = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpArgs)
         ifNext, ...
         cIndex.indexNextNode);
 
-    mtree = setUpSwitchingFunction_traceReturnStatementToInputs(mtree, updateBlockLastNode);
+    mtree = traceReturnStatementToInputs(mtree, updateBlockLastNode);
 end

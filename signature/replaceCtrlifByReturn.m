@@ -8,7 +8,7 @@ cIndex = mtree_cIndex;
 idx = find(ctrlif_index == ctrlif_pos);
 
 
-ctrlif_cond = mtree.T(rIndex_ctrlif.ctrlif_Arg(idx,1), cIndex.indexLeftchild);
+ctrlif_cond = rIndex_ctrlif.ctrlif_Arg(idx, 1);
 
 % new output variable for ctrlif
 [mtree, ~] = mtree_createAndAdd_NewNode(mtree, ...

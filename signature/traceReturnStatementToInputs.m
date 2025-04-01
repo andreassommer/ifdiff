@@ -9,7 +9,7 @@ function mtreeobj = traceReturnStatementToInputs(mtreeobj, returnStmtIndex)
     cIndex = mtree_cIndex();
 
     mtreeobj.T(returnStmtIndex,cIndex.indexNextNode) = 0;
-    mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, returnStmtIndex);
+    mtreeobj = replaceIfElseByBody(mtreeobj, returnStmtIndex);
     sortedMtree = mtreeplus(mtreeobj.tree2str);
     mtreeobj = deleteUnusedParameters(sortedMtree);
 end
