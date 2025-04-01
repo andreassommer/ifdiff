@@ -9,16 +9,22 @@ while config.reuseSwitchingFunctions
         % Check if the signature is actually correct
         testSignature = readSignatureFromFile([name '.m']);
         if strcmp(signature.str, testSignature)
-            fprintf('[DEBUG] Reusing switching function with name "%s"\n', name);
+            if config.debugMode
+                fprintf('[DEBUG] Reusing switching function with name "%s"\n', name);
+            end
             switchingFunctionHandle = str2func(name);
             return
         end
         
         % We have a collision and keep searching
-        fprintf('[DEBUG] Collision detected in file "%s"\n with hash "%s"\n', name, signature.hash);
+        if config.debugMode
+            fprintf('[DEBUG] Collision detected in file "%s"\n with hash "%s"\n', name, signature.hash);
+        end
     else
         % Since we guarantee that collisions are numbered sequentially, there is no point in searching further
-        fprintf('[DEBUG] Switching function with name "%s" not found\n', name);
+        if config.debugMode
+            fprintf('[DEBUG] Switching function with name "%s" not found\n', name);
+        end
         break
     end
 
