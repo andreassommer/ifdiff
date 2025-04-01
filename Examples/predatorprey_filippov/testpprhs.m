@@ -1,3 +1,4 @@
+%% SETUP
 % parameter values p = (r1, r2, beta1, beta2, q1, q2, m, e)
 % order as in paper (see rhs file)
 m     = 0.790;
@@ -12,85 +13,120 @@ beta1 = 7.8;  % repulsive focus, below curve mu
 
 beta1 = 7.81; q2 = 1.5; r2 = 0.3;
 
-
-% initial values
+% initial values, parameters
 a = 0.286975;
 x0_1 = [a ; a ; r1-r2];
-x0_2 = x0_1 + [0.001 ; 0.0001 ; 0];
-
+x0_2 = x0_1 + [0.001 ; 0.0001 ; 0]; %% disturbed
 p = [r1, r2, beta1, beta2, q1, q2, m, e, aq];
-tspanA = [0 100];%2*[0 150];
-tspanB = 2*[0 135];
-eulerStep = 1e-5;
 
-opts = odeset('reltol', 1e-6, 'abstol', 1e-9, 'MaxStep', 0.1);
+tspan = [0 100];
+X_plot = linspace(tspan(1), tspan(end), 10000);
+fignum = 100;
+figure(fignum); clf; hold('on');
 
-doOriginal = true;
-doTransformed = false;
-doIfdiff = true;
-analyzeResults = true; % compare ifdiff and original
+% solver selection and configuration
+intEuler  = @explEuler;
+intMatlab = @ode45;
+intIfdiff = intMatlab;
+intOptions = odeset('reltol', 1e-5, 'abstol', 1e-5, 'MaxStep', 0.1);
+eulerStep  = 1e-5;
 
-integrator = @explEuler;
+% select what to do
+doEuler        = true;
+doMatlab       = true;
+doIfdiff       = true;
+doTransformed  = false;
+doErrorplot    = true; % compare ifdiff and original
 
-% plain integration, no treatment of switches
-fignum = 333;
-if doOriginal
-   origSol = integrator(@(t,x) pprhs(t,x,p), tspanA, x0_1, eulerStep);
-   plotit(fignum, origSol.x, origSol.y, 'b');
+% name generators
+nameIfdiff = @(f) sprintf('ifdiff/%s', func2str(f));
+namePlain  = @(f) sprintf('plain %s' , func2str(f));
+
+
+%% Plain integration, no treatment of switches
+if doMatlab
+   fprintf('Integrating with plain %s ...\n', func2str(intMatlab))
+   figure(fignum);
+   th = tic();
+   sol_matlab = intMatlab(@(t,x) pprhs(t,x,p), tspan, x0_1, intOptions);
+   time_matlab = toc(th); fprintf('%s took %g s\n', func2str(intMatlab), time_matlab);
+   X_matlab = X_plot;
+   Y_matlab = deval(sol_matlab, X_matlab);
+   plotit(fignum, X_matlab, Y_matlab, 'r', namePlain(intMatlab));
 end
 
+%% IFDIFF
 if doIfdiff
-    filename = 'pprhs';
-    ifdiffIntegrator = @ode45;
-    datahandle = prepareDatahandleForIntegration(filename, 'solver', func2str(ifdiffIntegrator), 'options', opts);
-    %profile off; profile clear; profile on
-    ifdiffSol = solveODE(datahandle, tspanA, x0_1, p);
-    % profile off; profile viewer
-    plotit(fignum, ifdiffSol.x, ifdiffSol.y, 'g');
+   fprintf('Integrating with IFDIFF/%s ...\n', func2str(intIfdiff))
+   figure(fignum);
+   datahandle = prepareDatahandleForIntegration('pprhs', 'solver', func2str(intIfdiff), 'options', intOptions);
+   % profile off; profile clear; profile on
+   th = tic();
+   sol_ifdiff = solveODE(datahandle, tspan, x0_1, p);
+   time_ifdiff = toc(th); fprintf('IFDIFF took %g s\n', time_ifdiff);
+   X_ifdiff = X_plot;
+   Y_ifdiff = deval(sol_ifdiff, X_ifdiff);
+   % profile off; profile viewer
+   plotit(fignum, X_ifdiff, Y_ifdiff, 'g', nameIfdiff(intIfdiff));
 end
 
-% TRANSFORMED SYSTEM
+%% EULER Integration
+if doEuler
+   fprintf('Integrating with integrator %s...\n', func2str(intEuler))
+   figure(fignum);
+   th = tic();
+   sol_euler = intEuler(@(t,x) pprhs(t,x,p), tspan, x0_1, eulerStep);
+   time_euler = toc(th); fprintf('Euler took %g s\n', time_euler);
+   X_euler = X_plot;
+   Y_euler = transpose(interp1(sol_euler.x, transpose(sol_euler.y), X_euler));
+   plotit(fignum, X_euler, Y_euler, 'b', namePlain(intEuler));
+end
+
+%% TRANSFORMED SYSTEM
 if doTransformed
-   myfig = figure(fignum); clf(fignum);
-   solA = integrator(@(t,x) pprhs5(t,x,p), tspanA, x0_1, opts);
-   solB = integrator(@(t,x) pprhs5(t,x,p), tspanB, x0_2, opts);
+   error('Don''t do that!');
+   myfig = figure(fignum); clf(myfig);
+   solA = intMatlab(@(t,x) pprhs5(t,x,p), tspan, x0_1, intOptions);
+   solB = intMatlab(@(t,x) pprhs5(t,x,p), tspan, x0_2, intOptions);
    xA=solA.x; yA=solA.y; xB=solB.x; yB=solB.y;
-   
-   plotit(fignum, xA, yA, 'b');
-   plotit(fignum, xB, yB, 'g');
+   plotit(myfig, xA, yA, 'b');
+   plotit(myfig, xB, yB, 'g');
    xlabel('y1'); ylabel('y2'); zlabel('y3');
    fitplane(yB)
    set(gca, 'YDir','reverse')
    height = 1200;
    width = 1920;
    set(myfig, 'Units', 'pixels', 'Position', [0, 0, width, height])
-   
 end
 
-if doOriginal || doIfdiff || doTransformed
-    datalabels = {};
-    if doOriginal,      datalabels{end+1} = ['plain ', func2str(integrator)];       end %#ok<UNRCH> 
-    if doIfdiff,        datalabels{end+1} = ['ifdiff+',func2str(ifdiffIntegrator)]; end %#ok<UNRCH> 
-    if doTransformed,   datalabels{end+1} = 'Transformed';                          end %#ok<UNRCH>
-    legend(datalabels{:});
-end
+% %% LABELS
+% if doMatlab || doIfdiff || doTransformed
+%     datalabels = {};
+%     if doMatlab,      datalabels{end+1} = ['plain ', func2str(intMatlab)]; end
+%     if doIfdiff,      datalabels{end+1} = ['ifdiff+',func2str(intIfdiff)];  end
+%     if doTransformed, datalabels{end+1} = 'Transformed';                    end
+%     legend(datalabels{:});
+% end
 
-if analyzeResults
-    initStep = eulerStep;
-    evalEvery = floor(1/initStep*1/10);
-    solTime = origSol.x(1:evalEvery:end);
-    solDiff = vecnorm(origSol.y(:,1:evalEvery:end) - deval(ifdiffSol, solTime)); %#ok<UNRCH> 
-    figDiff = figure(fignum+1); 
-    semilogy(solTime, solDiff, 'LineWidth', 1.0);
-    xlabel('t');
-    ylabel('||y||_2');
-    legend(['difference plain ', func2str(integrator), ' and ifdiff+', func2str(ifdiffIntegrator)]);
+%% ANALYSIS
+if doErrorplot
+   if (doIfdiff && doMatlab)
+      fignum = fignum + 1; errorPlot(fignum, X_plot, Y_ifdiff, Y_matlab, nameIfdiff(intIfdiff), namePlain(intMatlab))
+   end
+   if (doMatlab && doEuler)
+      fignum = fignum + 1; errorPlot(fignum, X_plot, Y_matlab, Y_euler , namePlain(intMatlab) , namePlain(intEuler));
+   end
+   if (doIfdiff && doEuler)
+      fignum = fignum + 1; errorPlot(fignum, X_plot, Y_ifdiff, Y_euler , nameIfdiff(intIfdiff), namePlain(intEuler));
+   end
 end
 
 % FINITO
+return
 
 
-% HELPER
+
+%% HELPERS
 function p = fitplane(YY)
    x = YY(3,:);
    y = YY(2,:);
@@ -107,31 +143,43 @@ function p = fitplane(YY)
 end
 
 
-function plotit(fignum, x, y, color)
+function errorPlot(fignum, x1, y1, y2, intname1, intname2)
+   figure(fignum); clf(fignum);
+   ydiff = vecnorm(y2 - y1, 2);
+   semilogy(x1, ydiff, 'LineWidth', 1.0);
+   xlabel('t');
+   ylabel('||y||_2');
+   title(sprintf('difference %s and %s', intname1, intname2));
+   drawnow
+end
+
+
+
+function plotit(fignum, x, y, color, name)
    figure(fignum); hold on;
-   plot3(y(3,:), y(2,:), y(1,:), color, 'LineWidth', 3.0);%
+   plot3(y(3,:), y(2,:), y(1,:), color, 'LineWidth', 3.0, 'DisplayName', name);
    view([166 12]); 
    grid on;
    box on;
    xlabel('Predator');
-   ylabel('prey2');
-   zlabel('prey1');
-   
+   ylabel('Prey 2');
+   zlabel('Prey 1');
+   legend('location', 'northwest');
+   drawnow
+   pause(1.0);
 end
 
 function sol = explEuler(rhs, tspan, x0, stepsize)
-   xdim = length(rhs(0,x0));  % get dimension
+   xdim = length(x0);  % get dimension
    T = linspace(tspan(1), tspan(end), (tspan(end)-tspan(1))/stepsize);
-   steps = length(T);
-   X = zeros(steps, xdim);
-   X(1,:) = reshape(x0, 1, []); 
-   progress = 0.1;
-   for i=2:steps
-      X(i,:) = X(i-1,:) + stepsize * rhs(T(i), X(i-1,:))';
-      if (i/steps>progress), progress = progress+0.1; fprintf('.'); end
-      % if mod(i,150)==0; fprintf('\n'); end % fifddlign
+   stepcount = length(T);
+   X = zeros(xdim, stepcount);
+   X(:,1) = reshape(x0, [], 1); 
+   for i=2:stepcount
+      X(:,i) = X(:,i-1) + stepsize * rhs(T(i), X(:,i-1));
+      if ~mod(i/stepcount, 0.1), fprintf('.'); end
    end
    fprintf('\n')
    sol.x = T;
-   sol.y = X';
+   sol.y = X;
 end
