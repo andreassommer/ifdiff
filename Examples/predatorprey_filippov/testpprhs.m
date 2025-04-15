@@ -20,19 +20,20 @@ x0_2 = x0_1 + [0.001 ; 0.0001 ; 0]; %% disturbed
 p = [r1, r2, beta1, beta2, q1, q2, m, e, aq];
 
 tspan = [0 100];
-X_plot = linspace(tspan(1), tspan(end), 10000);
-fignum = 100;
+X_plot = linspace(tspan(1), tspan(end), 1000);
+fignum = 1000;
 figure(fignum); clf; hold('on');
 
 % solver selection and configuration
-intEuler  = @explEuler;
+intEuler  = @explEuler; % @implEuler; 
 intMatlab = @ode45;
 intIfdiff = intMatlab;
-intOptions = odeset('reltol', 1e-5, 'abstol', 1e-5, 'MaxStep', 0.1);
-eulerStep  = 1e-5;
+intOptions = odeset('reltol', 1e-5, 'abstol', 1e-5, 'MaxStep', 0.5);
+eulerStep  = 1e-7;
+plotit = @plotter;
 
 % select what to do
-doEuler        = true;
+doEuler        = false;   % false loads from file
 doMatlab       = true;
 doIfdiff       = true;
 doTransformed  = false;
@@ -42,6 +43,11 @@ doErrorplot    = true; % compare ifdiff and original
 nameIfdiff = @(f) sprintf('ifdiff/%s', func2str(f));
 namePlain  = @(f) sprintf('plain %s' , func2str(f));
 
+%% Mark the initial point
+if true
+   xx = x0_1;
+   hStart = plot3(xx(3), xx(2), xx(1), 'k.', 'MarkerSize', 25, 'DisplayName', 'x_0');
+end
 
 %% Plain integration, no treatment of switches
 if doMatlab
@@ -52,7 +58,8 @@ if doMatlab
    time_matlab = toc(th); fprintf('%s took %g s\n', func2str(intMatlab), time_matlab);
    X_matlab = X_plot;
    Y_matlab = deval(sol_matlab, X_matlab);
-   plotit(fignum, X_matlab, Y_matlab, 'r', namePlain(intMatlab));
+   linewidth = 1.0;
+   hMatlab = plotit(fignum, X_matlab, Y_matlab, 'r', namePlain(intMatlab), linewidth);
 end
 
 %% IFDIFF
@@ -67,8 +74,10 @@ if doIfdiff
    X_ifdiff = X_plot;
    Y_ifdiff = deval(sol_ifdiff, X_ifdiff);
    % profile off; profile viewer
-   plotit(fignum, X_ifdiff, Y_ifdiff, 'g', nameIfdiff(intIfdiff));
+   linewidth = 3.0;
+   hIFDIFF = plotit(fignum, X_ifdiff, Y_ifdiff, 'g', nameIfdiff(intIfdiff), linewidth);
 end
+
 
 %% EULER Integration
 if doEuler
@@ -77,9 +86,22 @@ if doEuler
    th = tic();
    sol_euler = intEuler(@(t,x) pprhs(t,x,p), tspan, x0_1, eulerStep);
    time_euler = toc(th); fprintf('Euler took %g s\n', time_euler);
-   X_euler = X_plot;
-   Y_euler = transpose(interp1(sol_euler.x, transpose(sol_euler.y), X_euler));
-   plotit(fignum, X_euler, Y_euler, 'b', namePlain(intEuler));
+else
+   fname = sprintf('sol_euler_%.0e.mat', eulerStep);
+   fprintf('Loading sol_euler from file %s\n', fname);
+   tmp = load(fname, 'sol_euler');
+   sol_euler = tmp.sol_euler;
+   doEuler = true;
+end
+X_euler = X_plot;
+Y_euler = transpose(interp1(sol_euler.x, transpose(sol_euler.y), X_euler));
+linewidth = 2.0;
+hEuler = plotit(fignum, X_euler, Y_euler, 'c', namePlain(intEuler), linewidth);
+
+
+%%
+if false
+   hPlane = fitplane(Y_ifdiff);
 end
 
 %% TRANSFORMED SYSTEM
@@ -127,25 +149,26 @@ return
 
 
 %% HELPERS
-function p = fitplane(YY)
+function h = fitplane(YY)
    x = YY(3,:);
    y = YY(2,:);
    z = YY(1,:);
-   idx = x > 5; 
+   idx = x > 3; 
    xx = x(idx)'; yy=y(idx)'; zz=z(idx)';  % selecting points
    DM = [xx, yy, ones(size(zz))];  % fitting
    B = DM\zz;                      % fitting 
-   [X,Y] = meshgrid(linspace(min(x)*1.05,max(x)*1.05,50), linspace(min(y)*1.00,max(y)*1.15,50));
-   [X,Y] = meshgrid(linspace(min(x)-3,max(x)+3,50), linspace(min(y)-0.5,max(y)+0.5,50));
+   [X,Y] = meshgrid(linspace(min(x)*1.02,max(x)*1.02,50), linspace(min(y)*1.00,max(y)*1.02,50));
+   %[X,Y] = meshgrid(linspace(min(x)-3,max(x)+3,50), linspace(min(y)-0.5,max(y)+0.5,50));
    Z = B(1)*X + B(2)*Y + B(3)*ones(size(X)) - 0.01;
-   h = surf(X, Y, Z);
-   set(h,'FaceColor',[1 0.4 0],'FaceAlpha',0.5,'EdgeColor','none');
+   h = surf(X, Y, Z, 'DisplayName', 'switching manifold');
+   set(h,'FaceColor',[0 0.4 1],'FaceAlpha',0.15,'EdgeColor','none');
 end
 
 
 function errorPlot(fignum, x1, y1, y2, intname1, intname2)
    figure(fignum); clf(fignum);
-   ydiff = vecnorm(y2 - y1, 2);
+%    ydiff = vecnorm(y2 - y1, 2);
+   ydiff = calcDiff(y1, y2);
    semilogy(x1, ydiff, 'LineWidth', 1.0);
    xlabel('t');
    ylabel('||y||_2');
@@ -155,31 +178,110 @@ end
 
 
 
-function plotit(fignum, x, y, color, name)
+function h = plotter(fignum, x, y, color, name, lw)
    figure(fignum); hold on;
-   plot3(y(3,:), y(2,:), y(1,:), color, 'LineWidth', 3.0, 'DisplayName', name);
-   view([166 12]); 
+   h = plot3(y(3,:), y(2,:), y(1,:), color, 'LineWidth', lw, 'DisplayName', name);
+%    view([166 12]); 
+   view([97 51]);
    grid on;
    box on;
    xlabel('Predator');
    ylabel('Prey 2');
    zlabel('Prey 1');
-   legend('location', 'northwest');
+   legend('location', 'northeast');
    drawnow
    pause(1.0);
+   set(fignum, 'Position', [200  250  750  375]);
 end
+
+
+function sol = explEulerFull(rhs, tspan, x0, stepsize)
+    xdim = length(x0);  % get dimension
+    T = linspace(tspan(1), tspan(end), (tspan(end)-tspan(1))/stepsize);
+    stepcount = length(T);
+    X = zeros(xdim, stepcount);
+    X(:,1) = reshape(x0, [], 1); 
+    for i=2:stepcount
+       X(:,i) = X(:,i-1) + stepsize * rhs(T(i), X(:,i-1));
+       if ~mod(i/stepcount, 0.1), fprintf('.'); end
+    end
+    fprintf('\n')
+    sol.x = T;
+    sol.y = X;
+end
+
+
 
 function sol = explEuler(rhs, tspan, x0, stepsize)
    xdim = length(x0);  % get dimension
-   T = linspace(tspan(1), tspan(end), (tspan(end)-tspan(1))/stepsize);
-   stepcount = length(T);
-   X = zeros(xdim, stepcount);
-   X(:,1) = reshape(x0, [], 1); 
+   % T = linspace(tspan(1), tspan(end), (tspan(end)-tspan(1))/stepsize);
+   stepcount = (tspan(end)-tspan(1))/stepsize;
+   sfac = 0.001; % store factor
+   X = zeros(xdim, ceil(stepcount*sfac)+1);
+   Xi = reshape(x0, [], 1); 
+   X(:,1) = Xi;
+   k = 2; nextout = ceil(1 / sfac);
    for i=2:stepcount
-      X(:,i) = X(:,i-1) + stepsize * rhs(T(i), X(:,i-1));
-      if ~mod(i/stepcount, 0.1), fprintf('.'); end
+      Xi = Xi + stepsize * rhs(i*stepsize, Xi);
+      if (i == nextout)
+         X(:,k) = Xi; k = k + 1; 
+         nextout = nextout + ceil(1 / sfac);
+         if ~mod(i/stepcount, 0.1), fprintf('.'); end
+      end
    end
    fprintf('\n')
+   T = linspace(tspan(1), tspan(end), ceil(stepcount*sfac)+1);
    sol.x = T;
    sol.y = X;
+end
+
+
+function sol = implEuler(rhs, tspan, x0, stepsize)
+   xdim = length(x0);  % get dimension
+   % T = linspace(tspan(1), tspan(end), (tspan(end)-tspan(1))/stepsize);
+   stepcount = (tspan(end)-tspan(1))/stepsize;
+   sfac = 0.001; % store factor
+   X = zeros(xdim, ceil(stepcount*sfac)+1);
+   Xi = reshape(x0, [], 1); 
+   X(:,1) = Xi;
+   k = 2; nextout = ceil(1 / sfac);
+   fsolveopts = optimoptions(@fsolve, 'Display', 'off', 'maxiter', 100);
+   for i=2:stepcount
+      g = @(x) x - Xi - stepsize*rhs(i*stepsize, x);
+      Xi = fsolve(g, Xi, fsolveopts);
+      if (i == nextout)
+         X(:,k) = Xi; k = k + 1; 
+         nextout = nextout + ceil(1 / sfac);
+         if ~mod(i/stepcount, 0.1), fprintf('.'); end
+      end
+   end
+   fprintf('\n')
+   T = linspace(tspan(1), tspan(end), ceil(stepcount*sfac)+1);
+   sol.x = T;
+   sol.y = X;
+end
+
+
+
+function diffnorm = calcDiff(yA, yB)
+  % laufe durch x-koordinate von yA, und finde nächstgelegene x-Koordinatein yB
+  % vergleiche damit.
+  % Ansatz: 1) Durchlaufe x von yA in Index i
+  %         2) Suche nächstgelegenes x in yB, ausgehend von x(i-100) bi2 y(i+100) in yV
+  len = length(yA);
+  diffnorm = zeros(len, 1);
+  for i = 1:len
+     y = yA(:, i);
+     % suche passendes x in yB, um den aktuellen Punkt herum
+     window = 250;
+     j0 = max(1, i-window);
+     jf = max(len, j0+window);
+     jidx = j0:jf;
+     tmpdiff = yB(:, jidx) - repmat(y, [1, length(jidx)]);
+     tmpdiff = vecnorm(tmpdiff,2,1);
+     diffnorm(i) = min(tmpdiff);
+     if ~mod(i, floor(len/10)), fprintf('x'); end
+     diffnorm(i) = diffnorm(i) / norm(y);
+  end
+
 end
