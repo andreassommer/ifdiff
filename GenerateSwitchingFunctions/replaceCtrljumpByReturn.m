@@ -1,4 +1,4 @@
-function mtree = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpArgs)
+function mtree = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpInfo)
 % SETUPJUMPFUNCTION_REPLACECTRLJUMPBYRETURN Replace the ctrlif and ctrljump that signal a jump with the body of the
 %     jump's update block, creating a function that returns the update.
 % A jump specification
@@ -23,9 +23,9 @@ function mtree = replaceCtrljumpByReturn(mtree, ctrlif_index, ctrljumpArgs)
     rIndex.HEAD = mtree_rIndex_head(mtree, rIndex.HEAD); 
 
     % find the ctrljump whose ctrlif_index equals the one we are looking for
-    ctrlif_indices = ctrljumpArgs(2, :);
+    ctrlif_indices = ctrljumpInfo(2, :);
     u              = find(ctrlif_indices == ctrlif_index);
-    ctrljumpRIndex = ctrljumpArgs(1, u);
+    ctrljumpRIndex = ctrljumpInfo(1, u);
 
     [ifhead, rIndex_update] = replaceJumpifByCtrlif_parseJumpSpec(mtree, ctrljumpRIndex, jumpSpec);
 
