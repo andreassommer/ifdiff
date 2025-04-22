@@ -1,8 +1,20 @@
-function char = numericJoin(numeric, delim)
-%NUMERICJOIN    Convert numeric array to char array with delimiter inserted between elements.
-%   char = NUMERICJOIN(numeric, delim)
+function str = numericJoin(num, delim)
+%str = NUMERICJOIN(num, delim)
+%
+%Convert numeric array to char array with delimiter inserted between elements.
+%
+%INPUT:
+%   num - Numeric array to be converted
+%       numeric array
+%
+%   delim - Delimiter string to be inserted between each element of num
+%       char array
+%
+%OUTPUT:
+%   str - String concatenation of the elements of num with delim inserted between each element
+%       char array
 
 % strjoin requires a cell array of char arrays/strings
-numeric = arrayfun(@num2str, numeric, 'UniformOutput', false);
-char = strjoin(numeric, delim);
+num = arrayfun(@num2str, num, 'UniformOutput', false);
+str = strjoin(num, delim);
 end

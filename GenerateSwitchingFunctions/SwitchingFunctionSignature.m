@@ -1,24 +1,36 @@
 classdef SwitchingFunctionSignature
-    %SWITCHINGFUNCTIONSIGNATURE Uniquely identifies a model transition/switch
-    %   Three parameters are used for this purpose:
-    %   - switch_cond: 1xN array of 0/1 containing the values of
-    %   the conditions observed by ctrlifs before a switch. The
-    %   i-th element of the array corresponds to the i-th ctrlif
-    %   that was encountered in runtime. The last element always
-    %   refers to a ctrlif whose condition has flipped.
+    %this = SWITCHINGFUNCTIONSIGNATURE(rhsName, switchCond, ctrlifIndex, functionIndex)
     %
-    %   - ctrlif_index: 1xN array of ints containing the
-    %   ctrlif indices that were encountered before a switch.
+    %Uniquely identifies a model transition/switch and its corresponding switching function.
     %
-    %   - Nx1 cell array of 1x? array of int containing function indices that
-    %   were encountered before a switch.
+    %INPUT:
+    %   rhsName - Name of the RHS function
+    %       char array
+    %
+    %   switchCond - True/False values of the conditions observed by ctrlifs before a switch.
+    %   The i-th element of the array corresponds to the i-th ctrlif that was encountered in runtime.
+    %   The last element always refers to a ctrlif whose condition has flipped.
+    %       1xN array of logicals
+    %
+    %   ctrlifIndex - Ctrlif indices that were encountered before a switch (in order of appearance during runtime).
+    %       1xN array of positive integers
+    %
+    %   functionIndex - Function indices that were encountered before a switch (in order of appearance during runtime).
+    %       1xN cell array of 1x? arrays of positive integers
+    %
+    %OUTPUT:
+    %   str - Unique string representation of an instance of this class
+    %       char array
+    %
+    %   hash - 32-bit hash of str in hex format
+    %       char array
 
 
     properties (Access=public)
-        rhsName
-        switch_cond
-        ctrlif_index
-        function_index
+        rhsName = ''
+        switchCond = []
+        ctrlifIndex = []
+        functionIndex = {}
     end
 
     properties (Dependent)
@@ -36,48 +48,53 @@ classdef SwitchingFunctionSignature
     end
 
     methods
-        function this = SwitchingFunctionSignature(rhsName, switch_cond, ctrlif_index, function_index)
-            %SWITCHINGFUNCTIONSIGNATURE Construct signature from ctrlif data.
+        % Constructor
+        function this = SwitchingFunctionSignature(rhsName, switchCond, ctrlifIndex, functionIndex)
             if nargin == 0
                 return
             end
 
             this.rhsName = rhsName;
-            this.switch_cond = switch_cond;
-            this.ctrlif_index = ctrlif_index;
-            this.function_index = function_index;
+            this.switchCond = switchCond;
+            this.ctrlifIndex = ctrlifIndex;
+            this.functionIndex = functionIndex;
         end
 
         function str = get.str(this)
-            %GET.STR Concatenate signature into one string.
-            %   Format: <switch_cond><DELIM><ctrlif_index><DELIM><function_index>
-            %   <switch_cond> - Concatenation of the array elements
-            %   <ctrlif_index> - Concatenation of the array elements
-            %   separated by a delimiter. This is required since
-            %   ctrilif indices may consists of multiple digits.
-            %   <function_index> - First the numeric arrays in each cell are
-            %   reduced to char arrays containing the concatenation of the
-            %   elements separated by a delimiter.
-            %   Then the results are concatenated with a (different)
-            %   delimiter.
+            %str = this.str
+            %
+            %Concatenate data properties of signature into a unique string.
+            %
+            %The string is built according to the following format:
+            %   str = <rhsName><DELIM1><switchCond><DELIM2><ctrlifIndex><DELIM3><functionIndex>
+            %       <rhsName> - Name of the RHS function
+            %       <switchCond> - Concatenation of the array elements (only 0/1 values so no delimiter needed)
+            %       <ctrlifIndex> - Concatenation of the array elements separated by a delimiter.
+            %       Required since ctrlif indices may consist of multiple digits.
+            %       <functionIndex> - Numeric arrays in each cell reduced to char arrays,
+            %       containing concatenation of the elements separated by a delimiter.
+            %       Then char arrays are concatenated with a (different) delimiter.
 
-            switch_cond_string = sprintf('%d', this.switch_cond);
-
-            ctrlif_index_string = numericJoin(this.ctrlif_index, this.CTRLIF_INDEX_DELIMITER);
-
-            % Convert each cell into a char array
+            % Concatenate switch condition
+            switchCondString = sprintf('%d', this.switchCond);
+            % Concatenate ctrlif index
+            ctrlifIndexString = numericJoin(this.ctrlifIndex, this.CTRLIF_INDEX_DELIMITER);
+            % First, convert each cell in function index into a char array
             convertCell = @(array) numericJoin(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
-            function_index_string = cellfun(convertCell, this.function_index, 'UniformOutput', false);
-
-            function_index_string = strjoin(function_index_string, this.FUNCTION_INDEX_CONCAT_DELIMITER);
-
+            functionIndexString = cellfun(convertCell, this.functionIndex, 'UniformOutput', false);
+            % Concatenate function index
+            functionIndexString = strjoin(functionIndexString, this.FUNCTION_INDEX_CONCAT_DELIMITER);
+            % Concatenate results
             str = [this.rhsName, this.RHS_NAME_SUFFIX, ...
-                switch_cond_string, this.SWITCH_COND_SUFFIX, ...
-                ctrlif_index_string, this.CTRLIF_INDEX_SUFFIX, ...
-                function_index_string];
+                switchCondString, this.SWITCH_COND_SUFFIX, ...
+                ctrlifIndexString, this.CTRLIF_INDEX_SUFFIX, ...
+                functionIndexString];
         end
 
         function hash = get.hash(this)
+            %hash = this.hash
+            %
+            %Compute 32-bit hash of string representation of signature and output in hex format
             hash = dec2hex(fnv(this.str), 8);
         end
     end

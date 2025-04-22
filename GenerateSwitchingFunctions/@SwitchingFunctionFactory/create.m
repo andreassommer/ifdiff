@@ -15,10 +15,10 @@ function switchingFunctionHandle = create(this, signature, collisionIndex, varar
 %
 %   ctrljumpInfo - (Optional) Contains information that ties ctrlif indices to ctrljump expressions.
 %   If provided, this function will create a jump function instead of a switching function.
-%       3x? array of integers
+%       3xN array of integers
 %
 %OUTPUT:
-%   switchingFunctionHandle - Handle to the main (i.e. not helper) function of the newly created function
+%   switchingFunctionHandle - Handle to the main (i.e. not helper) function of the newly created function.
 %       function handle
 %
 %See also SWITCHINGFUNCTIONFACTORY, SWITCHINGFUNCTIONSIGNATURE, SOLVEODE, SOLVEODE_GETJUMPINDICES
