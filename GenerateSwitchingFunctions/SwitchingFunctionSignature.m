@@ -78,7 +78,7 @@ classdef SwitchingFunctionSignature
         end
 
         function hash = get.hash(this)
-            hash = dec2hex(fnv(this.str));
+            hash = dec2hex(fnv(this.str), 8);
         end
     end
 end
