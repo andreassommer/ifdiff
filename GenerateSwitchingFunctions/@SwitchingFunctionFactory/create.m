@@ -1,6 +1,6 @@
 function switchingFunctionHandle = create(this, signature, collisionIndex, varargin)
-%switchingFunctionHandle = CREATE(this, signature, collisionIndex)
-%switchingFunctionHandle = CREATE(this, signature, collisionIndex, ctrljumpInfo)
+%switchingFunctionHandle = this.CREATE(signature, collisionIndex)
+%switchingFunctionHandle = this.CREATE(signature, collisionIndex, ctrljumpInfo)
 %
 %Create a new switching/jump function and necessary helper functions based on a signature.
 %The source code of the functions will be written to .m files.

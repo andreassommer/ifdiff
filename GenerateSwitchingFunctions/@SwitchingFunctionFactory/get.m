@@ -1,4 +1,22 @@
 function switchingFunctionHandle = get(this, signature, varargin)
+%switchingFunctionHandle = this.GET(signature)
+%switchingFunctionHandle = this.GET(signature, ctrlJumpInfo)
+%
+%Find an existing switching/jump function based on a signature or, if not found, create a new one.
+%
+%INPUT:
+%   signature - Signature of the switching/jump function to be found/created.
+%       SwitchingFunctionSignature
+%
+%   ctrljumpInfo - (Optional) Contains information that ties ctrlif indices to ctrljump expressions.
+%   If provided, this function will find/create a jump function instead of a switching function.
+%       3xN array of integers
+%
+%OUTPUT:
+%   switchingFunctionHandle - Handle to the found/created switching or jump function.
+%
+%See also SWITCHINGFUNCTIONSIGNATURE
+
 config = makeConfig();
 
 collisionIndex = 1;
@@ -15,7 +33,7 @@ while config.reuseSwitchingFunctions
             switchingFunctionHandle = str2func(name);
             return
         end
-        
+
         % We have a collision and keep searching
         if config.debugMode
             fprintf('[DEBUG] Collision detected in file "%s"\n with hash "%s"\n', name, signature.hash);
