@@ -115,16 +115,8 @@ for idxCtrlif = 1:numCtrlif
     end
 end
 
-
-for idxExportMtree = 1:length(exportMtreeArray)
-    % Write the mtrees to files
-    filepath = [getExportFunctionName(switchingFunctionName, idxExportMtree), '.m'];
-    filepath = fullfile(this.writePath, filepath);
-    file = fopen(filepath, 'w');
-    % Add a signature header as comment
-    fprintf(file, '%%%s\n%s\n', signature.str, exportMtreeArray{idxExportMtree}.tree2str);
-    fclose(file);
-end
+% Write function mtrees to files
+exportSwitchingFunctions(exportMtreeArray, this.writePath, switchingFunctionName, signature.str);
 
 % Return function handle to the main switching function
 switchingFunctionHandle = str2func(getExportFunctionName(switchingFunctionName, 1));
