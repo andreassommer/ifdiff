@@ -67,7 +67,7 @@ classdef FunctionIterator
 
             functionCallIndex = this.functionIndexArray(1:this.idx);
             % Find out which function corresponds to the function index in the caller mtree
-            this.idxMtreeCallOriginal = this.functionData.functionIndexToIdxMtree(functionCallIndex(end), this.idxMtreeCallerOriginal);
+            this.idxMtreeCallOriginal = this.functionData.getIdxMtreeFromFunctionCall(this.idxMtreeCallerOriginal, functionCallIndex(end));
 
             % Check if this function call sequence has already been exported into a helper function
             this.idxMtreeCallExport = this.functionIndexToIdxMtreeExportMap.get(functionCallIndex);

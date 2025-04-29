@@ -60,7 +60,7 @@ for idxCtrlif = 1:numCtrlif
             break
         end
 
-        helperFunctionInfo = this.functionData.getHelperFunctionCallInfo(funIter.idxMtreeCallerOriginal, funIter.functionIndex);
+        helperFunctionInfo = this.functionData.getFunctionCallInfo(funIter.idxMtreeCallerOriginal, funIter.functionIndex);
 
         if funIter.new
             % Create new helper
