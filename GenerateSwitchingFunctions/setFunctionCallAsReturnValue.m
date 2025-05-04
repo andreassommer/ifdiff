@@ -10,7 +10,7 @@ function mtree = setFunctionCallAsReturnValue(mtree, outputName, rIndexEquals, r
 %   mtree - Mtree to be modified.
 %       mtreeplus
 %
-%   outputName - Name of the new singular output variable. All previous outputs of the function will be deleted.
+%   outputName - Name for the new singular output variable of the function call and its caller function.
 %       char array
 %
 %   rIndexEquals - rIndex of equals node of function call in mtree
@@ -20,7 +20,9 @@ function mtree = setFunctionCallAsReturnValue(mtree, outputName, rIndexEquals, r
 %       positive integer
 %
 %OUTPUT:
-%   mtree - Modified mtree
+%   mtree - Modified mtree with the function call assigned as the output of the caller function.
+%   Additionally, all statements coming after the function call are deleted.
+%   The mtree is then reparsed and all statements that do not contribute to the output of the caller function are removed.
 %       mtreeplus
 
 cIndex = mtree_cIndex();

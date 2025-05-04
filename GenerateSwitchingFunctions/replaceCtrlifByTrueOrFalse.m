@@ -14,7 +14,9 @@ function mtree = replaceCtrlifByTrueOrFalse(mtree, rIndexEquals, rIndexArg)
 %   Note: The 2nd argument of a ctrlif call contains the true part and the 3rd contains the false part.
 %       positive integer
 %
-%OUTPUT: mtree - Modified mtree with the ctrlif call replaced.
+%OUTPUT:
+%   mtree - Modified mtree with the ctrlif call replaced.
+%       mtreeplus
 
 cIndex = mtree_cIndex();
 
@@ -22,5 +24,6 @@ mtree = mtree_connectNodes(...
     mtree, ...
     rIndexEquals, ...
     rIndexArg, ...
-    cIndex.indexRightchild);
+    cIndex.indexRightchild ...
+    );
 end
