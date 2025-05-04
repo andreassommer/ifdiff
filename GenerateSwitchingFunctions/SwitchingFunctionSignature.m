@@ -84,20 +84,22 @@ classdef SwitchingFunctionSignature
             %       containing concatenation of the elements separated by a delimiter.
             %       Then char arrays are concatenated with a (different) delimiter.
 
-            % Concatenate switch condition
-            switchCondString = sprintf('%d', this.switchCond);
-            % Concatenate ctrlif index
-            ctrlifIndexString = numericJoin(this.ctrlifIndex, this.CTRLIF_INDEX_DELIMITER);
-            % First, convert each cell in function index into a char array
-            convertCell = @(array) numericJoin(array, this.FUNCTION_INDEX_SHRINKING_DELIMITER);
-            functionIndexString = cellfun(convertCell, this.functionIndex, 'UniformOutput', false);
-            % Concatenate function index
-            functionIndexString = strjoin(functionIndexString, this.FUNCTION_INDEX_CONCAT_DELIMITER);
-            % Concatenate results
+            switchCondStr = sprintf('%d', this.switchCond);
+
+            ctrlifIndexStr = arrayStrJoin(this.ctrlifIndex, this.CTRLIF_INDEX_DELIMITER, '%u');
+
+            % Convert each cell in function index into a char array.
+            functionIndexStr = cell(1, length(this.functionIndex));
+            for idx=1:length(functionIndexStr)
+                functionIndexStr{idx} = arrayStrJoin(this.functionIndex{idx}, this.FUNCTION_INDEX_SHRINKING_DELIMITER, '%u');
+            end
+            % Concatenate converted function index entries.
+            functionIndexStr = arrayStrJoin(functionIndexStr, this.FUNCTION_INDEX_CONCAT_DELIMITER, '%s');
+
             str = [this.rhsName, this.RHS_NAME_SUFFIX, ...
-                switchCondString, this.SWITCH_COND_SUFFIX, ...
-                ctrlifIndexString, this.CTRLIF_INDEX_SUFFIX, ...
-                functionIndexString];
+                switchCondStr, this.SWITCH_COND_SUFFIX, ...
+                ctrlifIndexStr, this.CTRLIF_INDEX_SUFFIX, ...
+                functionIndexStr];
         end
 
         function hash = toHash(this)

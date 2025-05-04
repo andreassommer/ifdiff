@@ -20,5 +20,5 @@ function name = getExportFunctionName(functionName, exportIndex)
 
 DELIMITER = '_';
 
-name = [functionName, DELIMITER, num2str(exportIndex)];
+name = [functionName, DELIMITER, sprintf('%u', exportIndex)];
 end

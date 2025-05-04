@@ -24,7 +24,7 @@ function newName = createSwitchingFunctionName(prefix, rhsName, hash, collisionI
 
 DELIMITER = '_';
 
-collisionIndex = num2str(collisionIndex);
+collisionIndex = sprintf('%u', collisionIndex);
 
 newName = [ ...
     prefix, ...

@@ -24,7 +24,7 @@ classdef FunctionIterator
             % Constructor - Takes an object of class PreproccesedFunctionData
 
             % RHS has function index 0 and gets export ID 1
-            obj.functionIndexToIdxMtreeExportMap = HashMap(@(key) numericJoin(key, '-'));
+            obj.functionIndexToIdxMtreeExportMap = HashMap(@(key) arrayStrJoin(key, '-', '%u'));
             obj.functionIndexToIdxMtreeExportMap.set(0, 1)
 
             if nargin == 0
