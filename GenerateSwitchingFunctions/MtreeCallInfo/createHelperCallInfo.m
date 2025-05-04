@@ -1,5 +1,5 @@
-function [functionIndex, rIndex, rIndexArgs] = createFunctionCallInfo(mtree)
-%[functionIndex, rIndex, rIndexArgs] = CREATEFUNCTIONCALLINFO(mtree)
+function [functionIndex, rIndex, rIndexArgs] = createHelperCallInfo(mtree)
+%[functionIndex, rIndex, rIndexArgs] = CREATEHELPERCALLINFO(mtree)
 %
 %Retrieve all row indices related to helper function calls in an mtree.
 %
@@ -18,7 +18,7 @@ function [functionIndex, rIndex, rIndexArgs] = createFunctionCallInfo(mtree)
 %
 %   rIndexArgs - Row indices of the arguments belonging to a function call.
 %   Each cell contains all the argument row indices for one function call.
-%       1xN cell array of 1x? array os positive integers
+%       1xN cell array of ?x1 array of positive integers
 %
 %See also RINDEXNAME, MTREECALLINFO
 
@@ -67,7 +67,7 @@ rIndex(rIndexName.Fname, :)  = mtree.T(rIndex(rIndexName.Call, :), cIndex.indexL
 tmpIndex = struct();
 tmpIndex.Call = rIndex(rIndexName.Call, :);
 tmpIndex = mtree_rIndex_getFunctionArguments(mtree, tmpIndex, 'Call');
-rIndexArgs = num2cell(tmpIndex.Arg, 2)';
+rIndexArgs = num2cell(tmpIndex.Arg', 1);
 
 % setFunctionIndex arguments:
 % Second argument is -1 => RHS, function index in first argument

@@ -6,4 +6,3 @@ classdef rIndexName < uint8
         Fname (4)
     end
 end
-

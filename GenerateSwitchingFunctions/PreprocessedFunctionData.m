@@ -20,7 +20,8 @@ classdef PreprocessedFunctionData < handle
     properties (SetAccess=private)
         functionIndexToIdxMtreeMap = {};
         functionNameToIdxMtreeMap = {};
-        helperFunctionCallInfoArray = {};
+        helperCallInfoArray = {};
+        ctrlifCallInfoArray = {};
     end
 
     methods
@@ -36,7 +37,9 @@ classdef PreprocessedFunctionData < handle
             this.functionNameArray = functionNameArray;
 
             this.functionNameToIdxMtreeMap = containers.Map(functionNameArray, num2cell(1:length(mtreeArray)));
-            this.helperFunctionCallInfoArray = cell(1, length(mtreeArray));
+
+            this.helperCallInfoArray = cell(1, length(mtreeArray));
+            this.ctrlifCallInfoArray = cell(1, length(mtreeArray));
         end
 
         function idxMtree = getIdxMtreeFromFunctionCall(this, idxMtreeCaller, functionCallIndex)
@@ -84,43 +87,77 @@ classdef PreprocessedFunctionData < handle
 
             cIndex = mtree_cIndex();
 
-            functionCallInfo = this.getFunctionCallInfo(idxMtreeCaller, functionCallIndex);
+            functionCallInfo = this.getHelperCallInfo(idxMtreeCaller, functionCallIndex);
 
             mtreeCaller = this.mtreeArray{idxMtreeCaller};
             functionName = mtreeCaller.C{mtreeCaller.T(functionCallInfo.rIndexFname, cIndex.stringTableIndex)};
         end
 
-        function functionCallInfo = getFunctionCallInfo(this, idxMtree, varargin)
-            %functionCallInfo = this.GETFUNCTIONCALLINFO(idxMtree)
-            %functionCallInfo = this.GETFUNCTIONCALLINFO(idxMtree, functionCallIndex)
+        function helperCallInfo = getHelperCallInfo(this, idxMtree, varargin)
+            %functionCallInfo = this.GETHELPERCALLINFO(idxMtree)
+            %functionCallInfo = this.GETHELPERCALLINFO(idxMtree, functionIndex)
             %
-            %Retrieve mtree row indices related to all/particular function calls in an mtree.
+            %Retrieve mtree row indices related to all/particular helper function calls in an mtree.
             %
             %INPUT:
             %   idxMtree - Index of the mtree containing the function calls.
             %       positive integer
             %
-            %   functionCallIndex - (Optional) Index of (a) particular function call(s) in the mtree.
-            %       positive integer
+            %   functionIndex - (Optional) Index of (a) particular helper function call(s) in the mtree.
+            %       1xN array of positive integers
             %
             %OUTPUT:
-            %   functionCallInfo - Mtree row indices related to the function call(s) (e.g. name, args, assignment etc.)
-            %       MtreeCallInfo
+            %   helperCallInfo - Mtree row indices related to the function call(s) (e.g. name, args, assignment etc.)
+            %       MtreeHelperCallInfo
             %
-            %See also MTREECALLINFO
+            %See also MTREEHELPERCALLINFO
 
             % Check if the helper function call info was generated previously for this mtree.
-            functionCallInfo = this.helperFunctionCallInfoArray{idxMtree};
-            if isempty(functionCallInfo)
+            helperCallInfo = this.helperCallInfoArray{idxMtree};
+            if isempty(helperCallInfo)
                 % Create new and cache result for future access.
-                functionCallInfo = MtreeCallInfo(this.mtreeArray{idxMtree});
-                this.helperFunctionCallInfoArray{idxMtree} = functionCallInfo;
+                helperCallInfo = MtreeHelperCallInfo(this.mtreeArray{idxMtree});
+                this.helperCallInfoArray{idxMtree} = helperCallInfo;
             end
 
-            % Optionally, restrict access to only one function call index.
+            % Optionally, restrict access to only one function index.
             if nargin > 2
                 functionIndex = varargin{1};
-                functionCallInfo = functionCallInfo.selectCallIndex(functionIndex);
+                helperCallInfo = helperCallInfo.selectCallIndex(functionIndex);
+            end
+        end
+
+        function ctrlifCallInfo = getCtrlifCallInfo(this, idxMtree, varargin)
+            %functionCallInfo = this.GETCTRLIFCALLINFO(idxMtree)
+            %functionCallInfo = this.GETCTRLIFCALLINFO(idxMtree, ctrlifIndex)
+            %
+            %Retrieve mtree row indices related to all/particular ctrlif calls in an mtree.
+            %
+            %INPUT:
+            %   idxMtree - Index of the mtree containing the ctrlif calls.
+            %       positive integer
+            %
+            %   functionCallIndex - (Optional) Index of (a) particular ctrlif call(s) in the mtree.
+            %       1xN array of positive integers
+            %
+            %OUTPUT:
+            %   ctrlifCallInfo - Mtree row indices related to the ctrlif call(s) (e.g. name, args, assignment etc.)
+            %       MtreeCtrlifCallInfo
+            %
+            %See also MTREECTRLIFCALLINFO
+
+            % Check if the ctrlif call info was generated previously for this mtree.
+            ctrlifCallInfo = this.ctrlifCallInfoArray{idxMtree};
+            if isempty(ctrlifCallInfo)
+                % Create new and cache result for future access.
+                ctrlifCallInfo = MtreeCtrlifCallInfo(this.mtreeArray{idxMtree});
+                this.ctrlifCallInfoArray{idxMtree} = ctrlifCallInfo;
+            end
+
+            % Optionally, restrict access to only one ctrlif index.
+            if nargin > 2
+                ctrlifIndex = varargin{1};
+                ctrlifCallInfo = ctrlifCallInfo.selectCallIndex(ctrlifIndex);
             end
         end
     end
