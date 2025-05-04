@@ -45,7 +45,7 @@ classdef MtreeFunctionCallInfo
         rIndexArgs
     end
 
-    properties (Access=public)
+    properties (Access=private)
         % Used internally to associate a call index with a column entry of an rIndex.
         % E.g.: Call index 5 is at index 3 in callIndex => Row index for call index 5 is stored in column 3 of rIndex.
         callIndex = []
