@@ -87,13 +87,22 @@ for idxCtrlif = 1:numCtrlif
         end
     end
 
+    ctrlifCallInfo = this.functionData.getCtrlifCallInfo(funIter.idxMtreeCallerOriginal, signature.ctrlifIndex(idxCtrlif));
+
     % For jump functions, all ctrlifs are replaced by their true or false part.
     % For switching functions, all ctrlifs except for the last are replaced by their true or false part.
     if isJump || idxCtrlif ~= numCtrlif
+        % True part is stored in the second argument, false part in the third.
+        if signature.switchCond(idxCtrlif)
+            idxArg = 2;
+        else
+            idxArg = 3;
+        end
+
         exportMtreeArray{funIter.idxMtreeCallerExport} = replaceCtrlifByTrueOrFalse( ...
             exportMtreeArray{funIter.idxMtreeCallerExport}, ...
-            signature.ctrlifIndex(idxCtrlif), ...
-            signature.switchCond(idxCtrlif) ...
+            ctrlifCallInfo.rIndexEquals, ...
+            ctrlifCallInfo.rIndexArgs(idxArg) ...
             );
     end
 
