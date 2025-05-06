@@ -1,5 +1,5 @@
 function [functionHandle, collisionIndex] = findExisting(this, signature)
-%functionHandle = this.FINDEXISTING(signature)
+%[functionHandle, collisionIndex] = this.FINDEXISTING(signature)
 %
 %Find an existing switching/jump function based on a signature.
 %
