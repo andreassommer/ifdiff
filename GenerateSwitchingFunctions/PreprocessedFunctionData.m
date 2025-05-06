@@ -56,6 +56,7 @@ classdef PreprocessedFunctionData < handle
             %
             %OUTPUT:
             %   idxMtree - Index of the mtree belonging to the function that was called.
+            %       positive integer
 
             % Check if we have previously stored the result of this query.
             if this.functionIndexToIdxMtreeMap.isKey(functionCallIndex)
@@ -84,6 +85,7 @@ classdef PreprocessedFunctionData < handle
             %
             %OUTPUT:
             %   functionName - Name of the called function.
+            %       char array
 
             cIndex = mtree_cIndex();
 
