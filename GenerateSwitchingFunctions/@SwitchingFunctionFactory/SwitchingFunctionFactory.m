@@ -41,7 +41,7 @@ classdef SwitchingFunctionFactory
             this.outputName = outputName;
         end
 
-        switchingFunctionHandle = create(this, signature, collisionIndex, varargin);
-        switchingFunctionHandle = get(this, signature, varargin);
+        [functionHandle, collisionIndex] = findExisting(this, signature);
+        functionHandle = createNew(this, signature, collisionIndex, varargin);
     end
 end

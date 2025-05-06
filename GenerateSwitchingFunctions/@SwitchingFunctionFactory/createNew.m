@@ -1,6 +1,6 @@
-function switchingFunctionHandle = create(this, signature, collisionIndex, varargin)
-%switchingFunctionHandle = this.CREATE(signature, collisionIndex)
-%switchingFunctionHandle = this.CREATE(signature, collisionIndex, ctrljumpInfo)
+function functionHandle = createNew(this, signature, collisionIndex, varargin)
+%functionHandle = this.CREATENEW(signature, collisionIndex)
+%functionHandle = this.CREATENEW(signature, collisionIndex, ctrljumpInfo)
 %
 %Create a new switching/jump function and necessary helper functions based on a signature.
 %The source code of the functions will be written to .m files.
@@ -151,5 +151,5 @@ end
 exportSwitchingFunctions(exportMtreeArray, this.writePath, switchingFunctionName, signature.str);
 
 % Return function handle to the main function.
-switchingFunctionHandle = str2func(getExportFunctionName(switchingFunctionName, 1));
+functionHandle = str2func(getExportFunctionName(switchingFunctionName, 1));
 end

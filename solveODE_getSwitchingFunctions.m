@@ -44,7 +44,13 @@ for idxSwitch = 1:nSwitches
         data.SWP_detection.ctrlif_index_t1(1:idxSignatureSwitchCtrlif), ...
         data.SWP_detection.function_index_t1(1:idxSignatureSwitchCtrlif) ...
         );
-    switchingfunctionhandles{idxSwitch} = factory.get(signature);
+    % Check if switching function exists or create a new one otherwise.
+    [switchingFunctionHandle, collisionIndex] = factory.findExisting(signature);
+    if isempty(switchingFunctionHandle)
+        switchingFunctionHandle = factory.createNew(signature, collisionIndex);
+    end
+
+    switchingfunctionhandles{idxSwitch} = switchingFunctionHandle;
 end
 
 % Store function handles to main switching functions in datahandle.

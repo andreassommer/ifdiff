@@ -23,6 +23,9 @@ function jumpFunctionHandle = solveODE_getJumpFunction(datahandle, factory, idxS
 %   SWP_detection.function_index_t1 - Function indices observed before the jump.
 %       Mx1 cell array of 1x? arrays of positive integers
 %
+%   SWP_detection.jumpConditions - Contains information that ties ctrlif indices to ctrljump expressions.
+%       3xN array of integers
+%
 %OUTPUT:
 %   jumpFunctionHandle - Handle to the main jump function for the jump detected in the last integration step.
 %       function handle
@@ -31,11 +34,16 @@ function jumpFunctionHandle = solveODE_getJumpFunction(datahandle, factory, idxS
 
 data = datahandle.getData();
 
+% Prepare signature.
 signature = SwitchingFunctionSignature( ...
     data.mtreeplus{2,1}, ...
     data.SWP_detection.switch_cond_t1(1:idxSignatureJumpCtrlif), ...
     data.SWP_detection.ctrlif_index_t1(1:idxSignatureJumpCtrlif), ...
     data.SWP_detection.function_index_t1(1:idxSignatureJumpCtrlif) ...
     );
-jumpFunctionHandle = factory.get(signature, data.SWP_detection.jumpConditions);
+% Check if jump function exists or create a new one otherwise.
+[jumpFunctionHandle, collisionIndex] = factory.findExisting(signature);
+if isempty(jumpFunctionHandle)
+    jumpFunctionHandle = factory.createNew(signature, collisionIndex, data.SWP_detection.jumpConditions);
+end
 end
