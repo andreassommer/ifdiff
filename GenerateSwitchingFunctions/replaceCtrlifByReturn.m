@@ -57,5 +57,7 @@ mtree = mtree_connectNodes(...
     cIndex.indexRightchild ...
     );
 
+% Reparse the entire mtree and remove everything that is not required for the computation of the new output variable.
+% WARNING: This will potentially invalidate existing row indices of the mtree!
 mtree = traceReturnStatementToInputs(mtree, rIndexExpr);
 end
