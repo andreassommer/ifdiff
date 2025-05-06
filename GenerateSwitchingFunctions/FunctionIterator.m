@@ -42,7 +42,7 @@ classdef FunctionIterator
         % Constructor
         function this = FunctionIterator(functionData)
             % RHS has function index 0 and gets export ID 1
-            this.functionIndexToIdxMtreeExportMap = HashMap(@(key) arrayStrJoin(key, '-', '%u'));
+            this.functionIndexToIdxMtreeExportMap = KeyFunctionMap(@(key) arrayStrJoin(key, '-', '%u'));
             this.functionIndexToIdxMtreeExportMap.set(0, 1)
 
             if nargin == 0
