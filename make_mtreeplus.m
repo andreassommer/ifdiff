@@ -215,8 +215,11 @@ function copyAndPatchMTREEPLUS(fid_src, fid_dest)
    elseif verLessThan('MATLAB', '9.11'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.10 --> 2021a
    elseif verLessThan('MATLAB', '9.12'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.11 --> 2021b
    elseif verLessThan('MATLAB', '9.13'), copyAndPatch__generic(fid_src, fid_dest, TESTED);     % Version 9.12 --> 2022a
-   elseif verLessThan('MATLAB', '9.14'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.13 --> 2023a
-   elseif verLessThan('MATLAB', '9.15'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.14 --> 2023b
+   elseif verLessThan('MATLAB', '9.14'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.13 --> 2022b
+   elseif verLessThan('MATLAB', '9.15'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.14 --> 2023a
+   elseif verLessThan('MATLAB', '24.1'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 23.2 --> 2023b
+   elseif verLessThan('MATLAB', '24.2'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 24.1 --> 2024a
+   elseif verLessThan('MATLAB', '25.1'), copyAndPatch__generic(fid_src, fid_dest, TESTED);     % Version 24.2 --> 2024b
    else
       copyAndPatch__unknown(fid_src, fid_dest, UNTESTED);
    end
