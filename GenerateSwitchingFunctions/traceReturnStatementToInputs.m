@@ -1,5 +1,5 @@
-function mtreeobj = setUpSwitchingFunction_traceReturnStatementToInputs(mtreeobj, returnStmtIndex)
-%MTREE_TRACERETURNSTATEMENTTOINPUTS Trace a function's return statement to its inputs, deleting everything unnecessary
+function mtreeobj = traceReturnStatementToInputs(mtreeobj, returnStmtIndex)
+%TRACERETURNSTATEMENTTOINPUTS Trace a function's return statement to its inputs, deleting everything unnecessary
 % returnStmtIndex is the row index of the return statement.
 % Caveats:
 % - the mtree is re-parsed, during which all existing rIndex values (including returnStmtIndex) become invalid
@@ -9,7 +9,7 @@ function mtreeobj = setUpSwitchingFunction_traceReturnStatementToInputs(mtreeobj
     cIndex = mtree_cIndex();
 
     mtreeobj.T(returnStmtIndex,cIndex.indexNextNode) = 0;
-    mtreeobj = setUpSwitchingFunction_replaceIfElseByBody(mtreeobj, returnStmtIndex);
+    mtreeobj = replaceIfElseByBody(mtreeobj, returnStmtIndex);
     sortedMtree = mtreeplus(mtreeobj.tree2str);
     mtreeobj = deleteUnusedParameters(sortedMtree);
 end

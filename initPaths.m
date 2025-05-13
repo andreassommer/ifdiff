@@ -19,4 +19,5 @@ addpath(genpath(fullfile(filePath, 'Tools')));
 addpath(genpath(fullfile(filePath, 'Examples')));
 addpath(genpath(fullfile(filePath, 'PreprocessedFunctions')));
 addpath(fullfile(filePath, 'ComputeSensitivities'));
+addpath(genpath(fullfile(filePath, 'GenerateSwitchingFunctions')));
 end

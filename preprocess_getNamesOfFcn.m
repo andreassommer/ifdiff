@@ -6,7 +6,7 @@ function [fnames, rhs_path] =  preprocess_getNamesOfFcn(rhs_name)
 
 
 % get list of all paths that are required when rhs_name.m is executed
-[fList,~] = matlab.codetools.requiredFilesAndProducts([rhs_name, '.m']);
+fList = matlab.codetools.requiredFilesAndProducts([rhs_name, '.m']);
 
 
 % check if there are any helper functions

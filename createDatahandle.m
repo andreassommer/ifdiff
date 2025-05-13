@@ -5,7 +5,7 @@ preprocessed.path = cd;
 
 preprocessed.path = fullfile(preprocessed.path, config.preprocessedFunctionsDirectoryName);
 if ~exist(preprocessed.path, 'dir')
-    mkdir(preprocessed.rhs_path, config.preprocessedFunctionsDirectoryName);
+    mkdir(preprocessed.path);
 end
 
 preprocessed.SwitchingFunctions_path = fullfile(preprocessed.path, config.switchingFunctionsDirectoryName);
@@ -33,7 +33,7 @@ if ~isempty(preprocessed.fcn)
     for i = 1:l
         filename = preprocessed.fcn{2,i};
         filepath = fullfile(preprocessed.path, [filename, '.m']);
-        fcn = preprocessed.fcn{3,i}; 
+        fcn = preprocessed.fcn{3,i};
         tempFile = fopen(filepath, 'w');
         treeStr = fcn.tree2str;
         % fprintf doesn't write the raw chars by default, which we want here however
@@ -53,5 +53,4 @@ data.paths.preprocessed_jumpFunction = preprocessed.JumpFunctions_path;
 data.caseCtrlif = config.caseCtrlif.default;
 
 datahandle = makeClosure(data);
-
 end
