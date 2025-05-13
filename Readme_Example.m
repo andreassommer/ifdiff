@@ -11,10 +11,8 @@
 initPaths();            % Initialise the paths for ifdiff
 integrator = @ode45;    % Choose integrator and options
 odeoptions = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
-        
-datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', ...
-                                             'integrator', func2str(integrator), ...
-                                             'options', odeoptions);
+
+datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptions);
 tspan         = [0 20];
 initialvalues = [1; 0];
 parameters    = 5.437;
@@ -24,6 +22,8 @@ sol = solveODE(datahandle, tspan, initialvalues, parameters);  % Returns a Matla
 t = 0:0.01:20;      % Evaluation grid
 y = deval(sol, t);  % Compatible to Matlab's evaluation functions
 
+%disp(length(t));
+%disp(length(y));
 
 %% Plotting 
 fignum = 333; fontsize = 14;
@@ -72,4 +72,5 @@ axh(3)=subplot(2,4,7,'replace'); plot(t, Gy21, 'k.'); xlim([t(1) t(end)]); title
 axh(4)=subplot(2,4,8,'replace'); plot(t, Gy22, 'k.'); xlim([t(1) t(end)]); title('G_{y,22}'); xline(sol.switches(1),'--'); xline(sol.switches(2),'--');
 set(axh,'Fontsize',fontsize)
 linkaxes(axh,'xy');
+
 %figure(fignum);
