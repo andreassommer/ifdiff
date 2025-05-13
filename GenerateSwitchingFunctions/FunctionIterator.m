@@ -83,7 +83,7 @@ classdef FunctionIterator
             %since this information is required to adjust function calls during switching function creation.
             %
             %INPUT:
-            %   this.idxMtreeCallee[Original|Export] - Index of the callee mtree from the previous iteration.
+            %   this.idxMtreeCallTarget[Original|Export] - Index of the callee mtree from the previous iteration.
             %   Will be set as the caller of this iteration. If empty, assume that the caller is the RHS (index 1).
             %       positive integer
             %
