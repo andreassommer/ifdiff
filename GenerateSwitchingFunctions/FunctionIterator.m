@@ -23,9 +23,9 @@ classdef FunctionIterator
         % Export index of the modified caller mtree assigned during switching function creation.
         idxMtreeCallerExport = []
         % FunctionData index of the unmodified mtree of the function that was called in the caller mtree.
-        idxMtreeCalleeOriginal = []
+        idxMtreeCallTargetOriginal = []
         % Export index of the modified mtree of the function that was called in the caller mtree.
-        idxMtreeCalleeExport = []
+        idxMtreeCallTargetExport = []
         % Flag indicating whether there are further function calls to iterate over.
         stop = false
         % Flag indicating whether the callee function in the last iteration should be exported or not.
@@ -69,8 +69,8 @@ classdef FunctionIterator
             this.functionIndex = [];
             this.idxMtreeCallerOriginal = [];
             this.idxMtreeCallerExport = [];
-            this.idxMtreeCalleeOriginal = [];
-            this.idxMtreeCalleeExport = [];
+            this.idxMtreeCallTargetOriginal = [];
+            this.idxMtreeCallTargetExport = [];
             this.idx = 1;
         end
 
@@ -97,7 +97,7 @@ classdef FunctionIterator
             %   this.idxMtreeCaller[Original|Export] - Index of the mtree considered to be the caller of this iteration.
             %       positive integer
             %
-            %   this.idxMtreeCallee[Original|Export] - Index of the mtree considered to be the callee of this iteration.
+            %   this.idxMtreeCallTarget[Original|Export] - Index of the mtree considered to be the callee of this iteration.
             %       positive integer
             %
             %   this.functionIndex - Function index of the callee function in this iteration.
@@ -115,14 +115,14 @@ classdef FunctionIterator
             this.new = false;
 
             % Update the caller mtree index.
-            if isempty(this.idxMtreeCalleeOriginal)
+            if isempty(this.idxMtreeCallTargetOriginal)
                 % If we have not seen a function call yet, then assume we are in the RHS.
                 this.idxMtreeCallerOriginal = 1;
                 this.idxMtreeCallerExport = 1;
             else
                 % Otherwise set the callee of the previous iteration as the new caller.
-                this.idxMtreeCallerOriginal = this.idxMtreeCalleeOriginal;
-                this.idxMtreeCallerExport = this.idxMtreeCalleeExport;
+                this.idxMtreeCallerOriginal = this.idxMtreeCallTargetOriginal;
+                this.idxMtreeCallerExport = this.idxMtreeCallTargetExport;
             end
 
             % Stop Iteration because there are no further function calls.
@@ -133,21 +133,21 @@ classdef FunctionIterator
             end
 
             % Find out which function corresponds to the current function index in the caller mtree.
-            this.idxMtreeCalleeOriginal = this.functionData.getIdxMtreeFromFunctionCall( ...
+            this.idxMtreeCallTargetOriginal = this.functionData.getIdxMtreeFromFunctionCall( ...
                 this.idxMtreeCallerOriginal, ...
                 this.functionIndexArray(this.idx) ...
                 );
 
             % Check if the current function call sequence has already been seen and exported into a helper function.
             functionCallSeq = this.functionIndexArray(1:this.idx);
-            this.idxMtreeCalleeExport = this.functionIndexToIdxMtreeExportMap.get(functionCallSeq);
+            this.idxMtreeCallTargetExport = this.functionIndexToIdxMtreeExportMap.get(functionCallSeq);
 
             % If not, then assign a new export ID to this function call sequence/helper function.
-            if isempty(this.idxMtreeCalleeExport)
+            if isempty(this.idxMtreeCallTargetExport)
                 this.new = true;
                 % ID is generated sequentially by order of appearance.
-                this.idxMtreeCalleeExport = this.functionIndexToIdxMtreeExportMap.size + 1;
-                this.functionIndexToIdxMtreeExportMap.set(functionCallSeq, this.idxMtreeCalleeExport);
+                this.idxMtreeCallTargetExport = this.functionIndexToIdxMtreeExportMap.size + 1;
+                this.functionIndexToIdxMtreeExportMap.set(functionCallSeq, this.idxMtreeCallTargetExport);
             end
 
             this.functionIndex = this.functionIndexArray(this.idx);
