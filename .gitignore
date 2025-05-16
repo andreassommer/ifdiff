@@ -43,3 +43,5 @@ octave-workspace
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+./Examples/ValentinStuff/*
