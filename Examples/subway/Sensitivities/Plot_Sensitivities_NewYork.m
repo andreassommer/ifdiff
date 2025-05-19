@@ -10,7 +10,6 @@ sol = solveODE(datahandle, tspan, initValues, parameters);
 
 sol_ode45 = ode45(@(t,x) newYorkCitySubwayModelRhs(t,x, nysscc_getPhysicsParameters()),tspan, initValues,odeoptionssubwaymodel);
 %% Plot solution ifdiff and ode45
-
 figure(1)
 plot(sol.x, sol.y(1,:),'LineWidth', 4, 'color', 'b')
 hold on
@@ -69,122 +68,88 @@ t_sens = 0:0.1:65;
 sensitivites = sensitivities_function_END(t_sens);
 %sensitivites = sensitivities_function_VDE(t_sens);
 %%
-figure(4)
-subplot(3,3,1)
-for i = 1:length(t_sens)
-   axis([0 65 0 2])
-   plot(t_sens(i),sensitivites(i).Gy(1,1), '.b')
-   hold on
-end
-hold off
+figure(4);
+subplot(3,3,1);
+Gy11_for_t = arrayfun(@(x) x.Gy(1,1), sensitivites);
+plot(t_sens, Gy11_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,1}')
 title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
-
+tic;
 subplot(3,3,2)
-for i = 1:length(t_sens)
-   axis([0 65 0 22])
-   plot(t_sens(i),sensitivites(i).Gy(1,2), '.b')
-   hold on
-end
-hold off
+Gy12_for_t = arrayfun(@(x) x.Gy(1,2), sensitivites);
+plot(t_sens, Gy12_for_t, '.b');
+toc;
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,2}')
 title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,3)
-for i = 1:length(t_sens)
-   axis([0 65 0 2])
-   plot(t_sens(i),sensitivites(i).Gy(1,3), '.b')
-   hold on
-end
-hold off
+Gy13_for_t = arrayfun(@(x) x.Gy(1,3), sensitivites);
+plot(t_sens, Gy13_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,3}')
 title('G_{y,13}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,4)
-for i = 1:length(t_sens)
-   axis([0 65 0 2])
-   plot(t_sens(i),sensitivites(i).Gy(2,1), '.b')
-   hold on
-end
-hold off
+Gy21_for_t = arrayfun(@(x) x.Gy(2,1), sensitivites);
+plot(t_sens, Gy21_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,1}')
 title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,5)
-for i = 1:length(t_sens)
-   axis([0 65 0 2.5])
-   plot(t_sens(i),sensitivites(i).Gy(2,2), '.b')
-   hold on
-end
-hold off
+Gy22_for_t = arrayfun(@(x) x.Gy(2,2), sensitivites);
+plot(t_sens, Gy22_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,2}')
 title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,6)
-for i = 1:length(t_sens)
-   axis([0 65 0 2])
-   plot(t_sens(i),sensitivites(i).Gy(2,3), '.b')
-   hold on
-end
-hold off
+Gy23_for_t = arrayfun(@(x) x.Gy(2,3), sensitivites);
+plot(t_sens, Gy23_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,3}')
 title('G_{y,23}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
+
 subplot(3,3,7)
-for i = 1:length(t_sens)
-   axis([0 65 0 2])
-   plot(t_sens(i),sensitivites(i).Gy(3,1), '.b')
-   hold on
-end
-hold off
+Gy31_for_t = arrayfun(@(x) x.Gy(3,1), sensitivites);
+plot(t_sens, Gy31_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_3(t)/\partial y_{0,1}')
 title('G_{y,31}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,8)
-for i = 1:length(t_sens)
-   axis([0 65 -50 60])
-   plot(t_sens(i),sensitivites(i).Gy(3,2), '.b')
-   hold on
-end
-hold off
+Gy32_for_t = arrayfun(@(x) x.Gy(3,2), sensitivites);
+plot(t_sens, Gy32_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_3(t)/\partial y_{0,2}')
 title('G_{y,32}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 
 subplot(3,3,9)
-for i = 1:length(t_sens)
-   axis([0 65 0 2])
-   plot(t_sens(i),sensitivites(i).Gy(3,3), '.b')
-   hold on
-end
-hold off
+Gy33_for_t = arrayfun(@(x) x.Gy(3,3), sensitivites);
+plot(t_sens, Gy33_for_t, '.b');
 xlabel('t');
 ylabel('\partial y_3(t)/\partial y_{0,3}')
 title('G_{y,33}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 %% Plot sensitivities END with ode45 without switching point detection
@@ -228,120 +193,76 @@ end
 
 figure(5)
 subplot(3,3,1)
-for i = 1:length(t_plot)
-   axis([0 65 -1 2.5])
-   plot(t_plot(i),diff_y_y01_END(1,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y01_END(1,:), '.b');
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,1}')
 title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
-subplot(3,3,2)
-for i = 1:length(t_plot)
-   axis([0 65 0 22])
-   plot(t_plot(i),diff_y_y02_END(1,i), '.b')
-   hold on
-end
-hold off
+subplot(3,3,2);
+plot(t_plot,diff_y_y02_END(1,:), '.b');
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,2}')
 title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,3)
-for i = 1:length(t_plot)
-   axis([0 65 -10 5])
-   plot(t_plot(i),diff_y_y03_END(1,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y03_END(1,:), '.b')
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,3}')
 title('G_{y,13}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,4)
-for i = 1:length(t_plot)
-   axis([0 65 -0.2 0.25])
-   plot(t_plot(i),diff_y_y01_END(2,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y01_END(2,:), '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,1}')
 title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,5)
-for i = 1:length(t_plot)
-   axis([0 65 0 2.5])
-   plot(t_plot(i),diff_y_y02_END(2,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y02_END(2,:), '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,2}')
 title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,6)
-for i = 1:length(t_plot)
-   axis([0 65 -0.5 0.5])
-   plot(t_plot(i),diff_y_y03_END(2,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y03_END(2,:), '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,3}')
 title('G_{y,23}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
+
 subplot(3,3,7)
-for i = 1:length(t_plot)
-   axis([0 65 -10 5.5])
-   plot(t_plot(i),diff_y_y01_END(3,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y01_END(3,:), '.b')
 xlabel('t');
 ylabel('\partial y_3(t)/\partial y_{0,1}')
 title('G_{y,31}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 subplot(3,3,8)
-for i = 1:length(t_plot)
-   axis([0 65 -50 60])
-   plot(t_plot(i),diff_y_y02_END(3,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y02_END(3,:), '.b')
 xlabel('t');
 ylabel('\partial y_3(t)/\partial y_{0,2}')
 title('G_{y,32}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 
 subplot(3,3,9)
-for i = 1:length(t_plot)
-   axis([0 65 -20 5])
-   plot(t_plot(i),diff_y_y03_END(3,i), '.b')
-   hold on
-end
-hold off
+plot(t_plot,diff_y_y03_END(3,:), '.b')
 xlabel('t');
 ylabel('\partial y_3(t)/\partial y_{0,3}')
 title('G_{y,33}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 11);
 set(gca, 'Box', 'off');
 
 
