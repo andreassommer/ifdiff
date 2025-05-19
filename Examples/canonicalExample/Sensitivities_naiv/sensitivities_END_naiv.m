@@ -39,15 +39,16 @@ end
 
 figure(1)
 subplot(2,2,1)
-for i = 1:length(t_plot)
-   axis([0 20 0 2])
-   plot(t_plot(i),diff_y_y01_END(1,i), '.b')
-   hold on
-end
+plot(t_plot,diff_y_y01_END(1,:), '.b');
+%for i = 1:length(t_plot)
+%   axis([0 20 0 2])
+%   plot(t_plot(i),diff_y_y01_END(1,i), '.b');
+%   hold on
+%end
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_0^{(1)}')
 title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(2,2,2)
@@ -55,19 +56,21 @@ plot(t_plot,diff_y_y02_END(1,:), '.b')
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_0^{(2)}')
 title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(2,2,3)
-for i=1:length(t_plot)
-   axis([0 20 0 2])
-   plot(t_plot,diff_y_y01_END(2,:), '.b')
-   hold on
-end
+axis([0 20 0 2])
+plot(t_plot,diff_y_y01_END(2,:), '.b');
+%for i=1:length(t_plot)
+%   axis([0 20 0 2])
+%   plot(t_plot,diff_y_y01_END(2,:), '.b');
+%   hold on
+%end
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_0^{(1)}')
 title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(2,2,4)
@@ -75,7 +78,7 @@ plot(t_plot,diff_y_y02_END(2,:), '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_0^{(2)}')
 title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 %% Plot sensitivities parameters without switching point detection
@@ -100,7 +103,7 @@ plot(t_plot,diff_y_p1_END(1,:), '.b')
 xlabel('t');
 ylabel('\partial y_1(t)/\partial p')
 title('G_{p,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(1,2,2)
@@ -108,5 +111,5 @@ plot(t_plot,diff_y_p2_END(1,:), '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial p')
 title('G_{p,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');

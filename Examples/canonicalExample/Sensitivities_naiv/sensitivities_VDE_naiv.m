@@ -18,54 +18,39 @@ function_y_VDE = @(t,G) VDE_RHS_y_naiv(sol, @canonicalExampleRHS, t, G, paramete
 solVDE_y = ode45(function_y_VDE, tspan, initial_y);
 t=0:0.01:20;
 sensitivities_y = deval(solVDE_y, t);
+disp(size(sensitivities_y));
 
 figure(1)
 subplot(2,2,1)
-for i = 1:length(t)
-%axis([0 20 0 2])
-plot(t(i), sensitivities_y(1,i), '.b')
-hold on 
-end
+plot(t, sensitivities_y(1,:), '.b');
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_0^{(1)}')
 title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(2,2,2)
-for i = 1:length(t)
-%axis([0 20 0 50])
-plot(t(i), sensitivities_y(3,i), '.b')
-hold on 
-end
+plot(t, sensitivities_y(3,:), '.b');
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_0^{(2)}')
 title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(2,2,3)
-for i = 1:length(t)
-axis([0 20 0 2])
-plot(t(i), sensitivities_y(2,i), '.b')
-hold on 
-end
+plot(t, sensitivities_y(2,:), '.b');
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_0^{(1)}')
 title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 subplot(2,2,4)
-for i = 1:length(t)
-%axis([0 20 0 2])
-plot(t(i), sensitivities_y(4,i), '.b')
-hold on
-end
+plot(t, sensitivities_y(4,:), '.b');
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_0^{(2)}')
 title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 %% Sensitivities parameters VDEs without switching point detection
