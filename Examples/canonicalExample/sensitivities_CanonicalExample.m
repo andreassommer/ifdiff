@@ -42,57 +42,42 @@ t_plot = 0:0.01:20;
 %sensitivities_END_plot = sensitivities_function_ENDpiecewise(t_plot);
 sensitivities_END_plot = sensitivities_function_VDE(t_plot);
 
+% extract Gy at all times in t_plot
+sensall1 = arrayfun(@(x) x.Gy(1,1), sensitivities_END_plot);
 figure(1)
 subplot(2,2,1)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(1,1), '.b')
-   hold on
-end
-hold off
+plot(t_plot,sensall1, '.b')
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,1}')
 title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
+sensall2 = arrayfun(@(x) x.Gy(1,2), sensitivities_END_plot);
 subplot(2,2,2)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(1,2), '.b')
-   hold on
-end
-hold off
+plot(t_plot,sensall2, '.b')
 xlabel('t');
 ylabel('\partial y_1(t)/\partial y_{0,2}')
 title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
+sensall3 = arrayfun(@(x) x.Gy(2,1), sensitivities_END_plot);
 subplot(2,2,3)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(2,1), '.b')
-   hold on
-end
-hold off
+plot(t_plot,sensall3, '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,1}')
 title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
+sensall4 = arrayfun(@(x) x.Gy(2,2), sensitivities_END_plot);
 subplot(2,2,4)
-for i = 1:length(t_plot)
-   axis([0 20 0 20])
-   plot(t_plot(i),sensitivities_END_plot(i).Gy(2,2), '.b')
-   hold on
-end
-hold off
+plot(t_plot,sensall4, '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial y_{0,2}')
 title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
 %% Plot sensitivities parameters
@@ -105,28 +90,20 @@ t_plot = 0:0.01:20;
 sensitivities_END_plot = sensitivities_function_VDE(t_plot);
 
 figure(2)
+sensall5 = arrayfun(@(x) x.Gp(1,1), sensitivities_END_plot);
 subplot(1,2,1)
-for i = 1:length(t_plot)
-   axis([0 20 -6 0])
-   plot(t_plot(i),sensitivities_END_plot(i).Gp(1,1), '.b')
-   hold on
-end
-hold off
+plot(t_plot,sensall5, '.b')
 xlabel('t');
 ylabel('\partial y_1(t)/\partial p')
 title('G_{p,11}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 
+sensall6 = arrayfun(@(x) x.Gp(2,1), sensitivities_END_plot);
 subplot(1,2,2)
-for i = 1:length(t_plot)
-   axis([0 20 -6 0])
-   plot(t_plot(i),sensitivities_END_plot(i).Gp(2,1), '.b')
-   hold on
-end
-hold off
+plot(t_plot,sensall6, '.b')
 xlabel('t');
 ylabel('\partial y_2(t)/\partial p')
 title('G_{p,21}(t; t_0)')
-set(gca, 'FontSize', 22);
+set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
