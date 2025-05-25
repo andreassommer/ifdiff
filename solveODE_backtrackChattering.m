@@ -1,14 +1,15 @@
-function [t, chattering_switches] = solveODE_backtrackChattering(datahandle)
+function [t, sliding_index] = solveODE_backtrackChattering(datahandle)
     % INPUT:
-    % 'datahandle':             Datahandle containing the integration and switching data.
-    %
+    % 'datahandle':         Datahandle containing the integration and switching data.
+    %                           handle
     %
     % OUTPUT:
-    % 't':                      Timepoint where numerical chattering begins, i.e., fast
-    %                           switching in one switch.
+    % 't':                  Timepoint where numerical chattering begins, 
+    %                       i.e. fast switching in one switch.
+    %                           double
     %
-    % 'chattering_switches':    Array that contains the ctrlif_index's of
-    %                           switches that switched after timepoint 't'.
+    % 'sliding_index':      ctrlif_index of switch that is chattering
+    %                           integer
     %
     % Author: Michael Strik, Jun2024
     % Email: michael.strik@stud.uni-heidelberg.de
@@ -17,10 +18,11 @@ function [t, chattering_switches] = solveODE_backtrackChattering(datahandle)
 
     % get parameters
     config              = makeConfig();
+    data                = datahandle.getData();
     checklast           = config.swfreqtol_checklast; % we are checking for Filippov switching on this many of the last switches
 
     % get switching data
-    SWP_detection   = datahandle.getData().SWP_detection;
+    SWP_detection   = data.SWP_detection;
     switchingpoints = SWP_detection.switchingpoints;
 
     % compute statistical measures of switching frequencies
@@ -43,9 +45,20 @@ function [t, chattering_switches] = solveODE_backtrackChattering(datahandle)
         end
     end
 
-    % TODO: Determine ALL the chattering indices --> Ifdiff needs to store 
-    % (ctrlif_index, function_index) for every switching event.
-    % Then from that, we need to 
-    chattering_switches = SWP_detection.switchingIndices(end);
+    % Determine the chattering switches (or rather the signatures involved)
+    switchingpoints = cell2mat(switchingpoints);
+    chattering_switchingpts = switchingpoints(switchingpoints >=t);
+    k = length(chattering_switchingpts);
+    switchingFunctions = SWP_detection.switchingFunction(end-k+1:end);
+    
+    rhs_name = func2str(data.integratorSettings.preprocessed_rhs);
+    signatures = getSignatureFromHandle(switchingFunctions, true, rhs_name);
+    
+    if length(signatures) > 2 % more than one switch involved --> not supported
+        errMsg = 'Encountered chattering that involves more than one switch. Cannot solve.\n';
+        error('IFDIFF:chattering', errMsg);
+    end
 
+    sliding_index = SWP_detection.switchingIndices(end);
+    
 end
