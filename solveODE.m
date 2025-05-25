@@ -56,15 +56,14 @@ while switch_detected
     chattering = solveODE_recognizeFilippovSwitching(datahandle);
     if chattering
         solveODE_setFilippovRHS(datahandle);
-        % extend solution object from t2 ongoing until the filippov regime ends
+        % extend solution from t2 until end of filippov regime
         extendODE_filippov_regime(datahandle);
-        
         if checkForSwitchingIndices(datahandle)
             warning('Switching during or right after Filippov mode.');
         end
+        
         if datahandle.getData().SWP_detection.t2 == tspan(2)
-            % reached end of time span? --> integration complete
-            break;
+            break; % reached end of time span
         else
             fprintf('Left Filippov regime.\n');
             solveODE_prepareNextStage(datahandle);
@@ -79,7 +78,7 @@ end
 
 sliding_switches = [];
 if ~isempty(sliding_switches)
-    % TODO: Update thie, retrieve info from datahandle.sliding
+    % TODO: Update this, retrieve info from datahandle.sliding
     fprintf("A warning/error for possible Filippov-switching has occurred " + ...
         "during integration.\n" + ...
         "The following ctrlif's have been involved in possible " + ...
