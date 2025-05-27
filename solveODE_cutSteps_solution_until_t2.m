@@ -68,7 +68,7 @@ SWP_detection.switchingpoints = SWP_detection.switchingpoints(1:end-k);
 SWP_detection.switchingFunction = SWP_detection.switchingFunction(1:end-k);
 SWP_detection.jumpFunction = SWP_detection.jumpFunction(1:end-k);
 t2 = data.SWP_detection.solution_until_t2.x(end);
-x2 = data.SWP_detection.solution_until_t2.y(end);
+x2 = data.SWP_detection.solution_until_t2.y(:,end);
 SWP_detection.t2 = t2;
 SWP_detection.x2 = {x2, x2};
 
