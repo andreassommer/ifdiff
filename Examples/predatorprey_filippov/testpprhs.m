@@ -38,6 +38,7 @@ doMatlab       = true;
 doIfdiff       = true;
 doTransformed  = false;
 doErrorplot    = true; % compare ifdiff and original
+plotPosterImage= false;
 
 % name generators
 nameIfdiff = @(f) sprintf('ifdiff/%s', func2str(f));
@@ -76,6 +77,9 @@ if doIfdiff
    % profile off; profile viewer
    linewidth = 3.0;
    hIFDIFF = plotit(fignum, X_ifdiff, Y_ifdiff, 'g', nameIfdiff(intIfdiff), linewidth);
+   if plotPosterImage
+    hIFDIFF_poster = posterPlotter(fignum+1, Y_ifdiff);
+   end
 end
 
 
@@ -180,7 +184,7 @@ end
 
 function h = plotter(fignum, x, y, color, name, lw)
    figure(fignum); hold on;
-   h = plot3(y(3,:), y(2,:), y(1,:), color, 'LineWidth', lw, 'DisplayName', name);
+   h = plot3(y(3,:), y(2,:), y(1,:), 'Color', color, 'LineWidth', lw, 'DisplayName', name);
 %    view([166 12]); 
    view([97 51]);
    grid on;
@@ -192,6 +196,25 @@ function h = plotter(fignum, x, y, color, name, lw)
    drawnow
    pause(1.0);
    set(fignum, 'Position', [200  250  750  375]);
+end
+
+function h = posterPlotter(fignum, y)
+    figure(fignum); hold on;
+    color = '#00534a';
+    lw = 2.5;
+    mark_x1 = plot3(y(3,:), y(2,:), y(1,:), 'Color', color, 'LineWidth', lw);
+    xx = y(:,1);
+    hStart = plot3(xx(3), xx(2), xx(1), 'k.', 'MarkerSize', 25, 'DisplayName', 'x_0');
+    set(gca, 'Color', '#F5F5F5');
+    view([97 51]);
+    grid on;
+    box on;
+    xlabel('Predator');
+    ylabel('Prey 2');
+    zlabel('Prey 1');
+    drawnow
+    pause(1.0);
+    set(fignum, 'Position', [200  250  750  375]);
 end
 
 
