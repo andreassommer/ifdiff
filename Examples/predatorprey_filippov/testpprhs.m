@@ -33,7 +33,7 @@ eulerStep  = 1e-7;
 plotit = @plotter;
 
 % select what to do
-doEuler        = false;   % false loads from file
+doEuler        = true;   % false loads from file
 doMatlab       = true;
 doIfdiff       = true;
 doTransformed  = false;
@@ -204,7 +204,7 @@ function h = posterPlotter(fignum, y)
     lw = 2.5;
     mark_x1 = plot3(y(3,:), y(2,:), y(1,:), 'Color', color, 'LineWidth', lw);
     xx = y(:,1);
-    hStart = plot3(xx(3), xx(2), xx(1), 'k.', 'MarkerSize', 25, 'DisplayName', 'x_0');
+    h = plot3(xx(3), xx(2), xx(1), 'k.', 'MarkerSize', 25, 'DisplayName', 'x_0');
     set(gca, 'Color', '#F5F5F5');
     view([97 51]);
     grid on;
