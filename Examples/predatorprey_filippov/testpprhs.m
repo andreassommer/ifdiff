@@ -38,7 +38,6 @@ doMatlab       = true;
 doIfdiff       = true;
 doTransformed  = false;
 doErrorplot    = true; % compare ifdiff and original
-plotPosterImage= false;
 
 % name generators
 nameIfdiff = @(f) sprintf('ifdiff/%s', func2str(f));
@@ -68,18 +67,13 @@ if doIfdiff
    fprintf('Integrating with IFDIFF/%s ...\n', func2str(intIfdiff))
    figure(fignum);
    datahandle = prepareDatahandleForIntegration('pprhs', 'solver', func2str(intIfdiff), 'options', intOptions);
-   % profile off; profile clear; profile on
    th = tic();
    sol_ifdiff = solveODE(datahandle, tspan, x0_1, p);
    time_ifdiff = toc(th); fprintf('IFDIFF took %g s\n', time_ifdiff);
    X_ifdiff = X_plot;
    Y_ifdiff = deval(sol_ifdiff, X_ifdiff);
-   % profile off; profile viewer
    linewidth = 3.0;
    hIFDIFF = plotit(fignum, X_ifdiff, Y_ifdiff, 'g', nameIfdiff(intIfdiff), linewidth);
-   if plotPosterImage
-    hIFDIFF_poster = posterPlotter(fignum+1, Y_ifdiff);
-   end
 end
 
 
@@ -198,25 +192,6 @@ function h = plotter(fignum, x, y, color, name, lw)
    set(fignum, 'Position', [200  250  750  375]);
 end
 
-function h = posterPlotter(fignum, y)
-    figure(fignum); hold on;
-    color = '#00534a';
-    lw = 2.5;
-    mark_x1 = plot3(y(3,:), y(2,:), y(1,:), 'Color', color, 'LineWidth', lw);
-    xx = y(:,1);
-    h = plot3(xx(3), xx(2), xx(1), 'k.', 'MarkerSize', 25, 'DisplayName', 'x_0');
-    set(gca, 'Color', '#F5F5F5');
-    view([97 51]);
-    grid on;
-    box on;
-    xlabel('Predator');
-    ylabel('Prey 2');
-    zlabel('Prey 1');
-    drawnow
-    pause(1.0);
-    set(fignum, 'Position', [200  250  750  375]);
-end
-
 
 function sol = explEulerFull(rhs, tspan, x0, stepsize)
     xdim = length(x0);  % get dimension
@@ -232,7 +207,6 @@ function sol = explEulerFull(rhs, tspan, x0, stepsize)
     sol.x = T;
     sol.y = X;
 end
-
 
 
 function sol = explEuler(rhs, tspan, x0, stepsize)
@@ -283,7 +257,6 @@ function sol = implEuler(rhs, tspan, x0, stepsize)
    sol.x = T;
    sol.y = X;
 end
-
 
 
 function diffnorm = calcDiff(yA, yB)
