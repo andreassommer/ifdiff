@@ -76,15 +76,6 @@ while switch_detected
     switch_detected = checkForSwitchingIndices(datahandle);
 end
 
-sliding_switches = [];
-if ~isempty(sliding_switches)
-    % TODO: Update this, retrieve info from datahandle.sliding
-    fprintf("A warning/error for possible Filippov-switching has occurred " + ...
-        "during integration.\n" + ...
-        "The following ctrlif's have been involved in possible " + ...
-        "Filippov-switching: [%s].\n", join(string(unique(sliding_switches)), ', '));
-end
-
 varargout = solveODE_assembleOutput(datahandle, nargout);
 
 end

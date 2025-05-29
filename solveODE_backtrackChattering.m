@@ -1,4 +1,4 @@
-function [t, sliding_index] = solveODE_backtrackChattering(datahandle)
+function [t, sliding_index, signatures] = solveODE_backtrackChattering(datahandle)
     % INPUT:
     % 'datahandle':         Datahandle containing the integration and switching data.
     %                           handle
@@ -10,6 +10,10 @@ function [t, sliding_index] = solveODE_backtrackChattering(datahandle)
     %
     % 'sliding_index':      ctrlif_index of switch that is chattering
     %                           integer
+    %
+    % 'signatures':         signatures involved in the chattering.
+    %                           cell array of char arrays
+    %                           
     %
     % Author: Michael Strik, Jun2024
     % Email: michael.strik@stud.uni-heidelberg.de
@@ -52,7 +56,7 @@ function [t, sliding_index] = solveODE_backtrackChattering(datahandle)
     switchingFunctions = SWP_detection.switchingFunction(end-k+1:end);
     
     rhs_name = func2str(data.integratorSettings.preprocessed_rhs);
-    signatures = getSignatureFromHandle(switchingFunctions, true, rhs_name);
+    signatures = getSignatureFromHandle(switchingFunctions, rhs_name);
     
     if length(signatures) > 2 % more than one switch involved --> not supported
         errMsg = 'Encountered chattering that involves more than one switch. Cannot solve.\n';

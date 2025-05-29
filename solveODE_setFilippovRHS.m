@@ -15,7 +15,7 @@ function solveODE_setFilippovRHS(datahandle)
 %        michi.strik@gmail.com
 
 % determine where to go back
-[t, sliding_index] = solveODE_backtrackChattering(datahandle);
+[t, sliding_index, signatures] = solveODE_backtrackChattering(datahandle);
 
 % cut steps
 solveODE_cutSteps_solution_until_t2(datahandle, t)
@@ -42,6 +42,7 @@ data.sliding.function_index = data.forcedBranching.function_index(sliding_index)
 datahandle.setData(data);
 
 % message
-fprintf("Entered Filippov regime.\n");
+signatureInfo = sprintf(' %s', signatures{:});
+fprintf("Entered Filippov regime, convexification with signatures:%s.\n", signatureInfo);
 
 end
