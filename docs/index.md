@@ -27,7 +27,7 @@ $$
 with
 
 $$
-  f_1(t,x,p) = 0.01 * t^t + x_2^3
+  f_1(t,x,p) = 0.01 * t^2 + x_2^3
   \qquad
   f_2(t,x,p) = \begin{cases} 0 ~~~if~~ x_1 < p  \\  5 ~~~if~~ p \leq x_1 < p+0.5  \\  0 ~~~if~~ x_1 \geq p+0.5  \end{cases}
 $$
