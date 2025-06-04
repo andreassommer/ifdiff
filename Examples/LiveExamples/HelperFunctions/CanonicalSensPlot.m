@@ -1,6 +1,7 @@
-function CanonicalSensPlot(t_plot, sensitivities_END_plot)
+function CanonicalSensPlot(t_plot, sensitivities_END_plot, num)
+
     sensall1 = arrayfun(@(x) x.Gy(1,1), sensitivities_END_plot);
-    figure(1)
+    figure(num);
     subplot(2,2,1)
     plot(t_plot,sensall1, '.b')
     xlabel('t');
