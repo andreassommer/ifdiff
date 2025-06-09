@@ -28,7 +28,7 @@ aq    = p(9);
 
 % switching manifold
 H = beta1*p1 - aq*beta2*p2;
-%fprintf('t=%22.17f  x=%.14f %.14f %.14f   H=%22.10f\n', t, x(1), x(2), x(3), H);
+
 % switched rhs
 if H >= 0
    dx(1) = (r1 - beta1*P) .* p1;

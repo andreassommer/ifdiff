@@ -1,4 +1,4 @@
-function dx = pprhs(t,state,p)
+function dx = pprhs5(t,state,p)
 % Predator Prey Model 
 %
 % Source: 
@@ -45,9 +45,5 @@ else
    dx(2) = (r2-beta2/beta1*z)*y ;
    dx(3) = (e*q2/aq*y-m)*z      ;
 end
-
-
-%if(h>0), fprintf('1'); else; fprintf('.'); end
-
 
 end
