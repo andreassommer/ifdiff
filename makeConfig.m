@@ -124,9 +124,9 @@ config.jump.disable                         = false;
 
 
 % filippov-switching / sliding-mode recognition parameters
-config.swfreqtol= 100;              % local switching frequency accepted
-config.swfreqtol_checklast = 10;    % compute local switching frequency based on this many of the last switches
-config.swmax    = 10000;            % total amount of switches accepeted during integration
+config.swfreqtol            = 100;   % local switching frequency accepted
+config.swfreqtol_checklast  = 10;    % compute local switching frequency based on this many of the last switches
+config.swmax                = 10000; % total amount of switches accepted during integration
 config.swfreq_haltOnWarning = false;
 
 

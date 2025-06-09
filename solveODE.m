@@ -16,6 +16,7 @@ function varargout = solveODE(datahandle, tspan, initialvalues, parameters)
 % nargout = 1 -> ode solution object
 % nargout = 2 -> ode solution object and datahandle with all data.
 
+config = makeConfig;
 initDatahandleFields(datahandle, tspan, initialvalues, parameters);
 
 solveODE_firstTime(datahandle)
@@ -59,13 +60,14 @@ while switch_detected
         % extend solution from t2 until end of filippov regime
         extendODE_filippov_regime(datahandle);
         if checkForSwitchingIndices(datahandle)
-            warning('Switching during or right after Filippov mode.');
+            error('IFDIFF:switchInFilippov', 'Switching during or right after Filippov mode.');
         end
-        
         if datahandle.getData().SWP_detection.t2 == tspan(2)
             break; % reached end of time span
         else
-            fprintf('Left Filippov regime.\n');
+            if config.debugMode
+                fprintf('Left Filippov regime.\n');
+            end
             solveODE_prepareNextStage(datahandle);
         end
     end

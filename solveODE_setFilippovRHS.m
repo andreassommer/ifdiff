@@ -14,6 +14,8 @@ function solveODE_setFilippovRHS(datahandle)
 % Email: michael.strik@stud.uni-heidelberg.de
 %        michi.strik@gmail.com
 
+config = makeConfig();
+
 % determine where to go back
 [t, sliding_index, signatures] = solveODE_backtrackChattering(datahandle);
 
@@ -28,7 +30,7 @@ switchingFunction = datahandle.getData().SWP_detection.switchingfunctionhandles{
 % activate forced branching and set RHS
 data = datahandle.getData();
 t = data.SWP_detection.solution_until_t2.x(end);
-x = deval(data.SWP_detection.solution_until_t2, data.SWP_detection.solution_until_t2.x(end)); 
+x = deval(data.SWP_detection.solution_until_t2, t); 
 ctrlif_setForcedBranchingSignature(datahandle, t, x);
 filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, sliding_index, switchingFunction, t, y, p);
 
@@ -42,7 +44,9 @@ data.sliding.function_index = data.forcedBranching.function_index(sliding_index)
 datahandle.setData(data);
 
 % message
-signatureInfo = sprintf(' %s', signatures{:});
-fprintf("Entered Filippov regime, convexification with signatures:%s.\n", signatureInfo);
+if config.debugMode
+    signatureInfo = sprintf(' %s', signatures{:});
+    fprintf("Entered Filippov regime, convexification with signatures:%s.\n", signatureInfo);
+end
 
 end

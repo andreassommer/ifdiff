@@ -6,10 +6,6 @@ function extendODE_filippov_regime(datahandle)
 
 data = datahandle.getData();
 
-t = data.SWP_detection.solution_until_t2.x(end);
-x = deval(data.SWP_detection.solution_until_t2,  data.SWP_detection.solution_until_t2.x(end)); 
-ctrlif_setForcedBranchingSignature(datahandle, t, x);
-
 rhs = @(t, y) data.sliding.filippov_rhs(datahandle, t, y, data.SWP_detection.parameters);
 z = odextend(...
     data.SWP_detection.solution_until_t2,... % sol
@@ -30,16 +26,8 @@ data.SWP_detection.t2 = data.SWP_detection.solution_until_t2.x(end);
 data.SWP_detection.solution_until_t3 = z;
 data.SWP_detection.t3 = data.SWP_detection.solution_until_t2.x(end);
 
-
 % clear filippov data, serves also as indicator for inactive filippov mode
-
-% extendODE_filippov_regime_cleanup(data.sliding);
-data.sliding.filippov_rhs   = [];
-data.sliding.alpha          = [];
-data.sliding.index          = [];
-data.sliding.ctrlif_index   = [];
-data.sliding.function_index = [];
-
+data.sliding = extendODE_filippov_regime_cleanup(data.sliding);
 
 datahandle.setData(data);
 

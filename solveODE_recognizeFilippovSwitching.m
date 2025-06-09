@@ -2,7 +2,7 @@ function chattering = solveODE_recognizeFilippovSwitching(datahandle)
 % This function evaluates the data in 'datahandle' to determine if a 
 % Filippov switching event possibly has occured. It does so by
 % calculating the local switching frequency and counting the total
-% amount of switches occured so far. If either of these is too high, an
+% amount of switches occurred so far. If either of these is too high, an
 % error/warning is issued. Recognition parameters can be changed by the
 % user in the file 'makeConfig.m'.
 %
@@ -24,7 +24,7 @@ chattering = false;
 config = makeConfig();
 swfreqtol           = config.swfreqtol;              % local switching frequency accepted
 swfreqtol_checklast = config.swfreqtol_checklast;    % compute local switching frequency based on this many of the last switches
-swmax               = config.swmax;                  % total amount of switches accepeted during integration
+swmax               = config.swmax;                  % total amount of switches accepted during integration
     
 % get switching data from datahandle
 SWP_detection   = datahandle.getData().SWP_detection;
@@ -50,15 +50,14 @@ end
 % throw error / issue warning
 if chattering
     message = ['Switching frequency exceeds local or global tolerance, ' ...
-              'potential Filippov switching detected.\n ' ...
-              'Local switching frequency: %0.5g. Total switching events: %i.'];
-    switch config.swfreq_haltOnWarning
-        case true
-            error('IFDIFF:chattering', message, swfreq, n_switches_total);
-        case false
-            warning('IFDIFF:chattering', message, swfreq, n_switches_total');
+              'potential Filippov switching detected.\n' ...
+              'Local switching frequency: %.5g.\n'...
+              'Total switching events: %i.'];
+    if config.swfreq_haltOnWarning
+        error('IFDIFF:chattering', message, swfreq, n_switches_total);
+    else
+        warning('IFDIFF:chattering', message, swfreq, n_switches_total');
     end
+end
 
 end
-    
-end 
