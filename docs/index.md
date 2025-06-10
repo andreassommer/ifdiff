@@ -173,3 +173,31 @@ Much worse, it can generate arbitrarily wrong results without any notice (see th
 IFDIFF provides correct integration results, correct first-order sensitivities and information 
 about the switching structure of your model.
 
+# Join us for a workshop on:
+**Filippov-ODEs with State-dependent Switches**  
+**Theory and Hands-On Practical with IFDIFF**  
+**Date: Friday, July 18, 2025** • Time: 9–16h (s.t.)  
+CIP Pool 1 • 3rd Floor • Mathematikon  
+Im Neuenheimer Feld 205 • 69120 Heidelberg  
+
+[Register here!](https://t1p.de/ifdiff2025)
+
+## Short Course Program
+
+**09:00 – 11:00** · _Introduction to Switched ODEs_
+
+**11:00 – 12:00** · _Hands-On Practical: Part 1_
+
+**12:00 – 13:00** · _Lunch break_ (finger food and beverages)
+
+**13:00 – 16:00** · _Hands-On Practical: Part 2_
+
+_Coffee and cookies always available_
+
+---
+
+![IFDIFF Workshop](ifdiff-workshop-2025-preview.png)
+
+
+[Workshop poster and program (PDF)](ifdiff-workshop-2025-poster-and-program-website.pdf)  
+[Register here!](https://t1p.de/ifdiff2025)
