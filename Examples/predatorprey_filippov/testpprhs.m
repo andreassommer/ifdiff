@@ -30,7 +30,7 @@ intOptions  = odeset('reltol', 1e-5, 'abstol', 1e-5, 'MaxStep', 0.5);
 
 % select what to do
 doIfdiff    = true;
-doEuler     = false; % false lets it load from a file
+doEuler     = false; % Euler takes very long! false: loads from file, if exists
 doErrorplot = true;  % compare ifdiff and plain euler
 
 % name generators
@@ -40,45 +40,48 @@ namePlain  = @(f) sprintf('plain %s' , func2str(f));
 
 %% IFDIFF
 if doIfdiff
-   fprintf('Integrating with IFDIFF/%s ...\n', func2str(intIfdiff))
-   figure(fignum);
-   datahandle = prepareDatahandleForIntegration('pprhs', 'solver', func2str(intIfdiff), 'options', intOptions);
-   th = tic();
-   sol_ifdiff = solveODE(datahandle, tspan, x0_1, p);
-   time_ifdiff = toc(th); fprintf('IFDIFF took %g s\n', time_ifdiff);
-   X_ifdiff = X_plot;
-   Y_ifdiff = deval(sol_ifdiff, X_ifdiff);
-   linewidth = 3.0;
-   hIFDIFF = plotit(fignum, Y_ifdiff, 'g', nameIfdiff(intIfdiff), linewidth);
+    fprintf('Integrating with IFDIFF/%s ...\n', func2str(intIfdiff))
+    figure(fignum);
+    datahandle = prepareDatahandleForIntegration('pprhs', 'solver', func2str(intIfdiff), 'options', intOptions);
+    th = tic();
+    sol_ifdiff = solveODE(datahandle, tspan, x0_1, p);
+    time_ifdiff = toc(th); fprintf('IFDIFF took %g s\n', time_ifdiff);
+    X_ifdiff = X_plot;
+    Y_ifdiff = deval(sol_ifdiff, X_ifdiff);
+    linewidth = 3.0;
+    hIFDIFF = plotit(fignum, Y_ifdiff, 'g', nameIfdiff(intIfdiff), linewidth);
 end
 
 
 %% EULER Integration
 euler_fname = fullfile('.', 'Examples', 'predatorprey_filippov', sprintf('sol_euler_%.0e.mat', eulerStep));
 if doEuler
-   fprintf('Integrating with integrator %s...\n', func2str(intEuler))
-   figure(fignum);
-   th = tic();
-   sol_euler = intEuler(@(t,x) pprhs(t,x,p), tspan, x0_1, eulerStep);
-   time_euler = toc(th); fprintf('Euler took %g s\n', time_euler);
-   save(euler_fname, "sol_euler");
-else
-   fprintf('Loading sol_euler from file %s\n', euler_fname);
-   tmp = load(euler_fname, 'sol_euler');
-   sol_euler = tmp.sol_euler;
-   doEuler = true;
+    fprintf('Integrating with integrator %s...\n', func2str(intEuler))
+    figure(fignum);
+    th = tic();
+    sol_euler = intEuler(@(t,x) pprhs(t,x,p), tspan, x0_1, eulerStep);
+    time_euler = toc(th); fprintf('Euler took %g s\n', time_euler);
+    save(euler_fname, "sol_euler");
+elseif isfile(euler_fname)
+    fprintf('Loading sol_euler from file %s\n', euler_fname);
+    tmp = load(euler_fname, 'sol_euler');
+    sol_euler = tmp.sol_euler;
+    doEuler = true;
 end
-X_euler = X_plot;
-Y_euler = transpose(interp1(sol_euler.x, transpose(sol_euler.y), X_euler));
-linewidth = 2.0;
-hEuler = plotit(fignum, Y_euler, 'c', namePlain(intEuler), linewidth);
-
+if doEuler
+    X_euler = X_plot;
+    Y_euler = transpose(interp1(sol_euler.x, transpose(sol_euler.y), X_euler));
+    linewidth = 2.0;
+    hEuler = plotit(fignum, Y_euler, 'c', namePlain(intEuler), linewidth);
+end
 
 %% ANALYSIS
 if doErrorplot
-   if (doIfdiff && doEuler)
-      fignum = fignum + 1; errorPlot(fignum, X_plot, Y_ifdiff, Y_euler, nameIfdiff(intIfdiff), namePlain(intEuler))
-   end
+    if (doIfdiff && doEuler)
+        fignum = fignum + 1; errorPlot(fignum, X_plot, Y_ifdiff, Y_euler, nameIfdiff(intIfdiff), namePlain(intEuler))
+    else
+        fprintf('Not enough data to compare. Either IFDIFF or Euler solution missing.\n')
+    end
 end
 
 % FINITO
