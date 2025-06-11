@@ -5,9 +5,10 @@ function t2_final = solveODE_computeSwitchingPoint_bisection(bisection)
 % t3 is upper bound; avoid rounding errors; 
 % root is calculated up to machine precision
 % exact switch may be later, solution object may have small errors. 
-
-
-
+%
+% FUNCTION MIGHT NEED REVISION. See solveODE_computeSwitchingPoint_checkSwitchingFunction.
+%
+% VARIABLES:
 % t -> time
 % Y -> value of ODE solution (required to evaluate the switching function; i.e. switchingFunctionHandle)
 % sw -> value of switchingfunction
@@ -41,16 +42,19 @@ while  bisection.t3 - bisection.t1 > min(eps(bisection.t3), eps(bisection.t1))
     
     
     
-    if  bisection.sw2*bisection.sw1 > 0 || abs(bisection.sw1_isNotZero) + abs(bisection.sw2) + abs(bisection.sw1) == 0
+    if  bisection.sw2*bisection.sw1 > 0
         bisection.t1      = bisection.t2;
         bisection.sw1     = bisection.sw2;
     else 
         bisection.t3      = bisection.t2;
         bisection.sw3     = bisection.sw2;
     end 
-    
-    
-    
+end
+
+t2_final = bisection.t3; 
+
+end
+
 %     % update t1, t3 with t2 resp.
 %     if (bisection.sw2 > 0 && bisection.sw1 > 0) || (bisection.sw2 < 0 && bisection.sw1 < 0)
 %         bisection.t1      = bisection.t2;
@@ -77,17 +81,3 @@ while  bisection.t3 - bisection.t1 > min(eps(bisection.t3), eps(bisection.t1))
 %     if updateSuccessfull == false
 %         error('Switching Point bisection failed - root of switching function cannot be detected')
 %     end 
-end
-
-t2_final = bisection.t3; 
-
-end
-
-
-
-
-
-
-
-
-
