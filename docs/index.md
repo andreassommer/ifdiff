@@ -132,7 +132,7 @@ and __IFDIFF delivers the correct result__:
 ![Canonical Example with ifdiff](./canonex_ifdiff.png)
 
 The switching times can be determined analytically for this example, and the switching times computed by ifdiff
-are exact up to integration tolerance. Using, e.g., absolute and relative toleances of $10^{-14}$ and $10^{-12}$, the
+are exact up to integration tolerance. Using, e.g., absolute and relative tolerances of $10^{-14}$ and $10^{-12}$, the
 first switching times is computed an error less than $10^{-14}$, and the second with an error less than $10^{-11}$.
 
 Note that the `sol` structure returned by `solveODE` is an augmented version of the solution structures returned
