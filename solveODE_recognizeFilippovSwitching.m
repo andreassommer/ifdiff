@@ -52,11 +52,11 @@ if chattering
     message = ['Switching frequency exceeds local or global tolerance, ' ...
               'potential Filippov switching detected.\n' ...
               'Local switching frequency: %.5g.\n'...
-              'Total switching events: %i.'];
+              'Total switching events: %i\n.'];
     if config.swfreq_haltOnWarning
         error('IFDIFF:chattering', message, swfreq, n_switches_total);
     else
-        warning('IFDIFF:chattering', message, swfreq, n_switches_total');
+        warning('IFDIFF:chattering', message, swfreq, n_switches_total);
     end
 end
 

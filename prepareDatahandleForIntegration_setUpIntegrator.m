@@ -94,14 +94,14 @@ data.integratorSettings.optionsForcedBranching = odeset(data.integratorSettings.
 data.integratorSettings.preprocessed_rhs = str2func(data.mtreeplus{2,1});
 
 % sliding fields
-data.sliding.index   = [];
-data.sliding.filippov_rhs = []; 
-data.sliding.ctrlif_index = [];
-data.sliding.function_index = [];
-data.sliding.alpha = [];
+data.sliding.index              = [];
+data.sliding.filippov_rhs       = []; 
+data.sliding.ctrlif_index       = [];
+data.sliding.function_index     = [];
+data.sliding.alpha_last         = [];
 data.sliding.convexification.function_index = [];
-data.sliding.convexification.t = [];
-data.sliding.convexification.alpha = [];
+data.sliding.convexification.t              = [];
+data.sliding.convexification.alpha          = [];
 
 
 datahandle.setData(data);
