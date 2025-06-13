@@ -3,10 +3,9 @@ function bisection = solveODE_computeSwitchingPoint_prepareBisection(datahandle,
 % 'datahandle':
 % 'switchingFunctionHandle':
 % 'parameters':
-% compute the values of the switching function at timeInterval and
-% yValues
-
-
+% compute the values of the switching function at timeInterval and yValues
+%
+%
 % t -> time
 % Y -> value of ODE solution (required to evaluate the switching function; i.e. switchingFunctionHandle)
 % sw -> value of switchingfunction
@@ -44,20 +43,4 @@ bisection.sw1 = bisection.switchingFunction([], bisection.t1, bisection.y1, bise
 bisection.sw3 = bisection.switchingFunction([], bisection.t3, bisection.y3, bisection.p);
 
 
-
-
-
 end
-
-
-
-
-
-
-
-
-
-
-
-
-

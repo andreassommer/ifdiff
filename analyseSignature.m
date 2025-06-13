@@ -1,35 +1,52 @@
-function status = analyseSignature(t, x, flag, datahandle)
-% output function for the integration of the ODE; returns status = 1 to
-% stop the integration; compares the current signature (signature of the
+function status = analyseSignature(t, x, flag, datahandle, debugMode)
+% Output function for the integration of the ODE. 
+% Returns status = 1 to stop the integration. 
+% It compares the current signature (signature of the
 % last function evaluation of the RHS) with the last signature in
-% signatureArray (the fixed signature that is used for the current
-% integration step)
-
-% At the start of integration, a solver calls ODEPLOT(TSPAN,Y0,'init') to
-% initialize the output function.  After each integration step to new time
-% point T with solution vector Y the solver calls STATUS = ODEPLOT(T,Y,'').
-% If the solver's 'Refine' property is greater than one (see ODESET), then
-% T is a column vector containing all new output times and Y is an array
-% comprised of corresponding column vectors.  The STATUS return value is 1
-% if the STOP button has been pressed and 0 otherwise.  When the
-%     integration is complete, the solver calls ODEPLOT([],[],'done').
-
-% 't': time of the last successful integration step (or last steps)
-% 'y': y value of the last integration step (or last steps)
-% 'flag': different flags yield to different results ('init' + [] +
-% 'done' have to be implemented)
-% 'datahandle': data handle which contains all signature related staff
+% signatureArray (the forced signature that is used for the current
+% integration step). If they differ, a switching event has occurred and the
+% integration is stopped to treat the switching event appropriately.
 %
-% 'status': the status of the output function, status = 0: nothing to do
-%  status = 1: stop/halt integration
+% If ifdiff is in Filippov mode, the integration also stops upon reaching
+% the end of a Filippov regime.
+%
+% When the integration is complete, the solver calls OutputFcn([],[],'done').
+%
+%
+% INPUT:
+% 't':      time of the last successful integration step (or last steps)
+% 'y':      y value of the last integration step (or last steps)
+% 'flag':   Type of call. 
+%           'init' -> Before the integration.
+%           []     -> After a successful time-step.
+%           'done' -> After integration is complete. 't' and 'x' are not
+%                     passed.
+%                     Note: Integration can be complete either because the
+%                           end of the timespan or because the integration
+%                           has been stopped, i.e. after status=1 has been
+%                           returned.
+%                     
+% 'datahandle': data handle which contains everything we know about the
+%               solution, including signature-related information
+%
+% 'debugMode'   Set true to store detailed information about sliding mode
+%               intervals. In particular, ifdiff stores convex-combination
+%               parameters and ctrlif's in sliding mode.
+%
+%
+%
+% OUTPUT:
+% 'status': The status of the output function.
+%           status = 0: nothing to do; status = 1: stop/halt integration
+
 data = datahandle.getData();
 
 switch flag
-    % initialization, before integrating
     case 'init'
-        
+        % nothing to do.
+
     case []
-        
+        % events monitoring
         status = 0;
         
         % compute RHS one last time to make sure the most recent evaluation is actually at t+h.
@@ -42,29 +59,52 @@ switch flag
             data.integratorSettings.preprocessed_rhs(datahandle, t(end), x(:,end), data.SWP_detection.parameters);
         end
         data = datahandle.getData();
-
-        cond = analyseSignature_checkForSwitch(...
-            data.forcedBranching.switch_cond_forcedBranching, ...
-            data.forcedBranching.switch_cond);
-        % cond = true; switch occured, step not accepted
-        % cond = false; no switch occured, step accepted
         
-        if cond
-            % a switch has occured
-            status = 1;
-            data.forcedBranching.switchDetected = 1;
-            % disp('A switch has occured');  % ONLY FOR DEBUG
+        signature_changed = false;
+        sliding_mode_left = false;
+        % 'normal' ifdiff mode
+        if isempty(data.sliding.filippov_rhs)
+            signature_changed = analyseSignature_checkForSwitch(...
+                data.forcedBranching.switch_cond_forcedBranching, ...
+                data.forcedBranching.switch_cond);
+        % sliding mode: filippov rhs active
         else
-            % t_i becomes t_i+1 however, since no switch occured, remains
-            % the same as before.
-            data.forcedBranching.switch_cond    = zeros(1,length(data.forcedBranching.switch_cond_forcedBranching));
-            data.forcedBranching.ctrlif_index   = zeros(1,length(data.forcedBranching.ctrlif_index_forcedBranching));
-            data.forcedBranching.function_index = cell(length(data.forcedBranching.function_index_forcedBranching),1);
+            % compute convexification parameter alpha and check its value
+            [abstol, reltol] = getIntegratorTolerances(data.integratorSettings.options);
+            state = data.SWP_detection.solution_until_t2.x(end);
+            alpha_tol = min(abstol, reltol*norm(state));
+            alpha = data.sliding.alpha_last;
+            if alpha <= alpha_tol || alpha >= 1-alpha_tol
+                sliding_mode_left = true;
+            end
+
+            % store sliding mode info
+            if debugMode
+                sliding_ctrlif_idx = data.sliding.ctrlif_index;
+                sliding_fct_idx = data.sliding.function_index;
+                data.sliding.convexification.t              = [data.sliding.convexification.t, t]; 
+                data.sliding.convexification.alpha          = [data.sliding.convexification.alpha, alpha];
+                data.sliding.convexification.ctrlif_index   = [data.sliding.convexification.ctrlif_index,   repmat(sliding_ctrlif_idx, 1,length(t))];
+                data.sliding.convexification.function_index = [data.sliding.convexification.function_index, repmat(sliding_fct_idx,    1,length(t))];
+            end
+            
+        end
+
+        data.forcedBranching.switchDetected = signature_changed;
+        data.sliding.sliding_mode_left = sliding_mode_left;
+
+        if signature_changed || sliding_mode_left
+                status = 1;
+            else
+                % t_i becomes t_i+1. however, since no switch occured, it remains the same as before.
+                data.forcedBranching.switch_cond    = zeros(1,length(data.forcedBranching.switch_cond_forcedBranching));
+                data.forcedBranching.ctrlif_index   = zeros(1,length(data.forcedBranching.ctrlif_index_forcedBranching));
+                data.forcedBranching.function_index = cell(length(data.forcedBranching.function_index_forcedBranching),1);
         end
         
     case 'done'
         
-        if isfield(data.forcedBranching, 'switchDetected') && data.forcedBranching.switchDetected
+        if data.forcedBranching.switchDetected
             
             data.SWP_detection.switch_cond_t1 = data.forcedBranching.switch_cond_forcedBranching;
             data.SWP_detection.switch_cond_t2 = [];

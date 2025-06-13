@@ -87,11 +87,22 @@ if ~isempty(optionlist)
 end
 
 % OutputFcn which will be called after each successful integration step to monitor switches.
-outputFunction =  @(t, y, flag) analyseSignature(t, y, flag, datahandle);
+outputFunction =  @(t, y, flag) analyseSignature(t, y, flag, datahandle, config.debugMode);
 data.integratorSettings.optionsForcedBranching = odeset(data.integratorSettings.options, 'OutputFcn', outputFunction);
 
 % Function handle for the preprocessed RHS function.
 data.integratorSettings.preprocessed_rhs = str2func(data.mtreeplus{2,1});
+
+% sliding fields
+data.sliding.index              = [];
+data.sliding.filippov_rhs       = []; 
+data.sliding.ctrlif_index       = [];
+data.sliding.function_index     = [];
+data.sliding.alpha_last         = [];
+data.sliding.convexification.function_index = [];
+data.sliding.convexification.t              = [];
+data.sliding.convexification.alpha          = [];
+
 
 datahandle.setData(data);
 end
