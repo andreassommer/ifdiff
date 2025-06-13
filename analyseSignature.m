@@ -74,7 +74,7 @@ switch flag
             state = data.SWP_detection.solution_until_t2.x(end);
             alpha_tol = min(abstol, reltol*norm(state));
             alpha = data.sliding.alpha_last;
-            if alpha(end) <= alpha_tol || alpha(end) >= 1-alpha_tol
+            if alpha <= alpha_tol || alpha >= 1-alpha_tol
                 sliding_mode_left = true;
             end
 

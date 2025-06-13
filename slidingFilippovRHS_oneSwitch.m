@@ -48,21 +48,19 @@ n_dot_fplus  = dot(n,f_plus);
 n_dot_fminus = dot(n,f_minus);    
 
 % assemble alpha
-alpha = n_dot_fplus./(n_dot_fplus-n_dot_fminus);
+alpha = n_dot_fplus/(n_dot_fplus-n_dot_fminus);
 
 % SANITY CHECK
 % dot(n,f_plus) and dot(n, f_minus) can't have the same sign. otherwise we 
-% are not in sliding mode anymore and we can not rely on the formula for alpha 
-same_sign = (n_dot_fplus <= 0 & n_dot_fminus <= 0) | (n_dot_fplus >= 0 & n_dot_fminus >= 0);
-if any(same_sign)
-    % dot(n,f_plus) and dot(n,f_minus) have the same sign
-    pos = n_dot_fplus(same_sign)>0;
-    neg = n_dot_fplus(same_sign)<0;
-    alpha(pos) = zeros(1,length(alpha(pos)));
-    % pos: n points into {swFct>=0}, so f_plus,f_minus point into {sigma>0}.
-    % we continue with f_plus, set alpha=0
-    alpha(neg) = ones(1,length(alpha(neg)));
+% are not in sliding mode anymore and can not rely on the previous formula for alpha
+if n_dot_fplus < 0 && n_dot_fminus < 0
     % neg: f_plus, f_minus point into {swFct<0}, continue with f_minus
+    alpha = 1;
+end
+
+if n_dot_fplus > 0 && n_dot_fminus > 0
+    % pos: n points into {swFct>=0}, so f_plus,f_minus point into {sigma>0}.
+    alpha = 0;
 end
 
 % write alpha into datahandle
