@@ -19,11 +19,8 @@ if sign(bisection.sw1) == sign(bisection.sw3)
 end
 
 
-if bisection.sw1 == 0
-    % try to obtain a point left of t1 where the switching function is in
-    % fact nonzero
-    bisection = solveODE_computeSwitchingPoint_backtrackNonzero(bisection);
-    % check whether switching function value of the model is zero at the initial value as well
-end
+% Open question:    What if bisection.sw1 == 0? Can we find an interval 
+%                   where at the edges the switching function is nonzero,
+%                   without provoking other issues?
 
 end
