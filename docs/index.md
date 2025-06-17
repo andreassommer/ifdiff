@@ -1,19 +1,4 @@
-# IFDIFF - A Matlab Toolkit for ODEs with State˗Dependent Switches
-
-The software package IFDIFF deals with the solution and algorithmic generation of sensitivities
-in ordinary differential equations with implicit (state-dependent) non-differentiabilites ("switches") 
-in the right-hand side that is given as Matlab program code with non-differentiable operators such as 
-`min`, `max`, `abs`, `sign`, as well as `if`-branching. IFDIFF automatically generates only necessary 
-switching functions, outputs them as Matlab code, and detects switching points accurately up to machine
-precision.
-
-IFDIFF handles multidimensional state and parameter vectors and can be transparently used in existing code,
-as it generates `sol` solution structures compatible to the Matlab ode solvers. No modifications to the 
-right hand side or manual processing are necessary. A single preparation call is sufficient.
-
-In the PErFDiff project, the existing implementation is to be further developed and extended for Filippov systems. 
-
-# Save the Date and join our Workshop on:
+# IFDIFF Workshop: Friday, July 18th, 2025
 ## Filippov-ODEs with State-dependent Switches  
 **Theory and Hands-On Practical with IFDIFF**
 **Date: Friday, July 18, 2025** • Time: 9–16h (s.t.)  
@@ -41,6 +26,23 @@ _Coffee and cookies always available_
 [Workshop poster and program (PDF)](ifdiff-workshop-2025-poster-and-program-website.pdf)  
 [Register here!](https://t1p.de/ifdiff2025)
 
+<br/>
+<br/>
+
+# IFDIFF - A Matlab Toolkit for ODEs with State˗Dependent Switches
+
+The software package IFDIFF deals with the solution and algorithmic generation of sensitivities
+in ordinary differential equations with implicit (state-dependent) non-differentiabilites ("switches") 
+in the right-hand side that is given as Matlab program code with non-differentiable operators such as 
+`min`, `max`, `abs`, `sign`, as well as `if`-branching. IFDIFF automatically generates only necessary 
+switching functions, outputs them as Matlab code, and detects switching points accurately up to machine
+precision.
+
+IFDIFF handles multidimensional state and parameter vectors and can be transparently used in existing code,
+as it generates `sol` solution structures compatible to the Matlab ode solvers. No modifications to the 
+right hand side or manual processing are necessary. A single preparation call is sufficient.
+
+In the PErFDiff project, the existing implementation is to be further developed and extended for Filippov systems. 
 
 <br/>
 <br/>
