@@ -1,11 +1,11 @@
-# IFDIFF Workshop: Friday, July 18th, 2025
+# Workshop: Friday, July 18, 2025
 ## Filippov-ODEs with State-dependent Switches  
-**Theory and Hands-On Practical with IFDIFF**
-**Date: Friday, July 18, 2025** • Time: 9–16h (s.t.)  
+**Theory and Hands-On Practical with IFDIFF**  
+**Friday, July 18, 2025** • Time: 9–16h  
 CIP Pool 1 • 3rd Floor • Mathematikon  
 Im Neuenheimer Feld 205 • 69120 Heidelberg  
 
-[Register here!](https://t1p.de/ifdiff2025)
+[**Register here!**](https://t1p.de/ifdiff2025) - Participation is free.
 
 ![IFDIFF Workshop](ifdiff-workshop-2025-preview.png)
 
