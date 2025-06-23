@@ -7,7 +7,7 @@ Im Neuenheimer Feld 205 • 69120 Heidelberg
 
 [**Register here!**](https://t1p.de/ifdiff2025) - Participation is free.
 
-![IFDIFF Workshop](ifdiff-workshop-2025-preview.png)
+[![IFDIFF Workshop](ifdiff-workshop-2025-preview.png)](ifdiff-workshop-2025-poster-and-program-website.pdf)
 
 ---
 
