@@ -24,7 +24,13 @@ switch_detected = checkForSwitchingIndices(datahandle);
 
 % Prepare factory for switching and jump functions
 if switch_detected
-    [switchFactory, jumpFactory] = solveODE_setupSwitchingFunctionFactories(datahandle);
+    [switchFactory, jumpFactory, modelFactory] = solveODE_setupSwitchingFunctionFactories(datahandle);
+    data = datahandle.getData();
+    data.codeGen = struct( ...
+        'switchFactory', switchFactory, ...
+        'jumpFactory', jumpFactory, ...
+        'modelFactory', modelFactory);
+    datahandle.setData(data);
 end
 
 while switch_detected
