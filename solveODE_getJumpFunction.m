@@ -41,9 +41,15 @@ signature = SwitchingFunctionSignature( ...
     data.SWP_detection.ctrlif_index_t1(1:idxSignatureJumpCtrlif), ...
     data.SWP_detection.function_index_t1(1:idxSignatureJumpCtrlif) ...
     );
+
 % Check if jump function exists or create a new one otherwise.
 [jumpFunctionHandle, collisionIndex] = factory.findExisting(signature);
 if isempty(jumpFunctionHandle)
-    jumpFunctionHandle = factory.createNew(signature, collisionIndex, data.SWP_detection.jumpConditions);
+    % FIXME: Ugly solution, would be better to store it in functionData upon creation.
+    % Should refactor this together with datahandle struct.
+    if isempty(factory.functionData.ctrljumpInfo)
+        factory.functionData.ctrljumpInfo = data.SWP_detection.jumpConditions;
+    end
+    jumpFunctionHandle = factory.createNew(signature, collisionIndex);
 end
 end

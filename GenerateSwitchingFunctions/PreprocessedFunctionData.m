@@ -15,6 +15,7 @@ classdef PreprocessedFunctionData < handle
     properties (Access=public)
         mtreeArray = {}
         functionNameArray = {}
+        ctrljumpInfo = {}
     end
 
     properties (SetAccess=private)
