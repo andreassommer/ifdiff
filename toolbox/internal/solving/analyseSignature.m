@@ -1,4 +1,4 @@
-function status = analyseSignature(t, x, flag, datahandle, debugMode)
+function status = analyseSignature(t, x, flag, datahandle)
 % Output function for the integration of the ODE. 
 % Returns status = 1 to stop the integration. 
 % It compares the current signature (signature of the
@@ -9,6 +9,11 @@ function status = analyseSignature(t, x, flag, datahandle, debugMode)
 %
 % If ifdiff is in Filippov mode, the integration also stops upon reaching
 % the end of a Filippov regime.
+%
+% If datahandle.sliding.storeSlidingInfo is true, this function stores 
+% detailed information about sliding mode intervals. 
+% In particular, convex-combination parameters and the 
+% convexified signatures are stored.
 %
 % When the integration is complete, the solver calls OutputFcn([],[],'done').
 %
@@ -28,11 +33,6 @@ function status = analyseSignature(t, x, flag, datahandle, debugMode)
 %                     
 % 'datahandle': data handle which contains everything we know about the
 %               solution, including signature-related information
-%
-% 'debugMode'   Set true to store detailed information about sliding mode
-%               intervals. In particular, ifdiff stores convex-combination
-%               parameters and ctrlif's in sliding mode.
-%
 %
 %
 % OUTPUT:
@@ -77,17 +77,13 @@ switch flag
             if alpha <= alpha_tol || alpha >= 1-alpha_tol
                 sliding_mode_left = true;
             end
-
-            % store sliding mode info
-            if debugMode
-                sliding_ctrlif_idx = data.sliding.ctrlif_index;
-                sliding_fct_idx = data.sliding.function_index;
-                data.sliding.convexification.t              = [data.sliding.convexification.t, t]; 
-                data.sliding.convexification.alpha          = [data.sliding.convexification.alpha, alpha];
-                data.sliding.convexification.ctrlif_index   = [data.sliding.convexification.ctrlif_index,   repmat(sliding_ctrlif_idx, 1,length(t))];
-                data.sliding.convexification.function_index = [data.sliding.convexification.function_index, repmat(sliding_fct_idx,    1,length(t))];
-            end
-            
+        end
+        % sliding info
+        if data.sliding.storeSlidingInfo
+            datahandle.setData(data);
+            convexification = analyseSignature_storeSlidingInfo(t,x,datahandle);
+            data = datahandle.getData();
+            data.sliding.convexification = convexification;
         end
 
         data.forcedBranching.switchDetected = signature_changed;
@@ -95,11 +91,11 @@ switch flag
 
         if signature_changed || sliding_mode_left
                 status = 1;
-            else
-                % t_i becomes t_i+1. however, since no switch occured, it remains the same as before.
-                data.forcedBranching.switch_cond    = zeros(1,length(data.forcedBranching.switch_cond_forcedBranching));
-                data.forcedBranching.ctrlif_index   = zeros(1,length(data.forcedBranching.ctrlif_index_forcedBranching));
-                data.forcedBranching.function_index = cell(length(data.forcedBranching.function_index_forcedBranching),1);
+        else
+            % t_i becomes t_i+1. however, since no switch occured, it remains the same as before.
+            data.forcedBranching.switch_cond    = zeros(1,length(data.forcedBranching.switch_cond_forcedBranching));
+            data.forcedBranching.ctrlif_index   = zeros(1,length(data.forcedBranching.ctrlif_index_forcedBranching));
+            data.forcedBranching.function_index = cell(length(data.forcedBranching.function_index_forcedBranching),1);
         end
         
     case 'done'

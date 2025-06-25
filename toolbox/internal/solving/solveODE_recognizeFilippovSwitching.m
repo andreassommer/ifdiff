@@ -24,6 +24,9 @@ chattering = false;
 config = makeConfig();
 swfreqtol           = config.swfreqtol;              % local switching frequency accepted
 swfreqtol_checklast = config.swfreqtol_checklast;    % compute local switching frequency based on this many of the last switches
+if swfreqtol_checklast < 2
+    error('Bad value: config.swfreqtol_checklast should be a positive integer greater than one.\n');
+end
 swmax               = config.swmax;                  % total amount of switches accepted during integration
     
 % get switching data from datahandle
@@ -52,7 +55,7 @@ if chattering
     message = ['Switching frequency exceeds local or global tolerance, ' ...
               'potential Filippov switching detected.\n' ...
               'Local switching frequency: %.5g.\n'...
-              'Total switching events: %i\n.'];
+              'Total switching events: %i.\n'];
     if config.swfreq_haltOnWarning
         error('IFDIFF:chattering', message, swfreq, n_switches_total);
     else
