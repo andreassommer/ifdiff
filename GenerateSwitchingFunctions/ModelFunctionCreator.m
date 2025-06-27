@@ -14,11 +14,11 @@ classdef ModelFunctionCreator < FunctionCreator
         function this = handleLastCtrlif(this)
             this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, true);
             this = this.fixBranching(this.numCtrlif);
-            % TODO: Find a way to properly simplify mtrees
-            %for idxMtree=1:numel(this.exportMtreeArray)
-            %    sortedMtree = mtreeplus(this.exportMtreeArray{idxMtree}.tree2str);
-            %    this.exportMtreeArray{idxMtree} = deleteUnusedParameters(sortedMtree);
-            %end
+
+            for idxMtree=1:numel(this.exportMtreeArray)
+                mtree = this.exportMtreeArray{idxMtree};
+                this.exportMtreeArray{idxMtree} = traceReturnStatementToInputs(mtree, mtree_getReturnStatement(mtree));
+            end
         end
     end
 end
