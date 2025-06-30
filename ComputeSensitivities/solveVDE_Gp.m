@@ -3,7 +3,7 @@ function solVDE = solveVDE_Gp(datahandle, sol, tspan, modelNum, sensOptions)
     data = datahandle.getData();
 
     parameters = data.SWP_detection.parameters;
-    rhs        = data.integratorSettings.preprocessed_rhs;
+    rhs        = getRHSForSensitivities(datahandle);
     dim_y      = data.computeSensitivity.dim_y;
     dim_p      = data.computeSensitivity.dim_p;
 

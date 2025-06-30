@@ -3,7 +3,7 @@ function [sol_original, sols_disturbed] = solveDisturbed_Gy(datahandle, tspan, m
 % sol_original is the undisturbed solution; sols_disturbed is an array of solutions: each one has the initial
 % y value disturbed in one component.
     data = datahandle.getData();
-    functionRHS_original   = data.integratorSettings.preprocessed_rhs;
+    functionRHS_original   = getRHSForSensitivities(datahandle);
     functionRHS_simple_END = @(t,y) functionRHS_original(datahandle, t, y,  data.SWP_detection.parameters);
     dim_y                  = data.computeSensitivity.dim_y;
     unit_y = eye(dim_y);

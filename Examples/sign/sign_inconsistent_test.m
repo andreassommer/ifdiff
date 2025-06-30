@@ -3,6 +3,7 @@ initstates   = [1];
 p            = 0;
 
 doIfdiff = true;
+doSensitivities = true;
 doMatlab = false;
 
 if doIfdiff
@@ -24,8 +25,25 @@ if doIfdiff
     sw_points_y = deval(sol_rhs_test, sw_points);
 end
 
+if doSensitivities
+    dim_y = size(sol_rhs_test.y, 1);
+    dim_p = length(p);
+    FDstep = generateFDstep(dim_y, dim_p, 'hy_rel_flag', true,'hp_rel_flag', true, 'hy_min', 1e-9, 'hp_min', 1e-6);
+    sensFunction_ENDpiece = generateSensitivityFunction(datahandle, ...
+        sol_rhs_test, FDstep, 'method', 'END_piecewise', 'calcGy', true, 'calcGp', false, ...
+        'Gmatrices_intermediate', true, 'save_intermediates', false);
+    %sensFunction_VDE = generateSensitivityFunction(datahandle, ...
+    %    sol_rhs_test, FDstep, 'method', 'VDE', 'calcGy', true, 'calcGp', false, ...
+    %    'Gmatrices_intermediate', true, 'save_intermediates', false);
+
+    t_plot = 0:0.01:1;
+    sensitivities_END_plot = sensFunction_ENDpiece(t_plot);
+    %sensitivities_VDE_plot = sensFunction_VDE(t_plot);
+    
+end
+
 if doMatlab
-    t0 = 0; %#ok<UNRCH> 
+    t0 = 0; %#ok<UNRCH>
     tf = 0.5+0.1;
     timeinterval = [t0,tf];
 

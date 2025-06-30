@@ -2,7 +2,7 @@ function solVDE = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
 %SOLVEVDE_GY Solve the VDE for Gy in the interval tspan fixed to model modelNum and return the sol object
     data = datahandle.getData();
 
-    rhs        = data.integratorSettings.preprocessed_rhs;
+    rhs        = getRHSForSensitivities(datahandle);
     parameters = data.SWP_detection.parameters;
     dim_y      = data.computeSensitivity.dim_y;
 
