@@ -14,7 +14,7 @@ function prepareDatahandleForIntegration_setUpIntegrator(datahandle, varargin)
 %   integrator - ODE solver to be used by IFDIFF.
 %       1xN char | string scalar | function_handle
 %
-%   solver - Same as integrator, but kept for backwards-compatibility.
+%   solver - Same as integrator, but kept for backward compatibility.
 %       1xN char | string scalar | function_handle
 %
 %   options - MATLAB ODE options to be used by the integrator.
@@ -44,7 +44,7 @@ optionlist = varargin;
 try
     olAssertOptionlist(optionlist);
 catch e
-    throwAsCaller(invalidOptionFormatError(e));
+    throw(invalidOptionFormatError(e));
 end
 
 % Default values

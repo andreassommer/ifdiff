@@ -6,6 +6,8 @@ function sliding = initDatahandleFields_Filippov()
 %OUTPUT:
 %   sliding - Struct used for Filippov mode handling in IFDIFF.
 %       struct
+%
+%See also INITDATAHANDLEFIELDS.
 
 sliding = extendODE_filippov_regime_cleanup(struct());
 

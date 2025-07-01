@@ -4,6 +4,7 @@ function datahandle = prepareDatahandleForIntegration(rhs, varargin)
 %datahandle = PREPAREDATAHANDLEFORINTEGRATION(rhs, 'options', odeopts, ...)
 %
 %Prepare ODE RHS for integration with IFDIFF.
+%Call sol = solveODE(datahandle, tspan, initialvalues, parameters) afterwards to compute a solution of the ODE with IFDIFF.
 %
 %INPUT:
 %   rhs - Name or handle to RHS.
@@ -25,7 +26,6 @@ function datahandle = prepareDatahandleForIntegration(rhs, varargin)
 %
 %OUTPUT:
 %   datahandle - Struct containing the prepared RHS ready for integration with IFDIFF.
-%   Call sol = solveODE(datahandle, tspan, initialvalues, parameters) to compute a solution of the ODE with IFDIFF.
 %       struct (with .getData() and .setData(data) function handles to emulate a handle class using closures)
 %
 %See also SOLVEODE.
