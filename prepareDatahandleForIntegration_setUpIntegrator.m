@@ -124,8 +124,8 @@ end
 %% Exceptions
 function e = invalidOptionFormatError(e)
 msg = 'Invalid option format: varargin has to be passed as key-value pairs where keys are char arrays.\n';
-causeException = MException('IFDIFF:Preprocessing:InvalidOptionFormat', msg);
-e = addCause(e, causeException);
+eCause = MException('IFDIFF:Preprocessing:InvalidOptionFormat', msg);
+e = addCause(e, eCause);
 end
 
 function e = invalidIntegratorDataTypeError(e, integrator)
