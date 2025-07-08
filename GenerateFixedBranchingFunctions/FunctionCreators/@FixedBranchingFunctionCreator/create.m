@@ -7,7 +7,7 @@ function functionHandle = create(this, collisionIndex)
 %
 %INPUT:
 %   signature - Signature corresponding to the function that should be created.
-%       SwitchingFunctionSignature
+%       BranchingSignature
 %
 %   collisionIndex - Integer added as a suffix to the name of the new function
 %   to avoid name clashes when encountering hash collisions in the signature.
@@ -21,7 +21,7 @@ function functionHandle = create(this, collisionIndex)
 %   switchingFunctionHandle - Handle to the main (i.e. not helper) function of the newly created function.
 %       function handle
 %
-%See also SWITCHINGFUNCTIONFACTORY, SWITCHINGFUNCTIONSIGNATURE, SOLVEODE, SOLVEODE_GETJUMPINDICES
+%See also SWITCHINGFUNCTIONFACTORY, BRANCHINGSIGNATURE, SOLVEODE, SOLVEODE_GETJUMPINDICES
 
 % Overview of the algorithm:
 % The output of the switching function should be the condition contained within the last ctrlif in the signature,
