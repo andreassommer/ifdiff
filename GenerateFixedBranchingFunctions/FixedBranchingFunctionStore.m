@@ -1,4 +1,4 @@
-classdef ForcedBranchingFunctionStore
+classdef FixedBranchingFunctionStore
     %this = SWITCHINGFUNCTIONFACTORY(functionData, writePath, namePrefix, outputName)
     %
     %Retrieve existing switching/jump functions from signature or create new ones.
@@ -29,7 +29,7 @@ classdef ForcedBranchingFunctionStore
 
     methods
         % Constructor
-        function this = ForcedBranchingFunctionStore(functionData, writePath, namePrefix, makeCreator)
+        function this = FixedBranchingFunctionStore(functionData, writePath, namePrefix, makeCreator)
             if nargin == 0
                 return
             end

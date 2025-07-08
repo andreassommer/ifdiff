@@ -1,4 +1,4 @@
-classdef FunctionCreator
+classdef FixedBranchingFunctionCreator
     properties (SetAccess=immutable)
         functionData
         signature
@@ -16,7 +16,7 @@ classdef FunctionCreator
 
     methods
         % Constructor
-        function this = FunctionCreator(functionData, signature, writePath, functionNamePrefix, functionOutputName)
+        function this = FixedBranchingFunctionCreator(functionData, signature, writePath, functionNamePrefix, functionOutputName)
             this.functionData = functionData;
             this.signature = signature;
             this.numCtrlif = numel(signature.ctrlifIndex);
