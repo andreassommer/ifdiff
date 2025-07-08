@@ -1,24 +1,24 @@
 classdef FixedBranchingFunctionStore
-    %this = SWITCHINGFUNCTIONFACTORY(functionData, writePath, namePrefix, outputName)
+    %this = FIXEDBRANCHINGFUNCTIONSTORE(functionData, writePath, namePrefix, makeCreator)
     %
-    %Retrieve existing switching/jump functions from signature or create new ones.
+    %Retrieve existing fixed branching functions from signature or create new ones.
     %
     %INPUT:
-    %   functionData - Data related to preprocessed functions used to create new switching/jump functions.
+    %   functionData - Data related to preprocessed functions used to create new functions.
     %       PreprocessedFunctionData
     %
     %   writePath - Absolute path to directory in which the source code of new functions will be placed.
     %       char array
     %
     %   namePrefix - Prefix added to the name of functions.
-    %   Primarily used to differentiate between switching and jump functions (e.g. sw_ and jump_).
+    %   Primarily used to differentiate between different types of functions.
     %       char array
     %
-    %   outputName - Name of the output variable for functions.
-    %   Primarily used to differentiate between switching and jump functions (e.g. switching_value and jump_increment).
-    %       char array
+    %   makeCreator - Constructor of the class used to create new functions.
+    %   The creator class must be a subclass of FixedBranchingFunctionCreator.
+    %       function_handle
     %
-    %See also PreprocessedFunctionData, SwitchingFunctionSignature
+    %See also PreprocessedFunctionData, FixedBranchingFunctionCreator.
 
     properties (Access=public)
         functionData = []
@@ -43,21 +43,21 @@ classdef FixedBranchingFunctionStore
         function [functionHandle, collisionIndex] = findExisting(this, signature)
             %[functionHandle, collisionIndex] = this.FINDEXISTING(signature)
             %
-            %Find an existing switching/jump function based on a signature.
+            %Find an existing function based on a signature.
             %
             %INPUT:
-            %   signature - Signature of the switching/jump function to be found.
-            %       SwitchingFunctionSignature
+            %   signature - Signature of the function to be found.
+            %       BranchingSignature
             %
             %OUTPUT:
-            %   functionHandle - Handle to the found switching/jump function if it exists or empty array otherwise.
+            %   functionHandle - Handle to the found function if it exists or empty array otherwise.
             %       function handle | empty array
             %
             %   collisionIndex - Index used to avoid hash collisions at which the search stopped.
             %   Can be used in a subsequent call to this.createNew to create a new function instead.
             %       positive integer
             %
-            %See also SWITCHINGFUNCTIONSIGNATURE
+            %See also BRANCHINGSIGNATURE
 
             config = makeConfig();
 
@@ -96,6 +96,23 @@ classdef FixedBranchingFunctionStore
         end
 
         function functionHandle = createNew(this, signature, collisionIndex)
+            %functionHandle = this.CREATENEW(signature, collisionIndex)
+            %
+            %Create a new function from a signature.
+            %
+            %INPUT:
+            %   signature - Signature of the function to be created.
+            %       BranchingSignature
+            %
+            %   collisionIndex - Index used to avoid hash collisions for the name of the new function.
+            %       positive integer
+            %
+            %OUTPUT:
+            %   functionHandle - Handle to the newly created function.
+            %       function_handle
+            %
+            %See also FIXEDBRANCHINGFUNCTIONCREATOR, BRANCHINGSIGNATURE.
+
             creator = this.makeCreator(this.functionData, signature);
             functionHandle = creator.create(collisionIndex);
         end
