@@ -1,4 +1,4 @@
-function dx = canonicalNested2(t, x, p)
+function dx = canonicalNestedLocalFunctionRHS(t, x, p)
 % Test 2 of the canonical example with parts as nested functions
 % here nested function outside the function
 dx = nested2(t, x, p);

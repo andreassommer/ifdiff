@@ -1,4 +1,4 @@
-function dx = canonicalNested1(t, x, p)
+function dx = canonicalNestedSubFunctionRHS(t, x, p)
 % Test 1 of the canonical example with parts as nested functions
 % here nested function within the function
 dx = zeros(2,1);
