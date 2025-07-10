@@ -1,37 +1,50 @@
 function prepareDatahandleForIntegration_setUpIntegrator(datahandle, varargin)
-%PREPAREDATAHANDLEFORINTEGRATION_SETUPINTEGRATOR    Set function handles and optional arguments for integration.
-%   PREPAREDATAHANDLEFORINTEGRATION_SETUPINTEGRATOR(datahandle)
-%   PREPAREDATAHANDLEFORINTEGRATION_SETUPINTEGRATOR(datahandle, key1, value1, ...)
+%PREPAREDATAHANDLEFORINTEGRATION_SETUPINTEGRATOR(datahandle, 'key1', val1, ...)
 %
-%   Store function handles in the datahandle:
-%   - The preprocessed RHS function
-%   - The OutputFcn called after each successful integration step to monitor switches
-%   Set optional arguments or provide defaults for integration:
-%   - ODE Options (in particular AbsTol and RelTol)
-%   - The integrator to be used (as char array or function handle)
+%Process optional user inputs to setup integrator and its options.
 %
-%   INPUT
-%   datahandle : handle to data where the settings will be written to
-%   varargin   : optional arguments as key-value pairs (see makeConfig.m for default values)
-%       'options'    -> ODE OPTIONS struct
-%       'integrator' -> text scalar or function_handle
-%       'solver'     -> same as integrator (for backwards compatibility)
+%INPUT:
+%   datahandle - Handle where the integrator and options will be stored.
+%       struct
 %
-%   OUTPUT
-%   [none]
-
+%   varargin - User options passed from RHS preparation call as key-value pairs.
+%       func(mandatoryArgs, ..., 'key1', val1, 'key2', val2, ...)
+%
+%OPTIONS:
+%   integrator - ODE solver to be used by IFDIFF.
+%       1xN char | string scalar | function_handle
+%
+%   solver - Same as integrator, but kept for backward compatibility.
+%       1xN char | string scalar | function_handle
+%
+%   options - MATLAB ODE options to be used by the integrator.
+%       struct
+%
+%OUTPUT:
+%   datahandle - With the following fields of data.integratorSettings updated:
+%       struct
+%
+%   preprocessed_rhs - Handle to the preprocessed RHS to be integrated by IFDIFF.
+%       function_handle
+%
+%   numericIntegrator - Handle to the integrator used by IFDIFF.
+%       function_handle
+%
+%   options - MATLAB ODE options to be used by the integrator.
+%       struct
+%
+%   optionsForcedBranching - MATLAB ODE options to be used when monitoring switches during integration.
+%       struct (with outputFunction set to the IFDIFF analyseSignature function)
+%
+%See also PREPAREDATAHANDLEFORINTEGRATION.
 
 data = datahandle.getData();
 config = makeConfig();
 optionlist = varargin;
-
 try
     olAssertOptionlist(optionlist);
-catch ME
-    msg = 'Invalid option format: varargin has to be passed as key-value pairs where keys are char arrays.\n';
-    causeException = MException('IFDIFF:prepareDatahandle:invalidOptionFormat', msg);
-    ME = addCause(ME, causeException);
-    rethrow(ME);
+catch e
+    throw(invalidOptionFormatError(e));
 end
 
 % Default values
@@ -43,40 +56,22 @@ data.integratorSettings.numericIntegrator = config.numericIntegratorDefault;
 if ~isempty(optionsVal)
     data.integratorSettings.options = optionsVal;
 else
-    fprintf( ...
-        'INFO: Option ''options'' not specified. Using default value: AbsTol=%.2e, RelTol=%.2e\n', ...
-        data.integratorSettings.options.AbsTol, data.integratorSettings.options.RelTol);
+    printDefaultValue('options', data)
 end
 
 % Optional argument: Integrator
-[integratorVal, optionlist] = olGetOption(optionlist, 'integrator');
 % Besides 'integrator', 'solver' is also accepted as a key for backward compatibility.
-if isempty(integratorVal)
-    [integratorVal, optionlist] = olGetOption(optionlist, 'solver');
+for integratorKey={'integrator', 'solver'}
+    [integratorVal, optionlist] = olGetOption(optionlist, integratorKey{:});
+    if ~isempty(integratorVal)
+        break
+    end
 end
 
 if ~isempty(integratorVal)
-    % Integrator may be passed as function handle or char array.
-    if ~isa(integratorVal, 'function_handle')
-        try
-            integratorVal = str2func(integratorVal);
-        catch ME
-            if strcmp(ME.identifier, 'MATLAB:string:MustBeStringScalarOrCharacterVector')
-                msg = sprintf([ ...
-                    'Incorrect type for option ''integrator'': ' ...
-                    'Expected text scalar or function handle but got %s instead.\n'], ...
-                    class(integratorVal));
-                causeException = MException('IFDIFF:prepareDatahandle:incorrectParameterType', msg);
-                ME = addCause(ME, causeException);
-            end
-            rethrow(ME);
-        end
-    end
-    data.integratorSettings.numericIntegrator = integratorVal;
+    data.integratorSettings.numericIntegrator = convertIntegratorToHandle(integratorVal);
 else
-    fprintf( ...
-        'INFO: Option ''integrator'' not specified. Using default value: %s\n', ...
-        func2str(data.integratorSettings.numericIntegrator));
+    printDefaultValue('integrator', data);
 end
 
 % Print warning if there are unused options
@@ -93,16 +88,52 @@ data.integratorSettings.optionsForcedBranching = odeset(data.integratorSettings.
 % Function handle for the preprocessed RHS function.
 data.integratorSettings.preprocessed_rhs = str2func(data.mtreeplus{2,1});
 
-% sliding fields
-data.sliding.index              = [];
-data.sliding.filippov_rhs       = []; 
-data.sliding.ctrlif_index       = [];
-data.sliding.function_index     = [];
-data.sliding.alpha_last         = [];
-data.sliding.convexification.function_index = [];
-data.sliding.convexification.t              = [];
-data.sliding.convexification.alpha          = [];
-
-
 datahandle.setData(data);
+end
+
+%% Helpers
+function integrator = convertIntegratorToHandle(integrator)
+if isa(integrator, 'function_handle')
+    return
+end
+
+try
+    integrator = str2func(integrator);
+catch e
+    e = invalidIntegratorDataTypeError(e, integrator);
+    throwAsCaller(e);
+end
+end
+
+function printDefaultValue(key, data)
+msg = 'INFO: Option ''%s'' not specified. Using default value: ';
+switch key
+    case 'options'
+        msg = [msg, 'AbsTol=%.0e, RelTol=%.0e\n'];
+        vals = {data.integratorSettings.options.AbsTol, data.integratorSettings.options.RelTol};
+    case {'integrator', 'solver'}
+        msg = [msg, '%s\n'];
+        vals = {func2str(data.integratorSettings.numericIntegrator)};
+    otherwise
+        msg = [msg, 'NONE\n'];
+        vals = {};
+end
+fprintf(msg, key, vals{:});
+end
+
+%% Exceptions
+function e = invalidOptionFormatError(e)
+msg = 'Invalid option format: varargin has to be passed as key-value pairs where keys are char arrays.\n';
+eCause = MException('IFDIFF:Preprocessing:InvalidOptionFormat', msg);
+e = addCause(e, eCause);
+end
+
+function e = invalidIntegratorDataTypeError(e, integrator)
+if strcmp(e.identifier, 'MATLAB:string:MustBeStringScalarOrCharacterVector')
+    msg = [ ...
+        'Incorrect type for option ''integrator'': ' ...
+        'Expected text scalar or function handle but got %s instead.\n'];
+    eCause = MException('IFDIFF:prepareDatahandle:incorrectParameterType', msg, class(integrator));
+    e = addCause(e, eCause);
+end
 end
