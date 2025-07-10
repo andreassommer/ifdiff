@@ -1,4 +1,18 @@
 classdef SwitchingFunctionCreator < FixedBranchingFunctionCreator
+    %this = SWITCHINGFUNCTIONCREATOR(functionData, signature, writePath)
+    %
+    %Create switching function from a signature (one-time-use).
+    %
+    %INPUT:
+    %   functionData - Data related to preprocessed functions used to create new functions.
+    %       PreprocessedFunctionData
+    %
+    %   signature - Signature of the function to be created.
+    %       BranchingSignature
+    %
+    %   writePath - Absolute path to directory in which the source code of the new function will be placed.
+    %       char array
+
     methods
         % Constructor
         function this = SwitchingFunctionCreator(functionData, signature, writePath)
@@ -12,6 +26,7 @@ classdef SwitchingFunctionCreator < FixedBranchingFunctionCreator
         end
 
         function this = handleLastCtrlif(this)
+            % Set return value of function to monitored condition of last ctrlif in the signature.
             this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, true);
             ctrlifCallInfo = this.functionData.getCtrlifCallInfo( ...
                 this.funcIter.idxMtreeCallerOriginal, ...
@@ -26,4 +41,3 @@ classdef SwitchingFunctionCreator < FixedBranchingFunctionCreator
         end
     end
 end
-

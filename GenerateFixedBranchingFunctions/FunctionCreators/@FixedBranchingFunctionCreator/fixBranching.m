@@ -1,10 +1,21 @@
 function this = fixBranching(this, idxCtrlif)
-% For jump functions: All ctrlifs are replaced by their true or false part.
-% For switching functions: All ctrlifs except for the last are replaced by their true or false part.
-% True part is stored in the second argument of the ctrlif, false part in the third.
+%this = this.FIXBRANCHING(idxCtrlif)
+%
+%Replace ctrlif with its true or false part based on the signature.
+%
+%INPUT:
+%   idxCtrlif - Index of the ctrlif in the signature (NOT the ctrlif_index).
+%       positive integer
+%
+%OUTPUT:
+%   this.exportMtreeArray - Mtree containing the ctrlif is updated.
+%       1xN cell array of mtreeplus
 
-ctrlifCallInfo = this.functionData.getCtrlifCallInfo(this.funcIter.idxMtreeCallerOriginal, this.signature.ctrlifIndex(idxCtrlif));
+ctrlifCallInfo = this.functionData.getCtrlifCallInfo( ...
+    this.funcIter.idxMtreeCallerOriginal, ...
+    this.signature.ctrlifIndex(idxCtrlif));
 
+% True part stored in 2nd arg, false part in 3rd arg of ctrlif.
 if this.signature.switchCond(idxCtrlif)
     idxArg = 2;
 else

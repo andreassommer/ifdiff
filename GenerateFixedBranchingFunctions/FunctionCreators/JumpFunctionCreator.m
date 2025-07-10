@@ -1,4 +1,18 @@
 classdef JumpFunctionCreator < FixedBranchingFunctionCreator
+    %this = JUMPFUNCTIONCREATOR(functionData, signature, writePath)
+    %
+    %Create jump function from a signature (one-time-use).
+    %
+    %INPUT:
+    %   functionData - Data related to preprocessed functions used to create new functions.
+    %       PreprocessedFunctionData
+    %
+    %   signature - Signature of the function to be created.
+    %       BranchingSignature
+    %
+    %   writePath - Absolute path to directory in which the source code of the new function will be placed.
+    %       char array
+
     methods
         % Constructor
         function this = JumpFunctionCreator(functionData, signature, writePath)
@@ -12,6 +26,7 @@ classdef JumpFunctionCreator < FixedBranchingFunctionCreator
         end
 
         function this = handleLastCtrlif(this)
+            % Set return value of function to jump update computed in the jump-if-block.
             this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, true);
             this = this.fixBranching(this.numCtrlif);
 
@@ -22,4 +37,3 @@ classdef JumpFunctionCreator < FixedBranchingFunctionCreator
         end
     end
 end
-

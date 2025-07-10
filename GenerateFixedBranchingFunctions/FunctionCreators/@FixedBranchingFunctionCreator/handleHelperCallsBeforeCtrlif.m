@@ -1,7 +1,24 @@
 function this = handleHelperCallsBeforeCtrlif(this, idxCtrlif, isReturn)
+%this = this.HANDLEHELPERCALLSBEFORECTRLIF(idxCtrlif, isReturn)
+%
+%Iterate over helper function calls preceding the ctrlif call to find the mtree of the ctrlif.
+%Along the way, create copies of helper functions and adjust helper function calls if necessary.
+%
+%INPUT:
+%   idxCtrlif - Index of the ctrlif to be found in the signature (NOT the ctrlif_index).
+%       positive integer
+%
+%   isReturn - Whether or not function calls should be replaced with return statements.
+%       logical
+%
+%OUTPUT:
+%   this.funcIter - Export and original index of the mtree containing the ctrlif.
+%       FunctionIterator
+%
+%   this.exportMtreeArray - Existing mtrees updated for function calls and new mtrees for helper fuctions added.
+%       1xN cell array of mtreeplus
+
 this.funcIter = this.funcIter.resetIteration(this.signature.functionIndex{idxCtrlif});
-% Iterate over helper function calls preceding the ctrlif call to find the mtree of the ctrlif.
-% Along the way, create copies of helper functions and adjust helper function calls if necessary.
 while true
     this.funcIter = this.funcIter.next();
     if this.funcIter.stop
@@ -9,7 +26,9 @@ while true
         break
     end
 
-    helperCallInfo = this.functionData.getHelperCallInfo(this.funcIter.idxMtreeCallerOriginal, this.funcIter.functionIndex);
+    helperCallInfo = this.functionData.getHelperCallInfo( ...
+        this.funcIter.idxMtreeCallerOriginal, ...
+        this.funcIter.functionIndex);
 
     if this.funcIter.new
         % Create new helper function.
@@ -28,7 +47,7 @@ while true
             );
     end
 
-    % On the last ctrlif, set the helper function call as the return value of the caller.
+    % Set the helper function call as the return value of the caller if required.
     if isReturn
         this.exportMtreeArray{this.funcIter.idxMtreeCallerExport} = setFunctionCallAsReturnValue( ...
             this.exportMtreeArray{this.funcIter.idxMtreeCallerExport}, ...
@@ -39,4 +58,3 @@ while true
     end
 end
 end
-
