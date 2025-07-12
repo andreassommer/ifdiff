@@ -83,7 +83,7 @@ ifNext   = mtree.T(ifRoot, cIndex.indexNextNode);
 updateBlockFirstNode = mtree.T(ifhead, cIndex.indexRightchild);
 updateBlockLastNode  = updateBlockFirstNode;
 while mtree.T(updateBlockLastNode, cIndex.indexNextNode) ~= 0
-    updateBlockLastNode = mtree.T(updateBlockLastNode, cIndex.indexNextNode) ~= 0;
+    updateBlockLastNode = mtree.T(updateBlockLastNode, cIndex.indexNextNode);
 end
 mtree = mtree_connectNodes(mtree, ...
     ifParent, ...

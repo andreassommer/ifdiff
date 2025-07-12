@@ -1,5 +1,5 @@
-function solveODE_getSwitchingFunctions(datahandle, factory)
-%SOLVEODE_GETSWITCHINGFUNCTIONS(datahandle, factory)
+function solveODE_getSwitchingFunctions(datahandle)
+%SOLVEODE_GETSWITCHINGFUNCTIONS(datahandle)
 %
 %Retrieve the switching functions for all ctrlif switches recorded in the datahandle during the last integration step.
 %We have to retrieve all switching functions, to determine their switching points and find out which one has switched first.
@@ -8,10 +8,10 @@ function solveODE_getSwitchingFunctions(datahandle, factory)
 %   datahandle - Datahandle containing the signature information for the last integration step.
 %       function handle
 %
-%   factory - Switching function factory used to find existing switching functions and create new ones.
-%       SwitchingFunctionFactory
-%
 %   The following datahandle fields are relevant:
+%   codeGen.switchFactory - Switching function factory used to find existing switching functions and create new ones.
+%       FixedBranchingFunctionStore
+%
 %   SWP_detection.switchingIndices - Signature indices where ctrlif conditions have flipped in the last integration step.
 %       1xN array of positive integers
 %
@@ -27,18 +27,17 @@ function solveODE_getSwitchingFunctions(datahandle, factory)
 %OUTPUT:
 %   SWP_detection.switchingfunctionhandles - Updated field in datahandle containing handles to the main switching functions.
 %       Nx1 cell array of function handles
-%
-%See also SWITCHINGFUNCTIONFACTORY
 
 data = datahandle.getData();
 rhsName = data.mtreeplus{2, 1};
+factory = data.codeGen.switchFactory;
 
 nSwitches = length(data.SWP_detection.switchingIndices);
 switchingfunctionhandles = cell(nSwitches, 1);
 for idxSwitch = 1:nSwitches
     % Prepare signature.
     idxSignatureSwitchCtrlif = data.SWP_detection.switchingIndices(idxSwitch);
-    signature = SwitchingFunctionSignature( ...
+    signature = BranchingSignature( ...
         rhsName, ...
         data.SWP_detection.switch_cond_t1(1:idxSignatureSwitchCtrlif), ...
         data.SWP_detection.ctrlif_index_t1(1:idxSignatureSwitchCtrlif), ...

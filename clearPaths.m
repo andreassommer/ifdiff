@@ -18,5 +18,5 @@ rmpath(genpath(fullfile(filePath, 'Tools')));
 rmpath(genpath(fullfile(filePath, 'Examples')));
 rmpath(genpath(fullfile(filePath, 'PreprocessedFunctions')));
 rmpath(fullfile(filePath, 'ComputeSensitivities'));
-rmpath(genpath(fullfile(filePath, 'GenerateSwitchingFunctions')));
+rmpath(genpath(fullfile(filePath, 'GenerateFixedBranchingFunctions')));
 end

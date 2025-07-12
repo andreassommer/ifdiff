@@ -17,6 +17,11 @@ preprocessed.JumpFunctions_path = fullfile(preprocessed.path, config.jump.jumpFu
 if ~exist(preprocessed.JumpFunctions_path, 'dir')
     mkdir(preprocessed.path, config.jump.jumpFunctionsDirectoryName);
 end
+
+preprocessed.ModelFunctions_path = fullfile(preprocessed.path, config.modelFunctionsDirectoryName);
+if ~exist(preprocessed.ModelFunctions_path, 'dir')
+    mkdir(preprocessed.path, config.modelFunctionsDirectoryName);
+end
 addpath(genpath(preprocessed.path));
 
 % export rhs
@@ -49,6 +54,7 @@ data.mtreeplus(:,2:end) = preprocessed.fcn(1:3,:);
 data.paths.preprocessed_rhs = preprocessed.path;
 data.paths.preprocessed_switchingFunction = preprocessed.SwitchingFunctions_path;
 data.paths.preprocessed_jumpFunction = preprocessed.JumpFunctions_path;
+data.paths.preprocessed_modelFunction = preprocessed.ModelFunctions_path;
 
 data.caseCtrlif = config.caseCtrlif.default;
 

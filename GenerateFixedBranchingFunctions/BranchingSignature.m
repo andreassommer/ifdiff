@@ -1,11 +1,11 @@
-classdef SwitchingFunctionSignature
-    %this = SWITCHINGFUNCTIONSIGNATURE(rhsName, switchCond, ctrlifIndex, functionIndex)
+classdef BranchingSignature
+    %this = BRANCHINGSIGNATURE(rhsName, switchCond, ctrlifIndex, functionIndex)
     %
-    %Uniquely identifies a model transition/switch and its corresponding switching function.
+    %Uniquely identifies a preprocessed RHS function's branching behavior.
     %
     %INPUT:
-    %   rhsName - Name of the RHS function
-    %       char array
+    %   rhsName - Name of the RHS function.
+    %       1xN char array
     %
     %   switchCond - True/False values of the conditions observed by ctrlifs before a switch.
     %   The i-th element of the array corresponds to the i-th ctrlif that was encountered in runtime.
@@ -19,11 +19,11 @@ classdef SwitchingFunctionSignature
     %       1xN cell array of 1x? arrays of positive integers
     %
     %OUTPUT:
-    %   str - Unique string representation of an instance of this class
-    %       char array
+    %   str - Unique string representation of an instance of this class.
+    %       1xN char array
     %
-    %   hash - 32-bit hash of str in hex format
-    %       char array
+    %   hash - 32-bit hash of str in hex format.
+    %       1xN char array
 
 
     properties (Access=public)
@@ -55,7 +55,7 @@ classdef SwitchingFunctionSignature
 
     methods
         % Constructor
-        function this = SwitchingFunctionSignature(rhsName, switchCond, ctrlifIndex, functionIndex)
+        function this = BranchingSignature(rhsName, switchCond, ctrlifIndex, functionIndex)
             if nargin == 0
                 return
             end

@@ -34,6 +34,10 @@ config.debugMode = false;
 % Always keep this enabled for best performance. Can be useful to disable for debugging and tests.
 config.reuseSwitchingFunctions = true;
 
+% Flag to export model functions as code (i.e. an RHS with fixed branching and no ctrlifs).
+% This should significantly speed-up sensitivity computations in most cases.
+config.removeCtrlifForSensComputation = true;
+
 % Largest power of ten which is added to the switching time when searching for a new signature.
 config.switchingPointMaxPower = 13;
 
@@ -96,6 +100,8 @@ config.preprocessedRhsNamePrefix          = 'rhs_preprocessed_';
 config.preprocessedFunctionNamePrefix     = 'preprocessed_';
 config.preprocessedFunctionsDirectoryName = 'PreprocessedFunctions';
 config.switchingFunctionsDirectoryName    = 'SwitchingFunctions';
+config.modelFunctionsDirectoryName        = 'ModelFunctions';
+config.modelFunctionNamePrefix = 'model_';
 
 % A condition will be ignored by IFDIFF if it contains at least one of the following strings:
 config.forbiddenConditionStrings = {'nargin', 'nargout', 'isempty', 'isnan', 'isnumeric'};
