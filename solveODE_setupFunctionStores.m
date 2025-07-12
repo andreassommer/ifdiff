@@ -1,21 +1,15 @@
-function [switchFactory, jumpFactory, modelFactory] = solveODE_setupSwitchingFunctionFactories(datahandle)
-
-%[switchFactory, jumpFactory] = solveODE_setupSwitchingFunctionFactories(datahandle)
-% Setup factories for switching functions and jump functions.
+function solveODE_setupFunctionStores(datahandle)
+%SOLVEODE_SETUPFUNCTIONSTORES(datahandle)
 %
+%Setup class instances for retrieving switching/jump/model functions.
 %
 %INPUT:
 %   datahandle - Datahandle containing the preprocessed mtree and path information.
-%       function handle
-%
+%       function_handle
 %
 %OUPUT:
-%   switchFactory - Generator/Finder for switching functions.
-%       SwitchingFunctionFactory
-%
-%   jumpFactory - Generator/Finder for switching functions.
-%       SwitchingFunctionFactory
-%
+%   codeGen - Field added to datahandle struct with the class instances.
+%       struct
 
 config = makeConfig();
 data = datahandle.getData();
@@ -23,6 +17,7 @@ data = datahandle.getData();
 mtreeArray = data.mtreeplus(3, :);
 functionNameArray = data.mtreeplus(2, :);
 functionData = PreprocessedFunctionData(mtreeArray, functionNameArray);
+
 switchFactory = FixedBranchingFunctionStore( ...
     functionData, ...
     data.paths.preprocessed_switchingFunction, ...
@@ -38,4 +33,10 @@ modelFactory = FixedBranchingFunctionStore( ...
     data.paths.preprocessed_modelFunction, ...
     config.modelFunctionNamePrefix, ...
     @(functionData, signature) ModelFunctionCreator(functionData, signature, data.paths.preprocessed_modelFunction));
+
+data.codeGen = struct( ...
+    'switchFactory', switchFactory, ...
+    'jumpFactory', jumpFactory, ...
+    'modelFactory', modelFactory);
+datahandle.setData(data);
 end

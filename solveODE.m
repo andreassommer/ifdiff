@@ -22,22 +22,14 @@ initDatahandleFields(datahandle, tspan, initialvalues, parameters);
 solveODE_firstTime(datahandle)
 switch_detected = checkForSwitchingIndices(datahandle);
 
-% Prepare factory for switching and jump functions
-if switch_detected
-    [switchFactory, jumpFactory, modelFactory] = solveODE_setupSwitchingFunctionFactories(datahandle);
-    data = datahandle.getData();
-    data.codeGen = struct( ...
-        'switchFactory', switchFactory, ...
-        'jumpFactory', jumpFactory, ...
-        'modelFactory', modelFactory);
-    datahandle.setData(data);
-end
+% Prepare class instances for switching/jump/model functions.
+solveODE_setupFunctionStores(datahandle);
 
 while switch_detected
     % cut last step in solution_until_t3 and it becomes solution_until_t1
     solveODE_solution_until_t1(datahandle)
 
-    solveODE_getSwitchingFunctions(datahandle, switchFactory);
+    solveODE_getSwitchingFunctions(datahandle);
 
     solveODE_computeSwitchingPoint(datahandle);
 
@@ -52,7 +44,7 @@ while switch_detected
         data.SWP_detection.jumpFunction{end + 1} = [];
         datahandle.setData(data);
     else
-        data.SWP_detection.jumpFunction{end + 1} = solveODE_getJumpFunction(datahandle, jumpFactory, jumpCtrlifIndices);
+        data.SWP_detection.jumpFunction{end + 1} = solveODE_getJumpFunction(datahandle, jumpCtrlifIndices);
         datahandle.setData(data);
     end
 
@@ -77,10 +69,10 @@ while switch_detected
             solveODE_prepareNextStage(datahandle);
         end
     end
-    
+
     % extend solution object from t2 ongoing until the next switch occurs
     extendODE_t2_to_tend_with_SWP_detection(datahandle);
-    
+
     switch_detected = checkForSwitchingIndices(datahandle);
 end
 
