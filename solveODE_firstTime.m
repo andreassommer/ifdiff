@@ -72,9 +72,9 @@ data.SWP_detection.t1 = data.SWP_detection.solution_until_t3.x(end-1);
 data.SWP_detection.t3 = data.SWP_detection.solution_until_t3.x(end);
 
 % signature matrix
-data.SWP_detection.signature.function_index{1} = data.SWP_detection.function_index_t1; 
-data.SWP_detection.signature.ctrlif_index{1} = data.SWP_detection.ctrlif_index_t1;
-data.SWP_detection.signature.switch_cond{1} = data.SWP_detection.switch_cond_t1;
+data.SWP_detection.signature.function_index{1} = data.forcedBranching.function_index_forcedBranching; 
+data.SWP_detection.signature.ctrlif_index{1} = data.forcedBranching.ctrlif_index_forcedBranching;
+data.SWP_detection.signature.switch_cond{1} = data.forcedBranching.switch_cond_forcedBranching;
 datahandle.setData(data);
 
 
