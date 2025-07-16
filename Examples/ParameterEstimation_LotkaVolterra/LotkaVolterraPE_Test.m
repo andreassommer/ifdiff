@@ -31,7 +31,6 @@ measurements = reshape(deval(sol, t), [], 1) + sigma.*rand;
 integrator_residual = @solveODE;
 RHS = @LotkaVolterraRHS;
 method = 'VDE';
-%residual_function = generateResFunction(t, datahandle, sol, measurements, tspan, parameters_ODE, RHS, FDstep, integrator_residual, method);
 residual_function = generateResFunction(t, datahandle, sol, measurements, tspan, parameters_ODE, FDstep, method);
 
 
