@@ -49,7 +49,13 @@ parameters_ODE_opt = param_opt(1:4);
 sol_opt = solveODE(datahandle, tspan, initialvalues_opt, parameters_ODE_opt);
 
 %% Trajectory before estimation
-sol_prev = solveODE(datahandle, tspan, [1; 1], 1.2*parameters_ODE);
+init_val = measurements(1:dim_y);
+sol_prev = solveODE(datahandle, tspan, init_val, 1.2*parameters_ODE);
+figure(40);
+plot(sol_prev.x, sol_prev.y(1,:),'LineWidth', 3, 'color', [0.08,0.05,0.68]);
+hold on;
+plot(sol_prev.x, sol_prev.y(2,:),'LineWidth', 3, 'color', [0.08,0.05,1.00]);
+
 
 %% Plot of real solution and of solution with estimated parameters
 measurements_plot = reshape(measurements, 2, []);
