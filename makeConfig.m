@@ -34,6 +34,9 @@ config.debugMode = false;
 % Always keep this enabled for best performance. Can be useful to disable for debugging and tests.
 config.reuseSwitchingFunctions = true;
 
+% Flag to automatically detect and delete outdated function files, i.e. after updating a RHS.
+config.autoRemoveOutdatedFunctionFiles = true;
+
 % Flag to export model functions as code (i.e. an RHS with fixed branching and no ctrlifs).
 % This should significantly speed-up sensitivity computations in most cases.
 config.removeCtrlifForSensComputation = true;

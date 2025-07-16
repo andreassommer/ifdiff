@@ -30,6 +30,8 @@ function datahandle = prepareDatahandleForIntegration(rhs, varargin)
 %
 %See also SOLVEODE.
 
+config = makeConfig();
+
 preprocessed = preprocess(prepareDatahandleForIntegration_getRhsFilename(rhs));
 
 % Prepare integration, initialize struct.
@@ -40,4 +42,9 @@ prepareDatahandleForIntegration_setUpIntegrator(datahandle, varargin{:});
 
 % Check whether rhs has three inputs (i.e. rhs(t, y, p)).
 prepareDatahandleForIntegration_checkRhs(datahandle);
+
+% Remove outdated switching/jump/model functions.
+if config.autoRemoveOutdatedFunctionFiles
+    clearOutdatedFixedBranchingFunctions(datahandle);
+end
 end
