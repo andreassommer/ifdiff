@@ -63,6 +63,7 @@ function fignum = plotSensitivitiesSwitched(sol, sensFun, tspan, varargin)
 
     fignum = 1234;
     fig = figure(fignum);
+    clf(fig);
     % shift a little so it doesn't exactly cover the solution plot's window
     fig.Position = fig.Position + [32, -32, 0, 0];
 
@@ -84,6 +85,7 @@ function fignum = plotSensitivitiesSwitched(sol, sensFun, tspan, varargin)
 
     fignum = 5678;
     fig = figure(fignum);
+    clf(fig);
     % shift a little so it doesn't exactly cover the solution plot's window
     fig.Position = fig.Position + [32, 32, 0, 0];
 
