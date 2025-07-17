@@ -51,25 +51,29 @@ sol_opt = solveODE(datahandle, tspan, initialvalues_opt, parameters_ODE_opt);
 %% Trajectory before estimation
 init_val = measurements(1:dim_y);
 sol_prev = solveODE(datahandle, tspan, init_val, 1.2*parameters_ODE);
-figure(40);
-plot(sol_prev.x, sol_prev.y(1,:),'LineWidth', 3, 'color', [0.08,0.05,0.68]);
-hold on;
-plot(sol_prev.x, sol_prev.y(2,:),'LineWidth', 3, 'color', [0.08,0.05,1.00]);
-
 
 %% Plot of real solution and of solution with estimated parameters
 measurements_plot = reshape(measurements, 2, []);
 figure(2)
-plot(sol.x, sol.y(1,:),'LineWidth', 3, 'color', [0.08,0.05,0.68]);
+T = 0:0.1:120;
+y = deval(sol,T);
+y_opt = deval(sol_opt, T);
+y_prev = deval(sol_prev, T);
+%
+plot(sol_prev.x, sol_prev.y(1,:), ':', 'LineWidth', 1, 'color', [0.08,0.05,0.68]);
+hold on;
+plot(sol_prev.x, sol_prev.y(2,:), ':','LineWidth', 1, 'color', [0.08,0.05,1.00]);
+%
+plot(T, y(1,:),'LineWidth', 3, 'color', [0.08,0.05,0.68]);
 hold on
-plot(sol_opt.x, sol_opt.y(1,:), '--', 'LineWidth', 3, 'color', [0.71,0.69,0.88]);
+plot(T, y_opt(1,:), '--', 'LineWidth', 3, 'color', [0.71,0.69,0.88]);
 plot(t, measurements_plot(1,:), '*', 'MarkerSize', 5, 'color', [0.08,0.05,0.68]);
-plot(sol.x, sol.y(2,:),'LineWidth', 3, 'color', [0.01,0.30,0.01]);
-plot(sol_opt.x, sol_opt.y(2,:), '--', 'LineWidth', 3, 'color', [0.72,0.92,0.72]);
+plot(T, y(2,:),'LineWidth', 3, 'color', [0.01,0.30,0.01]);
+plot(T, y_opt(2,:), '--', 'LineWidth', 3, 'color', [0.72,0.92,0.72]);
 plot(t, measurements_plot(2,:), '*', 'MarkerSize', 5, 'color', [0.01,0.30,0.01]);
 xlabel('time [t]')
 ylabel('solution [y]')
 set(gca, 'FontSize', 12);
 set(gca, 'Box', 'off');
 hold off 
-legend({'$y_L(t;\tilde{p}^{\ast})$', '$y_L(t;\tilde{p}^{opt})$', 'meas. $Prey$', '$y_S(t;\tilde{p}^{\ast})$', '$y_S(t;\tilde{p}^{opt})$', 'meas. $Predator$'}, 'Interpreter', 'LaTeX');
+legend({'Prey init', 'Pred. init', '$y_L(t;\tilde{p}^{\ast})$', '$y_L(t;\tilde{p}^{opt})$', 'meas. $Prey$', '$y_S(t;\tilde{p}^{\ast})$', '$y_S(t;\tilde{p}^{opt})$', 'meas. $Predator$'}, 'Interpreter', 'LaTeX');
