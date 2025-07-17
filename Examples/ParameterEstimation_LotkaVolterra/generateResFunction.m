@@ -5,10 +5,6 @@ function [residual_function] = generateResFunction(t, datahandle, sol, measureme
    dim_y = size(sol.y, 1);
    dim_p = length(parameters_ODE);
    
-   %integrator_solveODE = @ode45;
-   %odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-6);
-   %datahandle    = prepareDatahandleForIntegration('LotkaVolterraRHS', 'integrator', func2str(integrator_solveODE), 'options', odeoptionsrhs_test);
-   
    return
    
    function [residual, jacobian] = computeResidual(p)
