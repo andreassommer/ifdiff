@@ -1,5 +1,4 @@
 %% Solution ifdiff
-clear;
 initPaths();
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-6);
@@ -60,9 +59,9 @@ y = deval(sol,T);
 y_opt = deval(sol_opt, T);
 y_prev = deval(sol_prev, T);
 %
-plot(sol_prev.x, sol_prev.y(1,:), ':', 'LineWidth', 1, 'color', [0.08,0.05,0.68]);
+plot(T, y_prev(1,:), ':', 'LineWidth', 1, 'color', [0.08,0.05,0.68]);
 hold on;
-plot(sol_prev.x, sol_prev.y(2,:), ':','LineWidth', 1, 'color', [0.08,0.05,1.00]);
+plot(T, y_prev(2,:), ':','LineWidth', 1, 'color', [0.08,0.05,1.00]);
 %
 plot(T, y(1,:),'LineWidth', 3, 'color', [0.08,0.05,0.68]);
 hold on
