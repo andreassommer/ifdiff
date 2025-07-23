@@ -10,15 +10,15 @@ classdef TestStateJumps < matlab.unittest.TestCase
             originalPath = path;
             testCase.addTeardown(@path, originalPath);
 
-            if ~exist('initPaths', 'file')
+            if ~exist('initIFDIFF', 'file')
                 % We are probably in the test directory, so check parent directory
                 cd('..');
             end
-            initPaths();
+            initIFDIFF();
 
-            % Get absolute path to directory in which initPaths resides.
+            % Get absolute path to directory in which initIFDIFF resides.
             % This should be the IFDIFF project root directory.
-            [filePath, ~, ~] = fileparts(which('initPaths'));
+            [filePath, ~, ~] = fileparts(which('initIFDIFF'));
             addpath(fullfile(filePath, 'test', 'TestStateJumps'));
         end
     end

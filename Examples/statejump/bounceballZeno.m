@@ -1,6 +1,4 @@
 % Solve the bouncing ball problem with Zeno's phenomenon treatment and plot the solutions and sensitivities
-initPaths();
-
 solver = @ode15s;
 options    = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
 

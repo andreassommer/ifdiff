@@ -15,7 +15,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
 
         subway_tspan = [0 65];
         subway_x0 = [0; 0; 0];
-        % subway_p initialized later because we need to initPaths() before
+        % subway_p initialized later because we need to initIFDIFF() before
         subway_rhsFunction = 'newYorkCitySubwayModelRhs';
         subway_odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-10);
         subway_xEnd = [2112.07361577; 0.00124794; 4124.77885608];
@@ -41,15 +41,15 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             originalPath = path;
             testCase.addTeardown(@path, originalPath);
 
-            if ~exist('initPaths', 'file')
+            if ~exist('initIFDIFF', 'file')
                 % We are probably in the test directory, so check parent directory
                 cd('..');
             end
-            initPaths();
+            initIFDIFF();
 
-            % Get absolute path to directory in which initPaths resides.
+            % Get absolute path to directory in which initIFDIFF resides.
             % This should be the IFDIFF project root directory.
-            [filePath, ~, ~] = fileparts(which('initPaths'));
+            [filePath, ~, ~] = fileparts(which('initIFDIFF'));
             addpath(fullfile(filePath, 'Examples', 'subway'));
         end
         function setParameters(testCase)

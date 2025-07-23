@@ -6,8 +6,6 @@
 % This is because having to set h_+ to a value slightly above zero is a burden imposed by IFDIFF, so it
 % should also factor into the error
 
-initPaths();
-
 % INITIAL DATA
 g     = 9.807;
 gamma = 0.9;

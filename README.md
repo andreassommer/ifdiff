@@ -19,12 +19,13 @@ The file [Readme_Example.m](./Readme_Example.m) contains a self-explaining Matla
 
 
 # First Run Prerequisites
+
 Before using IFDIFF, it is mandatory to run the `make_mtreeplus` script once.  
 After starting Matlab, change to the IFDIFF directory and type `make_mtreeplus`.  
 This scripts generates a modified copy of Matlab's own parser class `mtree`, on which IFDIFF heavily relies.
 
-It is also advisable to initialize the paths needed for IFDIFF by invoking 
-`initPaths();` once on every new matlab session.
+It is advisable to initialize the paths needed for IFDIFF by invoking 
+`initIFDIFF();` once on every new matlab session.
 
 </br>
 
@@ -43,7 +44,7 @@ Preprocessing generates the `datahandle`, the central structure for switching de
 We set ODE solver and its options as usual. If not set, default values are used.
 
    ```matlab
-      initPaths();  % Initialise the paths for ifdiff
+      initIFDIFF();  % Initialise the paths for ifdiff -- needed only once per Matlab session
       integrator = @ode45; 
       odeoptions = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
       datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptions);

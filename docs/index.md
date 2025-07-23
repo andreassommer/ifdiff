@@ -122,7 +122,7 @@ Without any warning or error, the __naive approach with tight tolerances leads t
 With the switching point detection in IFDIFF, after a single call to a preparation routine, 
 integration is just as simple as before:
 ```matlab
-   initPaths();                                              % initialise the paths for ifdiff (only once)
+   initIFDIFF();                                             % initialise IFDIFF (only once)
    tspan = [0 20]; x0 = [1;0]; p = 5.437;                    % set time horizon, initial value, parameter
    integrator = @ode45;                                      % choose integrator
    odeoptions = odeset('AbsTol', 1e-5, 'RelTol', 1e-3);      % set integrator options, here: low accuracy

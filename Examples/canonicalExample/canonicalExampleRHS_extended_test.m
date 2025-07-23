@@ -3,7 +3,6 @@ timeinterval = [0, 100];
 initstates = [1 0];
 %p = 5.437;
 p = 0.5;
-%initPaths()
 %%
 
 options = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);

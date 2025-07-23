@@ -54,13 +54,15 @@ end
 
 
 %% EULER Integration
-euler_fname = fullfile('.', 'Examples', 'predatorprey_filippov', sprintf('sol_euler_%.0e.mat', eulerStep));
+[owndir, ~] = fileparts(mfilename('fullpath'));
+euler_fname = fullfile(owndir, sprintf('sol_euler_%.0e.mat', eulerStep));
 if doEuler
-    fprintf('Integrating with integrator %s...\n', func2str(intEuler))
+    fprintf('Integrating with integrator %s (might take a while) ...\n', func2str(intEuler))
     figure(fignum);
     th = tic();
     sol_euler = intEuler(@(t,x) pprhs(t,x,p), tspan, x0_1, eulerStep);
     time_euler = toc(th); fprintf('Euler took %g s\n', time_euler);
+    fprintf('Saving result to %s for later reuse.\n', euler_fname);
     save(euler_fname, "sol_euler");
 elseif isfile(euler_fname)
     fprintf('Loading sol_euler from file %s\n', euler_fname);
@@ -150,8 +152,8 @@ function sol = explEuler(rhs, tspan, x0, stepsize)
       if (i == nextout)
          X(:,k) = Xi; k = k + 1; 
          nextout = nextout + ceil(1 / sfac);
-         if ~mod(i/stepcount, 0.1), fprintf('.'); end
       end
+      if ~mod(floor(100*i/stepcount), 10), fprintf('.'); end
    end
    fprintf('\n')
    T = linspace(tspan(1), tspan(end), ceil(stepcount*sfac)+1);

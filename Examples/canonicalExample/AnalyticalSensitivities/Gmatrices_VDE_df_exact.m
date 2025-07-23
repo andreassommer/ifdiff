@@ -1,5 +1,5 @@
 %% Solution with ifdiff
-initPaths();
+
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
 datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);

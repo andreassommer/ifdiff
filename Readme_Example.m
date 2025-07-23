@@ -8,7 +8,7 @@
 % The ODE solver and the ODE options can be set by the user with name-value pairs. 
 % If unspecified, defaults are used.
 
-initPaths();            % Initialise the paths for ifdiff
+initIFDIFF();           % Initialise the paths for ifdiff
 integrator = @ode45;    % Choose integrator and options
 odeoptions = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
         
