@@ -161,10 +161,16 @@ function copyMtreeFiles(sourceDir, destinationDir)
       cd(ifdiffToolsDirectory);                      % make filecopy() reachable; we can rely that we are in the ifdiff folder
       files = dir(fullfile(sourceDir, '**', '*'));   % read all files including subfolders
       files = files(~[files.isdir]);                 % exclude folders, keep only files
+      lenSourceDir = numel(sourceDir);
       for i = 1:length(files)
          filespec = fullfile(files(i).folder, files(i).name);
-         fprintf('Copying %s to %s ...\n', filespec, destinationDir);
-         [success, msg] = filecopy(filespec, destinationDir, false);  % false: do not put existing files into recycle bin
+         % Get relative path of target in source mtree dir to preserve folder structure (to avoid issues with private functions)
+         % Might include preceding filesep, but doesn't matter due to fullfile call.
+         [destinationRelPath, ~, ~] = fileparts(filespec(lenSourceDir+1:end));
+         % Include trailing filesep, so filecopy recognizes destination as folder.
+         destinationPath = fullfile(destinationDir, destinationRelPath, filesep);
+         fprintf('Copying %s to %s ...\n', filespec, destinationPath);
+         [success, msg] = filecopy(filespec, destinationPath, false);  % false: do not put existing files into recycle bin
          if ~success, error('Error copying file %s :  %s', filespec, msg); end
       end
    catch ME
