@@ -1,5 +1,3 @@
-initPaths();
-
 solver = @ode45;
 options = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
 

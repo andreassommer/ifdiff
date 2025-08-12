@@ -3,7 +3,6 @@
 % 2. IFDIFF with standard tolerances and FD step, plus relative error
 % 3. IFDIFF with strict tolerances and shorter FD step, plus relative error
 
-initPaths();
 [t0, tEnd, p, x0] = jumpSensitivityInitdata();
 
 % CONFIGURATION

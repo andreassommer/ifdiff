@@ -5,11 +5,11 @@ classdef TestHelperFunctions < matlab.unittest.TestCase
             originalPath = path;
             testCase.addTeardown(@path, originalPath);
 
-            if ~exist('initPaths', 'file')
+            if ~exist('initIFDIFF', 'file')
                 % We are probably in the test directory, so check parent directory
                 cd('..');
             end
-            initPaths();
+            initIFDIFF();
 
             % Get absolute path to directory in which this file resides.
             [filePath, ~, ~] = fileparts(mfilename('fullpath'));

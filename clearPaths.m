@@ -7,16 +7,14 @@ function clearPaths()
 %   OUTPUT
 %   [none]
 %
-%   See also INITPATHS whose changes are undone by CLEARPATHS.
+%   See also initIFDIFF whose paths additions are undone by CLEARPATHS.
 
 
-% Get absolute path to directory in which this file resides.
-[filePath, ~, ~] = fileparts(mfilename('fullpath'));
+% receive the required paths
+ifdiffpaths = generateIFDIFFpaths();
 
-rmpath(filePath);
-rmpath(genpath(fullfile(filePath, 'Tools')));
-rmpath(genpath(fullfile(filePath, 'Examples')));
-rmpath(genpath(fullfile(filePath, 'PreprocessedFunctions')));
-rmpath(fullfile(filePath, 'ComputeSensitivities'));
-rmpath(genpath(fullfile(filePath, 'GenerateFixedBranchingFunctions')));
+% remove them from the search path
+rmpath(ifdiffpaths);
+
+
 end

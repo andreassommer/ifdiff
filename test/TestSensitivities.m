@@ -3,7 +3,7 @@ classdef TestSensitivities < matlab.unittest.TestCase
     methods(TestClassSetup)
         function setup(~)
             cd("..");
-            initPaths();
+            initIFDIFF();
         end
     end
     

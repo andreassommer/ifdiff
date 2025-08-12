@@ -136,7 +136,7 @@ classdef RunBenchmarksCommand < UserCommand
             end
 
             % Main: run the benchmarks and return the results
-            initPaths();
+            initIFDIFF();
             try
                 speedtrackerRunner = speedtrackerRunner.run(snapshots, benchmarks);
             catch error
