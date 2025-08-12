@@ -6,7 +6,7 @@ function flag = make_mtreeplus(varargin)
 % OUTPUT:  flag  -->  true if successful
 %                     false on failure
 %
-% Andreas Sommer, 2020
+% Andreas Sommer, 2020, 2025
 % andreas.sommer@iwr.uni-heidelberg.de
 % email@andreas-sommer.eu
 %
@@ -14,6 +14,9 @@ function flag = make_mtreeplus(varargin)
 
 % default flag: failure
 flag = false;
+
+% this file uses filecopy from the Tools directory
+ifdiffToolsDirectory = 'Tools';
 
 % set some helpers/constants
 MTREE_STRING         = 'mtree';
@@ -31,8 +34,7 @@ MTREEPLUS_FOLDERNAME = '@mtreeplus';
 % ensure that the current functions runs in working directory
 [maker_path, maker_file, ~] = fileparts(mfilename('fullpath'));
 if ~strcmp(maker_path, pwd())
-   disp('Please call %s from inside its home directory %s', maker_file, maker_path)
-   return
+   error('Please call %s from inside its home directory %s', maker_file, maker_path)
 end
 
 
@@ -149,17 +151,49 @@ end
 
 % ========================================================================================
 
-function copyMtreeFiles(source, destination)
+function copyMtreeFiles(sourceDir, destinationDir)
    % copy contents of mtree path to mtreeplus path
-   % we cannot use copyfile as is (tries to) preserve file permissions and ownership,
+   % we cannot use Matlab's copyfile() as it
+   % (tries to) preserve file permissions and ownership,
+   % so we use filecopy() from mmtools package
+   curDir = pwd(); % save current directory
+   try 
+      cd(ifdiffToolsDirectory);                      % make filecopy() reachable; we can rely that we are in the ifdiff folder
+      files = dir(fullfile(sourceDir, '**', '*'));   % read all files including subfolders
+      files = files(~[files.isdir]);                 % exclude folders, keep only files
+      lenSourceDir = numel(sourceDir);
+      for i = 1:length(files)
+         filespec = fullfile(files(i).folder, files(i).name);
+         % Get relative path of target in source mtree dir to preserve folder structure (to avoid issues with private functions)
+         % Might include preceding filesep, but doesn't matter due to fullfile call.
+         [destinationRelPath, ~, ~] = fileparts(filespec(lenSourceDir+1:end));
+         % Include trailing filesep, so filecopy recognizes destination as folder.
+         destinationPath = fullfile(destinationDir, destinationRelPath, filesep);
+         fprintf('Copying %s to %s ...\n', filespec, destinationPath);
+         [success, msg] = filecopy(filespec, destinationPath, false);  % false: do not put existing files into recycle bin
+         if ~success, error('Error copying file %s :  %s', filespec, msg); end
+      end
+   catch ME
+      cd(curDir);  % undo the directory change
+      warning('An error occured while copying the mtree folder %s to %s', sourceDir, destinationDir);
+      rethrow(ME);
+   end
+   cd(curDir);     % undo the directory change
+end
+
+% ========================================================================================
+
+function copyMtreeFilesBySystem(sourceDir, destinationDir)
+   % copy contents of mtree path to mtreeplus path
+   % we cannot use Matlab's copyfile() as it (tries to) preserve file permissions and ownership,
    % so we invoke system copy commands to own the copies
    fprintf('Copying files...\n')
    if ispc()
-      copy_command = sprintf('xcopy /s "%s\\*.*" "%s"', source, destination);  % WINDOWS
+      copy_command = sprintf('xcopy /s "%s\\*.*" "%s"', sourceDir, destinationDir);  % WINDOWS
    elseif ismac()
-      copy_command = sprintf('cp -R ''%s'' ''%s'''  , source, destination);  % MAC
+      copy_command = sprintf('cp -R ''%s'' ''%s'''  , sourceDir, destinationDir);  % MAC
    elseif isunix()
-      copy_command = sprintf('cp -R ''%s'' ''%s'''  , source, destination);  % LINUX
+      copy_command = sprintf('cp -R ''%s'' ''%s'''  , sourceDir, destinationDir);  % LINUX
    else
       error('Platform not supported.')
    end
@@ -186,34 +220,22 @@ end
 % ========================================================================================
 
 function copyAndPatchMTREEPLUS(fid_src, fid_dest)
-   % choose patch helper depending on matlab version
-   % MATLAB 9.0  R2016a  35
-   % MATLAB 9.1  R2016b  36
-   % MATLAB 9.2  R2017a  37
-   % MATLAB 9.3  R2017b  38
-   % MATLAB 9.4  R2018a  39
-   % MATLAB 9.5  R2018b  40
-   % MATLAB 9.6  R2019a  41
-   % MATLAB 9.7  R2019b  42
-   % MATLAB 9.8  R2020a  43
-   % MATLAB 9.9  R2020b  44
-   % MATLAB 9.10 R2021a  45
-   % MATLAB 9.11 R2021b  --
+   % choose patch helper depending on matlab version (since 2016, all work)
    TESTED = true; UNTESTED = false;
    if     verLessThan('MATLAB', '9.0')
       error('Incompatible Matlab version.');
-   elseif verLessThan('MATLAB', '9.1'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.0  --> 2016a
-   elseif verLessThan('MATLAB', '9.2'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.1  --> 2016b
-   elseif verLessThan('MATLAB', '9.3'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.2  --> 2017a
-   elseif verLessThan('MATLAB', '9.4'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.3  --> 2017b
-   elseif verLessThan('MATLAB', '9.5'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.4  --> 2018a
-   elseif verLessThan('MATLAB', '9.6'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.5  --> 2018b
-   elseif verLessThan('MATLAB', '9.7'),  copyAndPatch__generic(fid_src, fid_dest, TESTED);     % Version 9.6  --> 2019a
-   elseif verLessThan('MATLAB', '9.8'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.7  --> 2019b
-   elseif verLessThan('MATLAB', '9.9'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.8  --> 2020a
-   elseif verLessThan('MATLAB', '9.10'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.9  --> 2020b
-   elseif verLessThan('MATLAB', '9.11'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.10 --> 2021a
-   elseif verLessThan('MATLAB', '9.12'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.11 --> 2021b
+   elseif verLessThan('MATLAB', '9.1'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.0  --> 2016a  35
+   elseif verLessThan('MATLAB', '9.2'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.1  --> 2016b  36
+   elseif verLessThan('MATLAB', '9.3'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.2  --> 2017a  37
+   elseif verLessThan('MATLAB', '9.4'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.3  --> 2017b  38
+   elseif verLessThan('MATLAB', '9.5'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.4  --> 2018a  39
+   elseif verLessThan('MATLAB', '9.6'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.5  --> 2018b  40
+   elseif verLessThan('MATLAB', '9.7'),  copyAndPatch__generic(fid_src, fid_dest, TESTED);     % Version 9.6  --> 2019a  41
+   elseif verLessThan('MATLAB', '9.8'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.7  --> 2019b  42
+   elseif verLessThan('MATLAB', '9.9'),  copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.8  --> 2020a  43
+   elseif verLessThan('MATLAB', '9.10'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.9  --> 2020b  44
+   elseif verLessThan('MATLAB', '9.11'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.10 --> 2021a  45
+   elseif verLessThan('MATLAB', '9.12'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.11 --> 2021b  --
    elseif verLessThan('MATLAB', '9.13'), copyAndPatch__generic(fid_src, fid_dest, TESTED);     % Version 9.12 --> 2022a
    elseif verLessThan('MATLAB', '9.14'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.13 --> 2022b
    elseif verLessThan('MATLAB', '9.15'), copyAndPatch__generic(fid_src, fid_dest, UNTESTED);   % Version 9.14 --> 2023a
