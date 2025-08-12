@@ -153,7 +153,8 @@ end
 
 function copyMtreeFiles(sourceDir, destinationDir)
    % copy contents of mtree path to mtreeplus path
-   % we cannot use Matlab's copyfile() as is (tries to) preserve file permissions and ownership,
+   % we cannot use Matlab's copyfile() as it
+   % (tries to) preserve file permissions and ownership,
    % so we use filecopy() from mmtools package
    curDir = pwd(); % save current directory
    try 
@@ -178,7 +179,7 @@ end
 
 function copyMtreeFilesBySystem(sourceDir, destinationDir)
    % copy contents of mtree path to mtreeplus path
-   % we cannot use Matlab's copyfile() as is (tries to) preserve file permissions and ownership,
+   % we cannot use Matlab's copyfile() as it (tries to) preserve file permissions and ownership,
    % so we invoke system copy commands to own the copies
    fprintf('Copying files...\n')
    if ispc()
