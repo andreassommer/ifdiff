@@ -1,30 +1,11 @@
-# Workshop: Friday, July 18, 2025
-## Filippov-ODEs with State-dependent Switches  
-**Theory and Hands-On Practical with IFDIFF**  
-**Friday, July 18, 2025** • Time: 9–16h  
-CIP Pool 1 • 3rd Floor • Mathematikon  
-Im Neuenheimer Feld 205 • 69120 Heidelberg  
+# Meet us at the **MATLAB EXPO**
+**When**: Tuesday • October 21st • 2025 • 9:00–17:30h <br/>
+**Where**: Arabellastr. 6 • 81925 München <br/>
+**Team**: Andreas Sommer, Pilar Keller, Lev Gromov, Marvin Hertweck
 
-[**Register here!**](https://t1p.de/ifdiff2025) - Participation is free.
-
-[![IFDIFF Workshop](ifdiff-workshop-2025-preview.png)](ifdiff-workshop-2025-poster-and-program-website.pdf)
+[**Sign up for the MATLAB EXPO here!**](https://www.matlabexpo.com/de/2025.html)
 
 ---
-
-## Short Course Program
-
-**09:00 – 11:00** · _Introduction to Switched ODEs_
-
-**11:00 – 12:00** · _Hands-On Practical: Part 1_
-
-**12:00 – 13:00** · _Lunch break_ (finger food and beverages)
-
-**13:00 – 16:00** · _Hands-On Practical: Part 2_
-
-_Coffee and cookies always available_
-
-[Workshop poster and program (PDF)](ifdiff-workshop-2025-poster-and-program-website.pdf)  
-[Register here!](https://t1p.de/ifdiff2025)
 
 <br/>
 <br/>
@@ -185,7 +166,7 @@ Details of how to compute sensitivities with IFDIFF are given in the project's [
 <br/>
 <br/>
 
-# IFDIFF is not fast - but simple to use
+# IFDIFF is simple to use!
 
 Correct treatment of switched systems requires elaborate formulation of switching functions and tailored integrators, 
 placing high mathematical demands on modelers. Even small model changes often imply considerable reformulation effort. 
@@ -198,8 +179,7 @@ Transparently extending the Matlab integrators (ode45, ode15s, etc.), IFDIFF is 
 state- and parameter-dependent conditionals, thus enabling fast prototyping and relieving modelers of
 mathematical-technical effort. 
 
-Calculation times of the naive approach are much lower than the ones of IFDIFF. 
-But which result do you prefer: A quick or a correct one? The naive approach can make no statement about accuracy.
-Much worse, it can generate arbitrarily wrong results without any notice (see the example above!).
+Calculation times of the naive approach are a little lower than the ones of IFDIFF. 
+But it can generate arbitrarily wrong results without any notice (see the example above!).
 IFDIFF provides correct integration results, correct first-order sensitivities and information 
 about the switching structure of your model.
