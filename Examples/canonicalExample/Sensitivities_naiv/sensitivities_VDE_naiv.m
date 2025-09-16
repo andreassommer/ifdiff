@@ -19,54 +19,63 @@ solVDE_y = ode45(function_y_VDE, tspan, initial_y);
 t=0:0.01:20;
 sensitivities_y = deval(solVDE_y, t);
 
+%% plot
 figure(1)
+
+% Common settings
+markerStyle = '.';
+markerColor = 'b';
+markerSize  = 8;
+lineWidth   = 1.5;
+fontSize    = 14;
+
+% Subplot (1,1)
 subplot(2,2,1)
-for i = 1:length(t)
-%axis([0 20 0 2])
-plot(t(i), sensitivities_y(1,i), '.b')
-hold on 
-end
-xlabel('t');
+plot(t, sensitivities_y(1,:), markerStyle, ...
+     'Color', markerColor, 'MarkerSize', markerSize, 'LineWidth', lineWidth)
+axis([0 20 0 2])
+grid on
+xlabel('t')
 ylabel('\partial y_1(t)/\partial y_0^{(1)}')
 title('G_{y,11}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
+set(gca, 'FontSize', fontSize, 'Box', 'off')
 
+% Subplot (1,2)
 subplot(2,2,2)
-for i = 1:length(t)
-%axis([0 20 0 50])
-plot(t(i), sensitivities_y(3,i), '.b')
-hold on 
-end
-xlabel('t');
+plot(t, sensitivities_y(3,:), markerStyle, ...
+     'Color', markerColor, 'MarkerSize', markerSize, 'LineWidth', lineWidth)
+axis([0 20 -2 2])
+grid on
+xlabel('t')
 ylabel('\partial y_1(t)/\partial y_0^{(2)}')
 title('G_{y,12}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
+set(gca, 'FontSize', fontSize, 'Box', 'off')
 
+% Subplot (2,1)
 subplot(2,2,3)
-for i = 1:length(t)
-axis([0 20 0 2])
-plot(t(i), sensitivities_y(2,i), '.b')
-hold on 
-end
-xlabel('t');
+plot(t, sensitivities_y(2,:), markerStyle, ...
+     'Color', markerColor, 'MarkerSize', markerSize, 'LineWidth', lineWidth)
+axis([0 20 -2 2])
+grid on
+xlabel('t')
 ylabel('\partial y_2(t)/\partial y_0^{(1)}')
 title('G_{y,21}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
+set(gca, 'FontSize', fontSize, 'Box', 'off')
 
+% Subplot (2,2)
 subplot(2,2,4)
-for i = 1:length(t)
-%axis([0 20 0 2])
-plot(t(i), sensitivities_y(4,i), '.b')
-hold on
-end
-xlabel('t');
+plot(t, sensitivities_y(4,:), markerStyle, ...
+     'Color', markerColor, 'MarkerSize', markerSize, 'LineWidth', lineWidth)
+axis([0 20 -2 2])
+grid on
+xlabel('t')
 ylabel('\partial y_2(t)/\partial y_0^{(2)}')
 title('G_{y,22}(t; t_0)')
-set(gca, 'FontSize', 22);
-set(gca, 'Box', 'off');
+set(gca, 'FontSize', fontSize, 'Box', 'off')
+
+% layout
+sgtitle('Sensitivity Functions', 'FontSize', fontSize+2, 'FontWeight', 'bold')
+set(gcf, 'Color', 'w')
 
 %% Sensitivities parameters VDEs without switching point detection
 function_p_VDE = @(t,G) VDE_RHS_p_naiv(sol, @canonicalExampleRHS, t, G, parameters);
