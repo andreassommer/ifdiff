@@ -27,8 +27,10 @@ classdef ModelFunctionCreator < FixedBranchingFunctionCreator
 
         function this = handleLastCtrlif(this)
             % Fix branching of final ctrlif and simplify function (output is unchanged).
-            this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, true);
-            this = this.fixBranching(this.numCtrlif);
+            if this.numCtrlif > 0 % Protect against edge case: no switches
+                this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, true);
+                this = this.fixBranching(this.numCtrlif);
+            end
 
             for idxMtree=1:numel(this.exportMtreeArray)
                 mtree = this.exportMtreeArray{idxMtree};
