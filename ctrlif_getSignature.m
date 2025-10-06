@@ -42,8 +42,8 @@ feval(...
 data = datahandle.getData();
 index = 1:data.getSignature.ctrlifCounter;
 
-A1 = data.getSignature.switch_cond(1,index);
-A2 = data.getSignature.ctrlif_index(1,index);
-A3 = data.getSignature.function_index(index,1);
+A1 = data.getSignature.switch_cond(index);
+A2 = data.getSignature.ctrlif_index(index);
+A3 = data.getSignature.function_index(index);
 end
 

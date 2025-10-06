@@ -7,7 +7,7 @@ function preprocess_rhs_checkForCtrlif(preprocess)
 % i.e. if true then no ctrlif has been set so far. 
 condition = preprocess.ctrlif_index == 1; 
 if condition
-    error('No line of code found, that could cause a switch.')
+    %error('No line of code found, that could cause a switch.')
 end 
 
-end 
+end
