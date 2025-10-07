@@ -1,0 +1,16 @@
+function mtreeobj = preprocess_rhsAddDatahandleToInput(mtreeobj) 
+config = makeConfig();
+
+cIndex = mtree_cIndex; 
+rIndex = struct('HEAD', struct(), 'BODY', struct()); 
+rIndex.HEAD = mtree_rIndex_head(mtreeobj, rIndex.HEAD); 
+
+[mtreeobj, ~] = mtree_createAndAdd_NewNode(mtreeobj, ...
+    rIndex.HEAD.ETC2, ... 
+    cIndex.indexRightchild,... 
+    {mtreeobj.K.ID, config.datahandleArgumentName}, ...
+    rIndex.HEAD.Arg(:,1), ... 
+    cIndex.indexNextNode);  
+
+
+end 
