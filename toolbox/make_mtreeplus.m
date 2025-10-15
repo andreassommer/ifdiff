@@ -16,7 +16,7 @@ function flag = make_mtreeplus(varargin)
 flag = false;
 
 % this file uses filecopy from the Tools directory
-ifdiffToolsDirectory = 'Tools';
+ifdiffToolsDirectory = 'internal/tools';
 
 % set some helpers/constants
 MTREE_STRING         = 'mtree';
