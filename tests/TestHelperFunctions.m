@@ -1,19 +1,13 @@
 classdef TestHelperFunctions < matlab.unittest.TestCase
-    %TESTHELPERFUNCTIONS tests that various ways of using helper functions in RHSes work
+    %TESTHELPERFUNCTIONS
+    %
+    %Test using helper functions (i.e. other user-authored functions) in a RHS.
+
     methods(TestClassSetup)
         function setPath(testCase)
-            originalPath = path;
-            testCase.addTeardown(@path, originalPath);
+            import matlab.unittest.fixtures.PathFixture
 
-            if ~exist('initIFDIFF', 'file')
-                % We are probably in the test directory, so check parent directory
-                cd('..');
-            end
-            initIFDIFF();
-
-            % Get absolute path to directory in which this file resides.
-            [filePath, ~, ~] = fileparts(mfilename('fullpath'));
-            addpath(fullfile(filePath, 'TestHelperFunctions'));
+            testCase.applyFixture(PathFixture('data/TestHelperFunctions'));
         end
     end
 

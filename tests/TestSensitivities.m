@@ -1,12 +1,8 @@
 classdef TestSensitivities < matlab.unittest.TestCase
+    %TESTSENSITIVITIES
+    %
+    %Test sensitivity computation.
 
-    methods(TestClassSetup)
-        function setup(~)
-            cd("..");
-            initIFDIFF();
-        end
-    end
-    
     methods(Test)
         function testCanonexVde(testCase)
             % Test the sensitivities generated with the VDE method on the canonical example.

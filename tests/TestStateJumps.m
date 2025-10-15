@@ -1,26 +1,18 @@
 classdef TestStateJumps < matlab.unittest.TestCase
+    %TESTSTATEJUMPS
+    %
+    %Test state jumps, i.e. discontinuities in the state of the solution.
+
+    methods (TestClassSetup)
+        function setPath(testCase)
+            import matlab.unittest.fixtures.PathFixture
+
+            testCase.applyFixture(PathFixture('data/TestStateJumps'));
+        end
+    end
 
     properties (Constant)
         defaultIntegrator = @ode45;
-    end
-
-    methods(TestClassSetup)
-        % Shared setup for the entire test class
-        function setup(testCase)
-            originalPath = path;
-            testCase.addTeardown(@path, originalPath);
-
-            if ~exist('initIFDIFF', 'file')
-                % We are probably in the test directory, so check parent directory
-                cd('..');
-            end
-            initIFDIFF();
-
-            % Get absolute path to directory in which initIFDIFF resides.
-            % This should be the IFDIFF project root directory.
-            [filePath, ~, ~] = fileparts(which('initIFDIFF'));
-            addpath(fullfile(filePath, 'test', 'TestStateJumps'));
-        end
     end
 
     methods(TestMethodSetup)
@@ -78,7 +70,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(deval(sol, 3.5), -0.5, 'RelTol', 1e-8);
 
             expectedSwitches = [1,  2,  3, 4;
-                                -1, 1, -1, 1];
+                -1, 1, -1, 1];
             for i=1:length(expectedSwitches)
                 testCase.verifyEqual(sol.switches(i), expectedSwitches(1, i), 'RelTol', 1e-6);
                 testCase.verifyEqual(deval(sol, sol.switches(i)), expectedSwitches(2, i), 'RelTol', 1e-6);
@@ -376,7 +368,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             p = 0;
             x0 = [0; 0];
 
-            
+
             datahandle = prepareDatahandleForIntegration( ...
                 'helperInJumpRHS', ...
                 'solver', func2str(integrator), ...

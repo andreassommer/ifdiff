@@ -1,5 +1,18 @@
 classdef TestSolverCompatibility < matlab.unittest.TestCase
-    % Test that IFDIFF works with all of MATLAB's ODE solvers.
+    %TESTSOLVERCOMPATABILITY
+    %
+    %Test that IFDIFF works with all of the MATLAB ODE solvers.
+
+    methods (TestClassSetup)
+        function setParameters(testCase)
+            testCase.subway_p = nysscc_getPhysicsParameters();
+        end
+
+        function setTimer(testCase)
+            testCase.totalTime = tic;
+            testCase.addTeardown(@toc, testCase.totalTime);
+        end
+    end
 
     properties (Constant)
         % Canonical example: input params and expected results. The latter are those obtained from IFDIFF
@@ -34,31 +47,6 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         subway_p
 
         totalTime
-    end
-
-    methods (TestClassSetup)
-        function setPath(testCase)
-            originalPath = path;
-            testCase.addTeardown(@path, originalPath);
-
-            if ~exist('initIFDIFF', 'file')
-                % We are probably in the test directory, so check parent directory
-                cd('..');
-            end
-            initIFDIFF();
-
-            % Get absolute path to directory in which initIFDIFF resides.
-            % This should be the IFDIFF project root directory.
-            [filePath, ~, ~] = fileparts(which('initIFDIFF'));
-            addpath(fullfile(filePath, 'Examples', 'subway'));
-        end
-        function setParameters(testCase)
-            testCase.subway_p = nysscc_getPhysicsParameters();
-        end
-        function setTimer(testCase)
-            testCase.totalTime = tic;
-            testCase.addTeardown(@toc, testCase.totalTime);
-        end
     end
 
     methods (Test)

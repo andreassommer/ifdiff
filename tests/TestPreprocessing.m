@@ -1,19 +1,13 @@
 classdef TestPreprocessing < matlab.unittest.TestCase
-    %TESTPREPROCESSING  Test class for IFDIFF's preprocessing mechanism. (Manual review required)
-    methods(TestClassSetup)
+    %TESTPREPROCESSING
+    %
+    %Test preprocessing mechanism. (Manual review required)
+
+    methods (TestClassSetup)
         function setPath(testCase)
-            originalPath = path;
-            testCase.addTeardown(@path, originalPath);
+            import matlab.unittest.fixtures.PathFixture
 
-            if ~exist('initIFDIFF', 'file')
-                % We are probably in the test directory, so check parent directory
-                cd('..');
-            end
-            initIFDIFF();
-
-            % Get absolute path to directory in which this file resides.
-            [filePath, ~, ~] = fileparts(mfilename('fullpath'));
-            addpath(fullfile(filePath, 'TestPreprocessing'));
+            testCase.applyFixture(PathFixture('data/TestPreprocessing'));
         end
     end
 
@@ -25,5 +19,4 @@ classdef TestPreprocessing < matlab.unittest.TestCase
             prepareDatahandleForIntegration('testPreprocessingRHS');
         end
     end
-
 end

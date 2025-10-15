@@ -1,22 +1,16 @@
 classdef TestIgnore < matlab.unittest.TestCase
-    
+    %TESTIGNORE
+    %
+    %Test the IFDIFF ignore mechanism used to exclude ifs from preprocessing.
+
     methods(TestClassSetup)
         function setPath(testCase)
-            originalPath = path;
-            testCase.addTeardown(@path, originalPath);
+            import matlab.unittest.fixtures.PathFixture
 
-            if ~exist('initIFDIFF', 'file')
-                % We are probably in the test directory, so check parent directory
-                cd('..');
-            end
-            initIFDIFF();
-
-            % Get absolute path to directory in which this file resides.
-            [filePath, ~, ~] = fileparts(mfilename('fullpath'));
-            addpath(fullfile(filePath, 'TestIgnore'));
+            testCase.applyFixture(PathFixture('data/TestIgnore'));
         end
     end
-    
+
     methods(Test)
         function testIgnoreSimple(testCase)
             options = odeset();
@@ -25,7 +19,7 @@ classdef TestIgnore < matlab.unittest.TestCase
             tF = 10;
             x0    = 0;
             p     = 0;
-            
+
             datahandle = prepareDatahandleForIntegration('simpleIgnoreRHS', ...
                 'solver', func2str(solver), ...
                 'options', options);
@@ -46,7 +40,7 @@ classdef TestIgnore < matlab.unittest.TestCase
             tF = 10;
             x0    = 0;
             p     = 0;
-            
+
             datahandle = prepareDatahandleForIntegration('nestedIgnoreRHS', ...
                 'solver', func2str(solver), ...
                 'options', options);
@@ -67,7 +61,7 @@ classdef TestIgnore < matlab.unittest.TestCase
             tF = 10;
             x0    = 0;
             p     = 0;
-            
+
             datahandle = prepareDatahandleForIntegration('ignoredIfInNonIgnoredIfRHS', ...
                 'solver', func2str(solver), ...
                 'options', options);
@@ -88,7 +82,7 @@ classdef TestIgnore < matlab.unittest.TestCase
             tF = 10;
             x0    = 0;
             p     = 0;
-            
+
             datahandle = prepareDatahandleForIntegration('ignoreInHelperRHS', ...
                 'solver', func2str(solver), ...
                 'options', options);
@@ -112,7 +106,7 @@ classdef TestIgnore < matlab.unittest.TestCase
             tF = 10;
             x0 = 0;
             p  = 0;
-            
+
             datahandle = prepareDatahandleForIntegration('helperInIgnoreRHS', ...
                 'solver', func2str(solver), ...
                 'options', options);
@@ -135,7 +129,7 @@ classdef TestIgnore < matlab.unittest.TestCase
             tF = 10;
             x0 = 0;
             p  = 0;
-            
+
             datahandle = prepareDatahandleForIntegration('ignoreAndNotIgnoreRHS', ...
                 'solver', func2str(solver), ...
                 'options', options);
@@ -150,5 +144,4 @@ classdef TestIgnore < matlab.unittest.TestCase
             testCase.verifyEqual(deval(sol, tF), 15, 'RelTol', 0.1);
         end
     end
-    
 end

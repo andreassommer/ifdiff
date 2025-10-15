@@ -1,19 +1,13 @@
 classdef TestSolveODE < matlab.unittest.TestCase
     %TESTSOLVEODE
+    %
+    %Test special cases for solving ODEs with IFDIFF.
+
     methods (TestClassSetup)
         function setPath(testCase)
-            originalPath = path;
-            testCase.addTeardown(@path, originalPath);
+            import matlab.unittest.fixtures.PathFixture
 
-            if ~exist('initIFDIFF', 'file')
-                % We are probably in the test directory, so check parent directory
-                cd('..');
-            end
-            initIFDIFF();
-
-            % Get absolute path to directory in which this file resides.
-            [filePath, ~, ~] = fileparts(mfilename('fullpath'));
-            addpath(fullfile(filePath, 'TestSolveODE'));
+            testCase.applyFixture(PathFixture('data/TestSolveODE'));
         end
     end
 
