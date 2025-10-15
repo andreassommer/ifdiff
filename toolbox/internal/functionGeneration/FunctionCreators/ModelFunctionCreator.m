@@ -28,7 +28,7 @@ classdef ModelFunctionCreator < FixedBranchingFunctionCreator
         function this = handleLastCtrlif(this)
             % Fix branching of final ctrlif and simplify function (output is unchanged).
             if this.numCtrlif > 0 % Protect against edge case: no switches
-                this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, true);
+                this = this.handleHelperCallsBeforeCtrlif(this.numCtrlif, false);
                 this = this.fixBranching(this.numCtrlif);
             end
 
