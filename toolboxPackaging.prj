@@ -10,8 +10,8 @@ IFDIFF solves and computes sensitivities of ODEs with implicit non-differentiabi
 IFDIFF automatically generates only necessary switching functions, outputs them as differentiable
 MATLAB code, and determines switching times accurately up to machine precision.
 No modifications to the right-hand side or manual processing are necessary. A single preparation call is all it takes.</param.description>
-    <param.screenshot />
-    <param.version>1.0</param.version>
+    <param.screenshot>${PROJECT_ROOT}/images/FilippovPredatorPrey.png</param.screenshot>
+    <param.version>0.1</param.version>
     <param.output>${PROJECT_ROOT}/IFDIFF.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -37,14 +37,16 @@ No modifications to the right-hand side or manual processing are necessary. A si
 % All files matching a pattern in all subfolders of the toolbox folder:
 % **/*.bak
 %
-@mtreeplus</param.exclude.filters>
+@mtreeplus
+**/*.mat
+**/PreprocessedFunctions</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
     <param.examples />
     <param.demosxml />
     <param.apps />
     <param.registered.apps />
     <param.docs />
-    <param.getting.started.guide />
+    <param.getting.started.guide>${PROJECT_ROOT}/toolbox/doc/GettingStarted.mlx</param.getting.started.guide>
     <param.matlabpath.excludes />
     <param.javaclasspath.excludes />
     <param.exported.on.package>false</param.exported.on.package>
@@ -66,8 +68,6 @@ No modifications to the right-hand side or manual processing are necessary. A si
     <param.additional.sw.linux.url />
     <unset>
       <param.company />
-      <param.screenshot />
-      <param.version />
       <param.output />
       <param.products.name />
       <param.products.id />
@@ -79,7 +79,6 @@ No modifications to the right-hand side or manual processing are necessary. A si
       <param.apps />
       <param.registered.apps />
       <param.docs />
-      <param.getting.started.guide />
       <param.matlabpath.excludes />
       <param.javaclasspath.excludes />
       <param.exported.on.package />
