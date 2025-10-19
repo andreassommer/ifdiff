@@ -11,7 +11,7 @@ Sensitivities can be generated w.r.t. the initial values and w.r.t. a given para
 
 See the [IFDIFF page](https://andreassommer.github.io/ifdiff/) for a mathematical introduction with example.
 
-The file [Readme_Example.m](./Readme_Example.m) contains a self-explaining Matlab script similar to the
+The file [Readme_Example.m](./toolbox/examples/Readme_Example.m) contains a self-explaining Matlab script similar to the
  contents below.
 
 </br>

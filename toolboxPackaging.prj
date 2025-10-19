@@ -1,0 +1,144 @@
+<deployment-project plugin="plugin.toolbox" plugin-version="1.0">
+  <configuration file="/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo/toolboxPackaging.prj" location="/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo" name="toolboxPackaging" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>IFDIFF Toolbox</param.appname>
+    <param.authnamewatermark>Andreas Sommer</param.authnamewatermark>
+    <param.email>code@andreas-sommer.eu</param.email>
+    <param.company />
+    <param.summary>Solve ODEs with state-dependent switches, including support for state-jumps, sensitivity computation and handling of Filippov sliding mode.</param.summary>
+    <param.description>Implicit (state-dependent) switches in the right-hand side of an ODE require proper treatment. General-purpose integrators frequently lead to unnoticed disasters: Entirely wrong solutions without any warnings.
+IFDIFF solves and computes sensitivities of ODEs with implicit non-differentiabilities (“switches”) in the right-hand side, given as MATLAB program code with non-differentiable operators such as min, max, abs, sign, as well as if-branching.
+IFDIFF automatically generates only necessary switching functions, outputs them as differentiable
+MATLAB code, and determines switching times accurately up to machine precision.
+No modifications to the right-hand side or manual processing are necessary. A single preparation call is all it takes.</param.description>
+    <param.screenshot>${PROJECT_ROOT}/images/FilippovPredatorPrey.png</param.screenshot>
+    <param.version>0.1</param.version>
+    <param.output>${PROJECT_ROOT}/IFDIFF Toolbox.mltbx</param.output>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms />
+    <param.guid>20c4976e-dd33-411f-a4d3-6fafe035b1bd</param.guid>
+    <param.exclude.filters>% List files contained in your toolbox folder that you would like to exclude
+% from packaging.  Excludes should be listed relative to the toolbox folder.
+% Some examples of how to specify excludes are provided below:
+%
+% A single file in the toolbox folder:
+% .svn
+%
+% A single file in a subfolder of the toolbox folder:
+% example/.svn
+%
+% All files in a subfolder of the toolbox folder:
+% example/*
+%
+% All files of a certain name in all subfolders of the toolbox folder:
+% **/.svn
+%
+% All files matching a pattern in all subfolders of the toolbox folder:
+% **/*.bak
+%
+@mtreeplus
+**/*.mat
+**/PreprocessedFunctions</param.exclude.filters>
+    <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
+    <param.examples />
+    <param.demosxml />
+    <param.apps />
+    <param.registered.apps />
+    <param.docs />
+    <param.getting.started.guide>${PROJECT_ROOT}/toolbox/doc/GettingStarted.mlx</param.getting.started.guide>
+    <param.matlabpath.excludes />
+    <param.javaclasspath.excludes />
+    <param.exported.on.package>false</param.exported.on.package>
+    <param.required.addons />
+    <param.matlab.project.id />
+    <param.matlab.project.name />
+    <param.release.start>R2016b</param.release.start>
+    <param.release.end>latest</param.release.end>
+    <param.release.current.only>false</param.release.current.only>
+    <param.compatiblity.windows>true</param.compatiblity.windows>
+    <param.compatiblity.macos>true</param.compatiblity.macos>
+    <param.compatiblity.linux>true</param.compatiblity.linux>
+    <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
+    <param.installation.map />
+    <param.additional.sw.names />
+    <param.additional.sw.licenses />
+    <param.additional.sw.win.url />
+    <param.additional.sw.mac.url />
+    <param.additional.sw.linux.url />
+    <unset>
+      <param.company />
+      <param.output />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+      <param.platforms />
+      <param.exclude.pcodedmfiles />
+      <param.examples />
+      <param.demosxml />
+      <param.apps />
+      <param.registered.apps />
+      <param.docs />
+      <param.matlabpath.excludes />
+      <param.javaclasspath.excludes />
+      <param.exported.on.package />
+      <param.required.addons />
+      <param.matlab.project.id />
+      <param.matlab.project.name />
+      <param.release.current.only />
+      <param.compatiblity.windows />
+      <param.compatiblity.macos />
+      <param.compatiblity.linux />
+      <param.compatiblity.matlabonline />
+      <param.installation.map />
+      <param.additional.sw.names />
+      <param.additional.sw.licenses />
+      <param.additional.sw.win.url />
+      <param.additional.sw.mac.url />
+      <param.additional.sw.linux.url />
+    </unset>
+    <fileset.rootdir>
+      <file>${PROJECT_ROOT}/toolbox</file>
+    </fileset.rootdir>
+    <fileset.rootfiles>
+      <file>${PROJECT_ROOT}/toolbox/clearPaths.m</file>
+      <file>${PROJECT_ROOT}/toolbox/doc</file>
+      <file>${PROJECT_ROOT}/toolbox/examples</file>
+      <file>${PROJECT_ROOT}/toolbox/generateFDstep.m</file>
+      <file>${PROJECT_ROOT}/toolbox/generateIFDIFFpaths.m</file>
+      <file>${PROJECT_ROOT}/toolbox/generateSensitivityFunction.m</file>
+      <file>${PROJECT_ROOT}/toolbox/initIFDIFF.m</file>
+      <file>${PROJECT_ROOT}/toolbox/internal</file>
+      <file>${PROJECT_ROOT}/toolbox/makeConfig.m</file>
+      <file>${PROJECT_ROOT}/toolbox/make_mtreeplus.m</file>
+      <file>${PROJECT_ROOT}/toolbox/prepareDatahandleForIntegration.m</file>
+      <file>${PROJECT_ROOT}/toolbox/solveODE.m</file>
+    </fileset.rootfiles>
+    <fileset.depfun.included />
+    <fileset.depfun.excluded />
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}" name="IFDIFF Toolbox.mltbx" optional="false">/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo/IFDIFF Toolbox.mltbx</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>/usr/local/MATLAB/R2024b</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>true</unix>
+      <mac>false</mac>
+      <windows>false</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>true</linux>
+      <solaris>false</solaris>
+      <osver>6.14.0-33-generic</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>glnxa64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
