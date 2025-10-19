@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
   <configuration file="/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo/toolboxPackaging.prj" location="/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo" name="toolboxPackaging" target="target.toolbox" target-name="Package Toolbox">
-    <param.appname>IFDIFF</param.appname>
+    <param.appname>IFDIFF Toolbox</param.appname>
     <param.authnamewatermark>Andreas Sommer</param.authnamewatermark>
     <param.email>code@andreas-sommer.eu</param.email>
     <param.company />
@@ -12,7 +12,7 @@ MATLAB code, and determines switching times accurately up to machine precision.
 No modifications to the right-hand side or manual processing are necessary. A single preparation call is all it takes.</param.description>
     <param.screenshot>${PROJECT_ROOT}/images/FilippovPredatorPrey.png</param.screenshot>
     <param.version>0.1</param.version>
-    <param.output>${PROJECT_ROOT}/IFDIFF.mltbx</param.output>
+    <param.output>${PROJECT_ROOT}/IFDIFF Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
     <param.products.version />
@@ -118,7 +118,7 @@ No modifications to the right-hand side or manual processing are necessary. A si
     <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="IFDIFF.mltbx" optional="false">/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo/IFDIFF.mltbx</file>
+      <file location="${PROJECT_ROOT}" name="IFDIFF Toolbox.mltbx" optional="false">/home/gromovl/Programming/MATLAB/Projects/IFDIFF/Repo/IFDIFF Toolbox.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>
