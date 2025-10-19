@@ -30,7 +30,7 @@ intOptions  = odeset('reltol', 1e-5, 'abstol', 1e-5, 'MaxStep', 0.5);
 
 % select what to do
 doIfdiff    = true;
-doEuler     = true; % Euler takes very long! false: loads from file, if exists
+doEuler     = false; % Euler takes very long! false: loads from file, if exists
 doErrorplot = true;  % compare ifdiff and plain euler
 
 % name generators
