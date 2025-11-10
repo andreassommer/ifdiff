@@ -1,9 +1,9 @@
 function solveODE_setFilippovRHS(datahandle)
-% Sets datahandle.sliding.filippovRHS to a RHS that allows to slide/run 
+% Sets datahandle.sliding.filippovRHS to a RHS that allows to slide/run
 % on the zero-manifold associated to a function that is inconsistently switching.
 %
 % INPUT:
-% 'datahandle':         datahandle containing the integration and 
+% 'datahandle':         datahandle containing the integration and
 %                       switching data.
 %
 % OUTPUT:
@@ -25,7 +25,7 @@ t = solveODE_backtrackChattering(datahandle);
 % only two signatures involved, so we can assume the last switching ctrlif
 % to be the chattering one
 sliding_index = datahandle.getData().SWP_detection.switchingIndices(end);
-if signature1.switch_cond(sliding_index) == 1
+if signature1.switchCond(sliding_index) == 1
     signature_fplus = signature1;
     signature_fminus = signature2;
 else
@@ -33,28 +33,30 @@ else
     signature_fminus = signature1;
 end
 
-
 % cut steps
 solveODE_cutSteps_solution_until_t2(datahandle, t)
 
+data = datahandle.getData();
+
+% Store signature of Filippov model as combined signatures for sensitivities.
+data.SWP_detection.signature{end} = {signature_fplus, signature_fminus};
+
 % get the chattering switch's switching function:
-% We ensured there was only a single switch active during chattering, 
+% We ensured there was only a single switch active during chattering,
 % so we just pick the switching function of the last switching event.
-switchingFunction = datahandle.getData().SWP_detection.switchingfunctionhandles{end};
+switchingFunction = data.SWP_detection.switchingfunctionhandles{end};
 
 filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, signature_fplus, signature_fminus, switchingFunction,t,y,p);
 
 % set filippov rhs and store some other info
-data = datahandle.getData();
 data.sliding.filippov_rhs       = filippov_rhs;
 data.sliding.index              = sliding_index;
 data.sliding.signature_fplus    = signature_fplus;
 data.sliding.signature_fminus   = signature_fminus;
+
 datahandle.setData(data);
 
-% message
 if config.debugMode
     fprintf("Entered Filippov regime.\n");
 end
-
 end

@@ -16,9 +16,8 @@ data.SWP_detection.x2 = {xMinus, xPlus};
 
 % Get the new signature at t2, without forced branching
 [switch_cond, ctrlif_index, function_index] = ctrlif_getSignature(datahandle, t, xPlus);
-data.SWP_detection.signature.switch_cond{end+1} = switch_cond;
-data.SWP_detection.signature.ctrlif_index{end+1} = ctrlif_index;
-data.SWP_detection.signature.function_index{end+1} = function_index;
+signatureNew = BranchingSignature(data.mtreeplus{2, 1}, switch_cond, ctrlif_index, function_index);
+data.SWP_detection.signature{end + 1} = signatureNew;
 
 datahandle.setData(data);
 end

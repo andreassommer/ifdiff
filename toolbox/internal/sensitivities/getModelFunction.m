@@ -17,16 +17,7 @@ function functionHandle = getModelFunction(datahandle, modelStage)
 data = datahandle.getData();
 factory = data.codeGen.modelFactory;
 
-rhsName       = data.mtreeplus{2, 1};
-dataSignature = data.SWP_detection.signature;
-switchCond    = dataSignature.switch_cond{modelStage};
-ctrlifIndex   = dataSignature.ctrlif_index{modelStage};
-functionIndex = dataSignature.function_index{modelStage};
-signature     = BranchingSignature( ...
-    rhsName, ...
-    switchCond, ...
-    ctrlifIndex, ...
-    functionIndex);
+signature = data.SWP_detection.signature{modelStage};
 
 [functionHandle, collisionIndex] = factory.findExisting(signature);
 if isempty(functionHandle)

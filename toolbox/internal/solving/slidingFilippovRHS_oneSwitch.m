@@ -38,15 +38,15 @@ function dy = slidingFilippovRHS_oneSwitch(datahandle, signature_fplus, signatur
 % Heidelberg, 2020.
 
 % evaluate RHS for signature where chattering switchingFunction is positive
-ctrlif_index_fminus     = signature_fminus.ctrlif_index;
-function_index_fminus   = signature_fminus.function_index;
-switch_cond_fminus      = signature_fminus.switch_cond;
+ctrlif_index_fminus     = signature_fminus.ctrlifIndex;
+function_index_fminus   = signature_fminus.functionIndex;
+switch_cond_fminus      = signature_fminus.switchCond;
 f_minus = evaluateRHSForSignature(datahandle, t, y, p, ctrlif_index_fminus, function_index_fminus, switch_cond_fminus);
 
 % evaluate RHS for signature where chattering switchingFunction is negative
-ctrlif_index_fplus      = signature_fplus.ctrlif_index;
-function_index_fplus    = signature_fplus.function_index;
-switch_cond_fplus       = signature_fplus.switch_cond;
+ctrlif_index_fplus      = signature_fplus.ctrlifIndex;
+function_index_fplus    = signature_fplus.functionIndex;
+switch_cond_fplus       = signature_fplus.switchCond;
 f_plus  = evaluateRHSForSignature(datahandle, t, y, p, ctrlif_index_fplus, function_index_fplus, switch_cond_fplus);
 
 

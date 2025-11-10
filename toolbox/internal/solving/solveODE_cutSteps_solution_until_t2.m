@@ -1,7 +1,7 @@
 function solveODE_cutSteps_solution_until_t2(datahandle, t_cut)
-% Removes integration step that exceed time 't_cut' from ode sol object in 
+% Removes integration step that exceed time 't_cut' from ode sol object in
 % datahandle.
-% 
+%
 % INPUT:
 % 'datahandle': datahandle containing the integration and switching data.
 %                   handle
@@ -19,7 +19,7 @@ function solveODE_cutSteps_solution_until_t2(datahandle, t_cut)
 %
 % Code adapted from solveODE_solution_until_t1.m
 
-data = datahandle.getData(); 
+data = datahandle.getData();
 
 % Step 1: In solution object, cut steps past time t_cut
 cutSteps_solution(datahandle, 'solution_until_t2', t_cut);
@@ -28,16 +28,18 @@ cutSteps_solution(datahandle, 'solution_until_t2', t_cut);
 SWP_detection = data.SWP_detection;
 switchingpoints = cell2mat(SWP_detection.switchingpoints);
 
-SWP_detection.switchingpoints   = SWP_detection.switchingpoints(switchingpoints<=t_cut);
-SWP_detection.switchingFunction = SWP_detection.switchingFunction(switchingpoints<=t_cut);
-SWP_detection.jumpFunction      = SWP_detection.jumpFunction(switchingpoints<=t_cut);
+indicesCut = switchingpoints <= t_cut;
+
+SWP_detection.switchingpoints   = SWP_detection.switchingpoints(indicesCut);
+SWP_detection.switchingFunction = SWP_detection.switchingFunction(indicesCut);
+SWP_detection.jumpFunction      = SWP_detection.jumpFunction(indicesCut);
 t2 = data.SWP_detection.solution_until_t2.x(end);
 x2 = data.SWP_detection.solution_until_t2.y(:,end);
 SWP_detection.t2 = t2;
 SWP_detection.x2 = {x2, x2};
 
 data.SWP_detection = SWP_detection;
-datahandle.setData(data); 
+datahandle.setData(data);
 % adjust also signature & co. at t2
 [switch_cond_t2, ctrlif_index_t2, function_index_all_t2] = ctrlif_getSignature(...
     datahandle, ...
@@ -48,14 +50,10 @@ data.SWP_detection.ctrlif_index_t2   = ctrlif_index_t2;
 data.SWP_detection.function_index_t2 = function_index_all_t2;
 % note: signature keeps length(switchingpoints)+1 entries, one entry for
 % the initial signature
-data.SWP_detection.signature.ctrlif_index   = data.SWP_detection.signature.ctrlif_index([true, switchingpoints<=t_cut]);
-data.SWP_detection.signature.function_index = data.SWP_detection.signature.function_index([true, switchingpoints<=t_cut]);
-data.SWP_detection.signature.switch_cond    = data.SWP_detection.signature.switch_cond([true, switchingpoints<=t_cut]);
+data.SWP_detection.signature = data.SWP_detection.signature([true, indicesCut]);
 
 datahandle.setData(data);
 
 % adjust convexification data
 cutSteps_convexification(datahandle, t_cut)
-
-
 end
