@@ -82,7 +82,7 @@ if ~isempty(optionlist)
 end
 
 % OutputFcn which will be called after each successful integration step to monitor switches.
-outputFunction =  @(t, y, flag) analyseSignature(t, y, flag, datahandle, config.debugMode);
+outputFunction =  @(t, y, flag) analyseSignature(t, y, flag, datahandle);
 data.integratorSettings.optionsForcedBranching = odeset(data.integratorSettings.options, 'OutputFcn', outputFunction);
 
 % Function handle for the preprocessed RHS function.
