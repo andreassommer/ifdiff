@@ -121,6 +121,7 @@ classdef BranchingSignature
             end
         end
 
+        %% Getters and Setters
         % Getters retrieve the cached value for str and hash.
         function str = get.str(this)
             str = this.strCached;
@@ -149,6 +150,35 @@ classdef BranchingSignature
         function this = set.functionIndex(this, val)
             this.functionIndex = val;
             this = this.updateCache();
+        end
+
+        %% Comparison operators
+        % Equality operator overloading
+        function tf = eq(obj1, obj2)
+            tf = false;
+            % Objects should be of same class, no conversions.
+            if ~strcmp(class(obj1), class(obj2))
+                return
+            end
+
+            % Check each property
+            if ~strcmp(obj1.rhsName, obj2.rhsName)
+                return
+            end
+            if ~isequal(obj1.switchCond, obj2.switchCond)
+                return
+            end
+            if ~isequal(obj1.ctrlifIndex, obj2.ctrlifIndex)
+                return
+            end
+            if ~isequal(obj1.functionIndex, obj2.functionIndex)
+                return
+            end
+            tf = true;
+        end
+
+        function tf = ne(obj1, obj2)
+            tf = ~eq(obj1, obj2);
         end
     end
 end
