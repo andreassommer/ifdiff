@@ -60,12 +60,24 @@ while switch_detected
         if checkForSwitchingIndices(datahandle)
             error('IFDIFF:switchInFilippov', 'Switching during or right after Filippov mode.');
         end
-        if datahandle.getData().SWP_detection.t2 == tspan(2)
+        data = datahandle.getData();
+        if data.SWP_detection.t2 == tspan(2)
             break; % reached end of time span
         else
             if config.debugMode
                 fprintf('Left Filippov regime.\n');
             end
+            % Left the Filippov model and continue integration with new model:
+            % Need to set switching point, switching function and new signature.
+            % TODO: Do we need an accurate exit time of the Filippov model, e.g. for sensitivities?
+            % TODO: Same goes for the switching function...
+            % For now, just take the time where we ended up leaving and same switching function as in entry into Filippov.
+            data = datahandle.getData();
+            data.SWP_detection.switchingpoints{end + 1} = data.SWP_detection.t2;
+            % TODO: This in particular seems very wrong!
+            data.SWP_detection.switchingFunction{end + 1} = data.SWP_detection.switchingFunction{end};
+            data.SWP_detection.jumpFunction{end + 1} = [];
+            datahandle.setData(data);
             solveODE_prepareNextStage(datahandle);
         end
     end
