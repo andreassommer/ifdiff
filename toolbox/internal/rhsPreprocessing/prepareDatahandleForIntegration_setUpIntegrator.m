@@ -88,20 +88,6 @@ data.integratorSettings.optionsForcedBranching = odeset(data.integratorSettings.
 % Function handle for the preprocessed RHS function.
 data.integratorSettings.preprocessed_rhs = str2func(data.mtreeplus{2,1});
 
-% sliding fields
-data.sliding.storeSlidingInfo   = false; 
-% if true: convexification parameters and signatures are stored for every integration step
-data.sliding.index              = [];
-data.sliding.filippov_rhs       = []; 
-data.sliding.ctrlif_index       = [];
-data.sliding.function_index     = [];
-data.sliding.alpha_last         = [];
-data.sliding.convexification.t                  = [];
-data.sliding.convexification.index              = [];
-data.sliding.convexification.alpha              = [];
-data.sliding.convexification.signature_fminus   = {};
-data.sliding.convexification.signature_fplus    = {};
-
 datahandle.setData(data);
 end
 
