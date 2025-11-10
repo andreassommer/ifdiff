@@ -39,6 +39,7 @@ data.forcedBranching.function_index = cell(length(data.forcedBranching.function_
 
 % counter from the ctrlif
 data.forcedBranching.ctrlifCounter = 0;
+oldCaseCtrlif = data.caseCtrlif;
 data.caseCtrlif = config.caseCtrlif.forcedBranching; % case forced branching
 
 datahandle.setData(data);
@@ -47,5 +48,6 @@ dy = datahandle.getData().integratorSettings.preprocessed_rhs(datahandle,t,y,p);
 
 % cleanup
 data = datahandle.getData();
-data.caseCtrlif = config.caseCtrlif.default; % default case
+data.caseCtrlif = oldCaseCtrlif;
+datahandle.setData(data);
 end
