@@ -24,14 +24,15 @@ function [signature1, signature2] = chatteringGetSignatures(datahandle, t)
 data = datahandle.getData();
 switchingpoints = cell2mat(data.SWP_detection.switchingpoints);
 
-indices_chattering = (switchingpoints>=t);
+% Assume switching points are sorted. If not, something went very wrong...
+idxChatterStart = find(switchingpoints >= t, 1);
 
 signatures = data.SWP_detection.signature;
-ctrlif_indices      = signatures.ctrlif_index(indices_chattering);
-function_indices    = signatures.function_index(indices_chattering);
-switch_conds        = signatures.switch_cond(indices_chattering);
+ctrlif_indices      = signatures.ctrlif_index(idxChatterStart:end);
+function_indices    = signatures.function_index(idxChatterStart:end);
+switch_conds        = signatures.switch_cond(idxChatterStart:end);
 
-k = length(indices_chattering);
+k = length(ctrlif_indices);
 
 uniqueChatteringSignatures.ctrlif_index     = ctrlif_indices(1);
 uniqueChatteringSignatures.function_index   = function_indices(1);
