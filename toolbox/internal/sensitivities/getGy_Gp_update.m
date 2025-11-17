@@ -53,10 +53,23 @@ for i = startModel : (endModel-1)
     h_y = fdStep_getH_y(FDstep, yMinus);
     h_t = fdStep_getH_t(FDstep, tsMinus);
 
+    signatureFminus = data.SWP_detection.signature{data.computeSensitivity.modelStage};
+    % Special handling for Filippov model.
+    if iscell(signatureFminus)
+        % Assume we don't start in Filippov (given since Filippov can only begin after a switch).
+        switchingFunction = data.SWP_detection.switchingFunction{data.computeSensitivity.modelStage - 1};
+        rhsminus = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch( ...
+            datahandle, ...
+            signatureFminus{1}, ...
+            signatureFminus{2}, ...
+            switchingFunction, t, y, p);
+    else
+        rhsminus = functionRHS;
+    end
     % Calculate the derivatives of the switching functions w.r.t. y, t (and p if necessary)
     del_sigmay = del_f_del_y(datahandle, switchingFunction, tsMinus, yMinus, parameters, h_y);
     del_sigmat = del_f_del_t(datahandle, switchingFunction, tsMinus,  yMinus, parameters, h_t);
-    diff_sigmat = del_sigmat + del_sigmay * functionRHS(datahandle, tsMinus, yMinus, parameters);
+    diff_sigmat = del_sigmat + del_sigmay * rhsminus(datahandle, tsMinus, yMinus, parameters);
     if isempty(jumpFunction)
         del_jumpy = zeros(dim_y);
         del_jumpt = zeros(dim_y, 1);
@@ -67,7 +80,8 @@ for i = startModel : (endModel-1)
 
     % Evaluate the RHS at the switching point first with the model fixed on the left of the switch, then increase the model number
     % and evalate the RHS with the model fixed on the left of the switch.
-    fminus = functionRHS(datahandle, tsMinus, yMinus, parameters);
+
+    fminus = rhsminus(datahandle, tsMinus, yMinus, parameters);
 
     data   = datahandle.getData();
     data.computeSensitivity.modelStage = data.computeSensitivity.modelStage + 1;
