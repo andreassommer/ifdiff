@@ -1,4 +1,4 @@
-function extendODEuntilSwitch(datahandle)
+function extendODEuntilSwitch_Filippov(datahandle)
 %EXTENDODEUNTILSWITCH   Extend ODE solution until switch and set new signature.
 %   EXTENDODEUNTILSWITCH(datahandle)
 %
@@ -26,8 +26,7 @@ data = datahandle.getData();
 
 % Check if the numerically computed switching point is part of the new model.
 extendODEuntilSwitch_t1_to_t2(datahandle);
-extendODEuntilSwitch_updateSignature_t2(datahandle);
-switchingIndices = getSwitchingIndices(datahandle, 0);
+done = isFilippovExit(datahandle);
 
 % The numerically computed switching point may still be part of the old model due to inaccuracies.
 % In that case, slightly increment the switching point and reintegrate with forced branching.
@@ -35,8 +34,7 @@ switchingIndices = getSwitchingIndices(datahandle, 0);
 t2FromRootFinding = data.SWP_detection.t2;
 baseOffset = 16*eps(data.SWP_detection.t2);
 iter = 0;
-
-while isempty(switchingIndices)
+while ~done
     data = datahandle.getData();
 
     % Throw error if error of switching point obtained from root finding relative to tspan exceeds threshold.
@@ -52,7 +50,6 @@ while isempty(switchingIndices)
     % We can not start integrating from the old t2 because this would result in integration over a tiny
     % interval whose result would vanish due to limited floating point accuracy.
     data.SWP_detection.t2 = data.SWP_detection.t2 + baseOffset * 10^min(iter, config.switchingPointMaxPower);
-
     if data.SWP_detection.t2 >= data.SWP_detection.t3
         % Okay, just use t3.
         data.SWP_detection.t2 = data.SWP_detection.t3;
@@ -62,8 +59,7 @@ while isempty(switchingIndices)
 
     % Check if there is a new signature.
     extendODEuntilSwitch_t1_to_t2(datahandle);
-    extendODEuntilSwitch_updateSignature_t2(datahandle);
-    switchingIndices = getSwitchingIndices(datahandle, 0);
+    done = isFilippovExit(datahandle);
 
     iter = iter + 1;
 end
@@ -80,4 +76,24 @@ end
 data.SWP_detection.switchingpoints{end + 1} = data.SWP_detection.t2;
 
 datahandle.setData(data)
+end
+
+%% Helpers
+function updateAlpha(datahandle)
+data = datahandle.getData();
+t = data.SWP_detection.t2;
+x = deval(data.SWP_detection.solution_until_t2, t);
+unused = data.sliding.filippov_rhs(datahandle, t, x, data.SWP_detection.parameters); %#ok<NASGU>
+end
+
+function tf = isFilippovExit(datahandle)
+updateAlpha(datahandle);
+
+data = datahandle.getData();
+[abstol, reltol] = getIntegratorTolerances(data.integratorSettings.options);
+state = data.SWP_detection.solution_until_t2.x(end);
+alpha_tol = min(abstol, reltol*norm(state));
+alpha = data.sliding.alpha_last;
+
+tf = alpha <= alpha_tol || alpha >= 1-alpha_tol;
 end
