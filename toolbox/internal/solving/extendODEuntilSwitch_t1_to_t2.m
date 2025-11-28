@@ -11,7 +11,11 @@ x = deval(data.SWP_detection.solution_until_t1,  data.SWP_detection.solution_unt
 
 solution  = data.SWP_detection.solution_until_t1; 
 end_point = data.SWP_detection.t2; 
+
+% test with odeset
+data.integratorSettings.options.InitialStep = 0.01; %% step formula
 options   = data.integratorSettings.options; 
+disp(options);
 
 ctrlif_setForcedBranchingSignature(datahandle, t, x);
 data = datahandle.getData();

@@ -1,0 +1,8 @@
+Solver Statistics for DAE example
+Parameter: -2.000000e-01
+Total number of steps: 69
+Successful steps: 63
+Rejected steps: 6
+Total of function evaluations 131
+
+% MaxStep 0.05
