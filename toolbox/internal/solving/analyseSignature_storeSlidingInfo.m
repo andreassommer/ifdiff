@@ -29,18 +29,7 @@ if isempty(data.sliding.filippov_rhs)
     return
 end
 
-% We don't want to redundantly store the signature many times. So we store 
-% it once and write a pointer in form of an index into all following entries
-k = length(convexification.signature_fplus);
-if k==0 || ~isscalar(convexification.signature_fplus{end})
-    pointer = k+1;
-    convexification.signature_fplus  = [convexification.signature_fplus,  data.sliding.signature_fplus,  repmat({pointer}, 1,length(t)-1)];
-    convexification.signature_fminus = [convexification.signature_fminus, data.sliding.signature_fminus, repmat({pointer}, 1,length(t)-1)];
-else
-    % arrays have a pointer as the last entry, so we just add copies of it
-    convexification.signature_fplus  = [convexification.signature_fplus,  repmat(convexification.signature_fplus(end),  1,length(t))];
-    convexification.signature_fminus = [convexification.signature_fminus, repmat(convexification.signature_fminus(end), 1,length(t))];
-end
+
 
 % t can be vector-valued, but the Filippov-RHS can only save the alpha from
 % the latest evaluation, so we have to recompute it instead of reading it from

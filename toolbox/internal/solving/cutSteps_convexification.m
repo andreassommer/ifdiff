@@ -19,8 +19,8 @@ convexification_t                   = data.sliding.convexification.t;
 data.sliding.convexification.t      = data.sliding.convexification.t(convexification_t<=t_cut);
 data.sliding.convexification.index  = data.sliding.convexification.index(convexification_t<=t_cut);
 data.sliding.convexification.alpha  = data.sliding.convexification.alpha(convexification_t<=t_cut);
-data.sliding.convexification.signature_fplus    = data.sliding.convexification.signature_fplus(convexification_t<=t_cut);
-data.sliding.convexification.signature_fminus   = data.sliding.convexification.signature_fminus(convexification_t<=t_cut);
+%data.sliding.convexification.signature_fplus    = data.sliding.convexification.signature_fplus(convexification_t<=t_cut);
+%data.sliding.convexification.signature_fminus   = data.sliding.convexification.signature_fminus(convexification_t<=t_cut);
 
 datahandle.setData(data);
 
