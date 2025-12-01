@@ -48,7 +48,7 @@ We set ODE solver and its options as usual. If not set, default values are used.
       initIFDIFF();  % Initialise the paths for ifdiff -- needed only once per Matlab session
       integrator = @ode45; 
       odeoptions = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
-      datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptions);
+      datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', integrator, 'options', odeoptions);
    ```
 
 
