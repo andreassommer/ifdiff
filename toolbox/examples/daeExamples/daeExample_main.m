@@ -3,7 +3,7 @@ integrator = @ode15s;
 x0 = [1; -1];
 tspan = [0 5];
 M = [1 0; 0 0];
-p = -0.3;
+p = -0.2;
 
 global globalTimeLog
 global logEnabled
@@ -24,6 +24,7 @@ sol_plain = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_ode);
 
 % Rejected steps
 
+%{
 function uniqueList = removeConsecutiveDuplicates(inputList)
     uniqueList = inputList(1);
    
@@ -33,15 +34,17 @@ function uniqueList = removeConsecutiveDuplicates(inputList)
         end
     end
 end
+%}
 
 %% Plots
 
 % DAE solution plot
 fig1 = figure(01);
 hold on
-IFDIFF_plot_1 = plot(sol_ifdiff.x, sol_ifdiff.y, 'ro--', 'DisplayName', 'IFDIFF'); %  'ro--'
-%Plain_plot_1  = plot(sol_plain.x, sol_plain.y, 'bx-', 'DisplayName', 'plain ode15s'); %  'bx-'
-legend();
+IFDIFF_plot_1 = plot(sol_ifdiff.x, sol_ifdiff.y, 'ro--', 'DisplayName', 'IFDIFF'); 
+Plain_plot_1  = plot(sol_plain.x, sol_plain.y, 'ko-', 'DisplayName', 'plain ode15s');
+Switch_plot   = xline(sol_ifdiff.switches, 'g', 'LineWidth', 1.0, 'DisplayName', 'Switch');
+legend([Plain_plot_1(1), IFDIFF_plot_1(1), Switch_plot]);
 hold off
 
 %% Visualization of Integrator Steps
@@ -84,15 +87,17 @@ hold off
 
 %disp(sol_ifdiff.switches);
 
+%{
 fig4 = figure(04);
 clf;
 hold on;
 %timelog_diff = abs(diff(globalTimeLog));
-unique_globalTimeLog = removeConsecutiveDuplicates(globalTimeLog);
+%unique_globalTimeLog = removeConsecutiveDuplicates(globalTimeLog);
 %disp(unique_globalTimeLog);
-plot_1 = plot(unique_globalTimeLog, 'o-', 'DisplayName', 'globalTimeLog');
+plot_1 = plot(globalTimeLog, 'o-', 'DisplayName', 'globalTimeLog');
 xlabel('Integrator Steps');
 ylabel('Zeit'); 
 plot_switch = yline(sol_ifdiff.switches, 'rx-', 'LineWidth', 2.0, 'DisplayName', 'Switch');
 legend();
 hold off;
+%}

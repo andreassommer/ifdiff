@@ -6,18 +6,26 @@ function extendODEuntilSwitch_t1_to_t2(datahandle)
 config = makeConfig();
 data = datahandle.getData();
 
-t = data.SWP_detection.solution_until_t1.x(end); 
-x = deval(data.SWP_detection.solution_until_t1,  data.SWP_detection.solution_until_t1.x(end)); 
+
+% Last integrator step before switch
+ti = data.SWP_detection.solution_until_t1.x(end); 
+% Solution at the last time point before switch
+x = deval(data.SWP_detection.solution_until_t1, ti); 
 
 solution  = data.SWP_detection.solution_until_t1; 
 end_point = data.SWP_detection.t2; 
 
-% test with odeset
-data.integratorSettings.options.InitialStep = 0.01; %% step formula
-options   = data.integratorSettings.options; 
-disp(options);
+delta_t = end_point - ti;
 
-ctrlif_setForcedBranchingSignature(datahandle, t, x);
+% options = odeset('InitialStep', 0.000001, 'RelTol', 1, 'AbsTol', 1);
+data.integratorSettings.options.InitialStep = delta_t;
+data.integratorSettings.options.RelTol = 1;
+data.integratorSettings.options.RelTol = 1;
+data.integratorSettings.options.MinStep = data.integratorSettings.options.MaxStep;
+options   = data.integratorSettings.options;
+disp(options)
+
+ctrlif_setForcedBranchingSignature(datahandle, ti, x);
 data = datahandle.getData();
 data.caseCtrlif = config.caseCtrlif.extendODEuntilSwitch;
 datahandle.setData(data);
