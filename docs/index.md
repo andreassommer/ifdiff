@@ -1,15 +1,3 @@
-# Meet us at the **MATLAB EXPO**
-**When**: Tuesday • October 21st • 2025 • 9:00–17:30h <br/>
-**Where**: Arabellastr. 6 • 81925 München <br/>
-**Team**: Andreas Sommer, Pilar Keller, Lev Gromov, Marvin Hertweck
-
-[**Sign up for the MATLAB EXPO here!**](https://www.matlabexpo.com/de/2025.html)
-
----
-
-<br/>
-<br/>
-
 # IFDIFF - A Matlab Toolkit for ODEs with State˗Dependent Switches
 
 The software package IFDIFF deals with the solution and algorithmic generation of sensitivities
