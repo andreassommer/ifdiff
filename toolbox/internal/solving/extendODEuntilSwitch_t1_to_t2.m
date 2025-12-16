@@ -21,7 +21,6 @@ data.integratorSettings.options.InitialStep = delta_t;
 data.integratorSettings.options.AbsTol = 1;
 data.integratorSettings.options.RelTol = 1;
 options   = data.integratorSettings.options;
-disp(options)
 
 ctrlif_setForcedBranchingSignature(datahandle, ti, x);
 data = datahandle.getData();
