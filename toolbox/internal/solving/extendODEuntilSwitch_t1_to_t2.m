@@ -7,9 +7,9 @@ config = makeConfig();
 data = datahandle.getData();
 
 
-% Last integrator step before switch
+% last integrator step before switch
 ti = data.SWP_detection.solution_until_t1.x(end); 
-% Solution at the last time point before switch
+% solution at the last time point before switch
 x = deval(data.SWP_detection.solution_until_t1, ti); 
 
 solution  = data.SWP_detection.solution_until_t1; 
@@ -17,11 +17,9 @@ end_point = data.SWP_detection.t2;
 
 delta_t = end_point - ti;
 
-% options = odeset('InitialStep', 0.000001, 'RelTol', 1, 'AbsTol', 1);
 data.integratorSettings.options.InitialStep = delta_t;
+data.integratorSettings.options.AbsTol = 1;
 data.integratorSettings.options.RelTol = 1;
-data.integratorSettings.options.RelTol = 1;
-data.integratorSettings.options.MinStep = data.integratorSettings.options.MaxStep;
 options   = data.integratorSettings.options;
 disp(options)
 
@@ -31,6 +29,7 @@ data.caseCtrlif = config.caseCtrlif.extendODEuntilSwitch;
 datahandle.setData(data);
 
 z = odextend(solution, [], end_point, [], options);
+
 
 data = datahandle.getData();
 data.SWP_detection.solution_until_t2 = z;

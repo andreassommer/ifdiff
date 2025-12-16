@@ -3,7 +3,7 @@ integrator = @ode15s;
 x0 = [1; -1];
 tspan = [0 5];
 M = [1 0; 0 0];
-p = -0.2;
+p = -0.3;
 
 global globalTimeLog
 global logEnabled
@@ -17,24 +17,6 @@ opts_ode = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-10, ...
 datahandle = prepareDatahandleForIntegration('daeExampleRHS', 'integrator', integrator, 'options', opts_ifdiff);
 sol_ifdiff= solveODEWithLogging(datahandle, tspan, x0, p);
 sol_plain = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_ode);
-%diff(globalTimeLog)
-
-
-%%  Solver Statistics
-
-% Rejected steps
-
-%{
-function uniqueList = removeConsecutiveDuplicates(inputList)
-    uniqueList = inputList(1);
-   
-    for i = 2:length(inputList)
-        if inputList(i) ~= inputList(i - 1)
-            uniqueList = [uniqueList, inputList(i)];
-        end
-    end
-end
-%}
 
 %% Plots
 
