@@ -69,7 +69,7 @@ Gy22 = arrayfun(@(x) x.Gy(2, 2), sens);
 
 figure(500); box on;
 subplot(2, 2, 1);
-plot(T, Gy11, 'LineWidth', 2, 'Color', [0, 0.5, 0]); hold on;
+scatter(T, Gy11, 'LineWidth', 0.5, 'Color', [0, 0.5, 0], Marker='.'); hold on;
 plot(sol_ifdiff.x, a, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
 for s = switches
     xline(s, '--r', 'LineWidth', 1.5);
@@ -82,7 +82,7 @@ grid on;
 set(gca, 'FontSize', 12, 'LineWidth', 1.2);
 
 subplot(2, 2, 2);
-plot(T, Gy12, 'LineWidth', 2, 'Color', [0, 0.5, 0]); hold on;
+scatter(T, Gy12, 'LineWidth', 0.5, 'Color', [0, 0.5, 0], Marker='.'); hold on;
 plot(sol_ifdiff.x, a, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
 for s = switches
     xline(s, '--r', 'LineWidth', 1.5);
@@ -95,7 +95,7 @@ grid on;
 set(gca, 'FontSize', 12, 'LineWidth', 1.2);
 
 subplot(2, 2, 3);
-plot(T, Gy21, 'LineWidth', 2, 'Color', [0, 0.5, 0]); hold on;
+scatter(T, Gy21, 'LineWidth', 0.5, 'Color', [0, 0.5, 0], Marker='.'); hold on;
 plot(sol_ifdiff.x, a, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
 for s = switches
     xline(s, '--r', 'LineWidth', 1.5);
@@ -108,7 +108,7 @@ grid on;
 set(gca, 'FontSize', 12, 'LineWidth', 1.2);
 
 subplot(2, 2, 4);
-plot(T, Gy22, 'LineWidth', 2, 'Color', [0, 0.5, 0]); hold on;
+scatter(T, Gy22, 'LineWidth', 0.5, 'Color', [0, 0.5, 0], Marker='.'); hold on;
 plot(sol_ifdiff.x, a, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
 for s = switches
     xline(s, '--r', 'LineWidth', 1.5);
@@ -192,20 +192,40 @@ set(gca, 'FontSize', 12, 'LineWidth', 1.2, 'YScale', 'log');
 
 %% Display of the switching functions
 
-nu_rel = Y(2,:) - p(3);
+nu_rel = (Y(2,:) - p(3));
 
-figure(4); hold on; box on;
+figure(4); 
+subplot(2, 1, 1); hold on; box on;
 
-plot(T, nu_rel, 'LineWidth', 2);
-plot(sol_ifdiff2.x, a2, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
+scatter(T, nu_rel, 'LineWidth', 0.5, Marker='.');
+plot(sol_ifdiff2.x, 0, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
 
 for s = switches
     xline(s, '--r', 'LineWidth', 1.5);
 end
 
 xlabel('Time (s)', 'FontSize', 12);
-ylabel('nu_rel (switching function)', 'FontSize', 12);
+ylabel('\nu_{rel} (switching function)', 'FontSize', 12);
 title('Evolution of first switching condition', 'FontSize', 14);
+
+legend({'\nu_{rel}'}, 'Location', 'best');
+grid on;
+
+set(gca, 'FontSize', 12, 'LineWidth', 1.2);
+
+subplot(2, 1, 2); hold on; box on;
+
+scatter(T, nu_rel, 'LineWidth', 0.5, Marker='.');
+plot(sol_ifdiff2.x, 0, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
+
+for s = switches
+    xline(s, '--r', 'LineWidth', 1.5);
+end
+
+xlabel('Time (s)', 'FontSize', 12);
+ylabel('\nu_{rel} (switching function)', 'FontSize', 12);
+title('Evolution of first switching condition', 'FontSize', 14);
+ylim([-2 * epsilon 2 * epsilon]);
 
 legend({'\nu_{rel}'}, 'Location', 'best');
 grid on;
