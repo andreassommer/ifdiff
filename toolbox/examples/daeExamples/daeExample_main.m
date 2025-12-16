@@ -3,7 +3,7 @@ integrator = @ode15s;
 x0 = [1; -1];
 tspan = [0 5];
 M = [1 0; 0 0];
-p = -0.3;
+p = -0.2;
 
 global globalTimeLog
 global logEnabled

@@ -14,14 +14,14 @@ IFDIFF can solve such switched DAEs.
 
 Let's take a look at the following example for $t \in [0,n]$ where  $n \in \mathbb{N}$:
 
-$(D) \quad \begin{cases} \dot{x}_ 1 = f_1(x_2) = \begin{cases} x_2, \quad \text{if}  \quad x_2 < p \\ 0 \quad \text{if} \quad x_2 \geq p \end{cases}  \\ f_2(x) = x_1 + x_2 = 0  \\ x_0 = (1,-1)^T, p \in \mathbb{R} \end{cases}$
+$$(D) \quad \begin{cases} \dot{x}_ 1 = f_1(x_2) = \begin{cases} x_2, \quad \text{if}  \quad x_2 < p \\ 0 \quad \text{if} \quad x_2 \geq p \end{cases}  \\ f_2(x) = x_1 + x_2 = 0  \\ x_0 = (1,-1)^T, p \in \mathbb{R} \end{cases}$$
  
 
 ## Analytical solution
 
 The DAE $(D)$ is of index 1 since the algebraic constraint can be differentiated once to achieve $x_1 + x_2 = 0 \Rightarrow \dot{x_1} + \dot{x_2} = 0 \iff \dot{x_2} = - \dot{x_1}$ which then gives us the ODE system:
 
-$(D_{\text{ODE}})$ $\begin{cases} \dot{x}_ 1  = f_1(x_2) = \begin{cases} x_2, \quad \text{if} \hspace{0.2cm} x_2 < p\\ 0 \hspace{0.2cm} \text{if} \quad x_2 \geq p \end{cases}  \\ f_2(x) = - \dot{x_1} = \begin{cases} -x_2 \quad \text{if} \quad x_2 < p\\ 0 \quad \text{if} \quad x_2 \geq p \end{cases}   \\ x_0 = (1,-1)^T, p \in \mathbb{R} \end{cases}$
+$$(D_{\text{ODE}})\begin{cases} \dot{x}_ 1  = f_1(x_2) = \begin{cases} x_2, \quad \text{if} \hspace{0.2cm} x_2 < p\\ 0 \hspace{0.2cm} \text{if} \quad x_2 \geq p \end{cases}  \\ f_2(x) = - \dot{x_1} = \begin{cases} -x_2 \quad \text{if} \quad x_2 < p\\ 0 \quad \text{if} \quad x_2 \geq p \end{cases}   \\ x_0 = (1,-1)^T, p \in \mathbb{R} \end{cases}$$
 
 The system $(D_{\text{ODE}})$ will only exhibit switching behaviour at $p \in (-1,0)$ since:
 
@@ -96,10 +96,12 @@ hold off
 
 This gives us the following plot:
 
-![](plot1.png)
+![](Plots/plot1.png)
 
-When we take a closer look, we see, that the integration with IFDIFF is accurate around the switch.
-![](plot1_close.png)
+When we take a closer look, we see, that the integration with IFDIFF accurately dedects the switching point. 
+
+![](Plots/plot1_close2.png)
+
 
 ## Sensitivities
 
@@ -116,7 +118,6 @@ $ \tilde{x}_ 2(t_s) = - e^{-t_s} + \varepsilon x_2(0) = p \Leftrightarrow \tilde
 
 Then we see:
 
-$ \frac{d \tilde{t}_ s}{d x_2(0)} = \frac{d}{d x_2(0)} \left( - \ln (-p- \varepsilon x_2(0)) \right) = \frac{1}{-p - \varepsilon x_2(0)} = \frac{1}{-p + \varepsilon} = \frac{1}{\varepsilon - p} $.
+$ \frac{d \tilde{t}_ s}{d x_2(0)} = \frac{d}{d x_2(0)} \left(\ln (-p- \varepsilon x_2(0)) \right) = \frac{1}{-p - \varepsilon x_2(0)} = \frac{1}{p - \varepsilon } $.
 
-
-To further investigate this example go to `daeExample_main.m` and `daeExampleRHs.m`
+To further investigate this example take a look at the files `daeExample_main.m` and `daeExampleRHs.m`
