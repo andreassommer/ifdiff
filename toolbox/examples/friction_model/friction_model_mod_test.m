@@ -1,6 +1,6 @@
 integrator = @ode45;
 t0 = 0;
-tf = 12;
+tf = 30;
 timeinterval = [t0,tf];
 initstates   = [1.133944669704  0 ];
 p(1) = 1.0;   %k
@@ -26,7 +26,7 @@ fprintf('Done \n');
 
 % results
 disp(sol_ifdiff);
-T = 0:0.01:12;
+T = t0:0.01:tf;
 Y = deval(sol_ifdiff, T);
 switches = sol_ifdiff.switches;
 
@@ -135,7 +135,7 @@ fprintf('Done \n');
 
 % results
 disp(sol_ifdiff2);
-T = 0:0.01:12;
+T = t0:0.01:tf;
 Y2 = deval(sol_ifdiff2, T);
 switches2 = sol_ifdiff2.switches;
 
@@ -167,7 +167,6 @@ set(gca, 'FontSize', 12, 'LineWidth', 1.2);
 
 figure(3); hold on; box on;
 
-% remove zeros from err for log-plot
 a2 = epsilon * ones(length(sol_ifdiff2.x));
 fildiff1 = abs(Y2(1,:) - Y(1,:));
 fildiff2 = abs(Y2(2,:) - Y(2,:));
