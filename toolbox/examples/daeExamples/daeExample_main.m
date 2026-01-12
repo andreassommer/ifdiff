@@ -5,6 +5,7 @@ tspan = [0 5];
 M = [1 0; 0 0];
 p = -0.2;
 
+% Timelogging
 global globalTimeLog
 global logEnabled
 logEnabled = true;
