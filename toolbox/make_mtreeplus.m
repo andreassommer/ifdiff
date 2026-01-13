@@ -32,9 +32,11 @@ MTREEPLUS_FOLDERNAME = '@mtreeplus';
 
 
 % ensure that the current functions runs in working directory
-[maker_path, maker_file, ~] = fileparts(mfilename('fullpath'));
+[maker_path, ~, ~] = fileparts(mfilename('fullpath'));
 if ~strcmp(maker_path, pwd())
-   error('Please call %s from inside its home directory %s', maker_file, maker_path)
+    dirOld = pwd();
+    restoreDir = onCleanup(@() cd(dirOld));
+    cd(maker_path);
 end
 
 
