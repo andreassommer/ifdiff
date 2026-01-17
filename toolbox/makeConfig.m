@@ -139,5 +139,8 @@ config.swmax                = 10000; % total amount of switches accepted during 
 config.swfreq_haltOnWarning = false;
 
 
+% last point strategy for one-step solvers
+config.last_point_strategy = true;
+
 config_out = config;
 end
