@@ -4,13 +4,14 @@
 </script>
 
 
-# Switched DAE Example
+# A first DAE Example
 
 ## Introduction
 
 
-A **differential algebraic equation (DAE)** is a system that involves both differential equations and algebraic constraints. These systems may exhibit switching behavior, meaning the system dynamics change depending on certain conditions.
-IFDIFF can solve such switched DAEs. 
+A **differential algebraic equation (DAE)** is a system of equations involving an unknown function and its derivatives together with algebraic equations, which impose constraints on the variables. Geometrically, the algebraic equations define a constraint manifold in the state space, and the solution trajectory of any DAE initial-value problem must remain on this manifold.
+
+In applications, DAEs can be combined with state-dependent events (e.g. contact/no-contact, switching circuits), which leads to systems whose dynamics change when certain state conditions are met. IFDIFF can solve such switched DAEs.
 
 Let's take a look at the following example for $t \in [0,n]$ where  $n \in \mathbb{N}$:
 
@@ -19,7 +20,7 @@ $$(D) \quad \begin{cases} \dot{x}_ 1 = f_1(x_2) = \begin{cases} x_2, \quad \text
 
 ## Analytical solution
 
-The DAE $(D)$ is of index 1 since the algebraic constraint can be differentiated once to achieve $x_1 + x_2 = 0 \Rightarrow \dot{x_1} + \dot{x_2} = 0 \iff \dot{x_2} = - \dot{x_1}$ which then gives us the ODE system:
+First we derive the analytical solution of $(D)$. We see that the DAE is of index 1 since the algebraic constraint can be differentiated once to achieve $x_1 + x_2 = 0 \Rightarrow \dot{x_1} + \dot{x_2} = 0 \iff \dot{x_2} = - \dot{x_1}$ which then gives us the ODE system:
 
 $$(D_{\text{ODE}})\begin{cases} \dot{x}_ 1  = f_1(x_2) = \begin{cases} x_2, \quad \text{if} \hspace{0.2cm} x_2 < p\\ 0 \hspace{0.2cm} \text{if} \quad x_2 \geq p \end{cases}  \\ f_2(x) = - \dot{x_1} = \begin{cases} -x_2 \quad \text{if} \quad x_2 < p\\ 0 \quad \text{if} \quad x_2 \geq p \end{cases}   \\ x_0 = (1,-1)^T, p \in \mathbb{R} \end{cases}$$
 
@@ -35,7 +36,7 @@ At $ t = 0 $ we have $x_2(0)= -1 < p$.Therefore we only have $\dot{x_2} = - \dot
 In this situation the system starts in case 2, so exponential growth in the 1st and exponential decay in the 2nd component.
 We now determine the switching point $t_s \in (0,2)$. The switching point satisfies $x_2(t_s)=p$, so $x_2(t_s)=p \iff -e^{-t_s} = p \iff t_s = -\text{ln}(-p) $. (Remember that $-p$ is positive!)
 
-We also notice from the formula $t_s = -\text{ln}(-p)$ that the switching point $t_s$ will be larger as $p$ gets smaller. This means, depending on the parameter, we need to choose a fitting time horizon $[0,n]$
+We also notice from the formula $t_s = -\text{ln}(-p)$ that the switching point $t_s$ will be larger as $p$ gets smaller. This means, depending on the parameter, we need to choose a fitting time horizon $[0,n]$.
 
 ## Solution with IFDIFF
 
@@ -61,7 +62,7 @@ end
 ```
 
 ### Step 2: Setup & Integration
-For the main script, we first need to set up the initial value $x_0 = (1,-1)^T$ and a mass matrix $M$ such that the algebraic constant is set to 0 while the differential variables remain as coded in the RHS.
+For the main script, we first need to set up the initial value $x_0 = (1,-1)^T$ and a mass matrix $M$ such that the algebraic constraint is set to 0 while the differential variables remain as coded in the RHS.
 We now need to choose a parameter $ p \in (-1,0) $, e.g. $p = -0.2$ and a suitable time horizon, e.g. $[0,2]$. (You can choose any time horizon large enough to contain the switching point.).
 At last for this step, we set up integrator options and the datahandle and then integrate using `solveODE`. To compare our solution with the solution by plain `ode15s`, we can call it with the same options as we set for IFDIFF.
 
@@ -96,11 +97,11 @@ hold off
 
 This gives us the following plot:
 
-![](Plots/plot1.png)
+![](first_daeExample/Plots/plot1.png)
 
 When we take a closer look, we see, that the integration with IFDIFF accurately dedects the switching point. 
 
-![](Plots/plot1_close2.png)
+![](first_daeExample/Plots/plot1_close2.png)
 
 
 ## Sensitivities
@@ -120,4 +121,8 @@ Then we see:
 
 $ \frac{d \tilde{t}_ s}{d x_2(0)} = \frac{d}{d x_2(0)} \left(\ln (-p- \varepsilon x_2(0)) \right) = \frac{1}{-p - \varepsilon x_2(0)} = \frac{1}{p - \varepsilon } $.
 
-To further investigate this example take a look at the files `daeExample_main.m` and `daeExampleRHs.m`
+
+### Additional Content
+
+To further investigate this example take a look at the files `daeExample_main.m` and `daeExampleRHs.m`.
+To get a grasp of some applications of what we have learned in this README go to the folder `RLC Circuit example` which is an example about modelling with switched DAEs.
