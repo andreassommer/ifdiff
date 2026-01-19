@@ -8,7 +8,7 @@ in the right-hand side that is given as Matlab program code with non-differentia
 switching functions, outputs them as Matlab code, and detects switching points accurately up to 
 machine precision.
 
-Sensitivities can be generated w.r.t. the initial values and w.r.t. a given parameter set
+Sensitivities can be generated w.r.t. the initial values and w.r.t. a given parameter set.
 
 See the [IFDIFF page](https://andreassommer.github.io/ifdiff/) for a mathematical introduction with example.
 
