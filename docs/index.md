@@ -27,7 +27,7 @@ $$
 with
 
 $$
-  f_1(t,x,p) = 0.01 * t^2 + x_2^3
+  f_1(t,x,p) = 0.01 \cdot t^2 + x_2^3
   \qquad
   f_2(t,x,p) = \begin{cases} 0 ~~~if~~ x_1 < p  \\  5 ~~~if~~ p \leq x_1 < p+0.5  \\  0 ~~~if~~ x_1 \geq p+0.5  \end{cases}
 $$
@@ -95,7 +95,7 @@ integration is just as simple as before:
    tspan = [0 20]; x0 = [1;0]; p = 5.437;                    % set time horizon, initial value, parameter
    integrator = @ode45;                                      % choose integrator
    odeoptions = odeset('AbsTol', 1e-5, 'RelTol', 1e-3);      % set integrator options, here: low accuracy
-   datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptions);
+   datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', integrator, 'options', odeoptions);
    sol = solveODE(datahandle, tspan, x0, p); 
    T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
 ```
