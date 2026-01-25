@@ -19,7 +19,7 @@ end_point = data.SWP_detection.t2;
 delta_t = end_point - ti;
 
 options   = data.integratorSettings.options;
-solver = solution.solver;
+solver    = solution.solver;
 
 % Common setup for all solvers
 ctrlif_setForcedBranchingSignature(datahandle, ti, x);
@@ -31,7 +31,7 @@ z = odextend(solution, [], end_point, [], options);
 data = datahandle.getData();
 data.SWP_detection.solution_until_t2 = z;
 
-% last point strategy for one-step solvers
+% last point strategy for one step solvers
 compatible_solvers = {'ode23', 'ode45', 'ode78', 'ode89', 'ode113', 'ode23t', 'ode23tb'};
 if config.last_point_strategy && ismember(solver, compatible_solvers)
 

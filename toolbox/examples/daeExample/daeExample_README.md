@@ -4,7 +4,7 @@
 </script>
 
 
-# A first DAE Example
+# Switched DAE Example
 
 ## Introduction
 
@@ -40,7 +40,7 @@ We also notice from the formula $t_s = -\text{ln}(-p)$ that the switching point 
 
 ## Solution with IFDIFF
 
-Numerically, an index 1 DAE system is not solved by converting it to an ODE system. Instead, MATLAB offers the solver `ode15s` for solving DAEs which we will use IFDIFF with.
+In practice, DAE systems are not solved by converting them to an ODE systems. Instead, MATLAB offers the solver `ode15s` for solving DAEs which we will use IFDIFF with.
 
 ### Step 1: Right Hand Side
 We code the Right Hand Side (RHS) as follows.
@@ -62,28 +62,27 @@ end
 ```
 
 ### Step 2: Setup & Integration
-For the main script, we first need to set up the initial value $x_0 = (1,-1)^T$ and a mass matrix $M$ such that the algebraic constraint is set to 0 while the differential variables remain as coded in the RHS.
-We now need to choose a parameter $ p \in (-1,0) $, e.g. $p = -0.2$ and a suitable time horizon, e.g. $[0,2]$. (You can choose any time horizon large enough to contain the switching point.).
-At last for this step, we set up integrator options and the datahandle and then integrate using `solveODE`. To compare our solution with the solution by plain `ode15s`, we can call it with the same options as we set for IFDIFF.
+For the main script, we set up a consistent initial value, e.g. $x_0 = (1,-1)^T$ and a mass matrix $M$ such that the algebraic constraint is set to 0 while the differential variables remain as coded in the RHS.
+We choose a parameter $ p \in (-1,0) $, e.g. $p = -0.2$ and a suitable time horizon, e.g. $[0 5]$.
 
 ```
 integrator = @ode15s;
-x0 = [1; -1];
-tspan = [0 5];
-M = [1 0; 0 0];
-p = -0.2;
+x0         = [1; -1];
+tspan      = [0 5];
+M          = [1 0; 0 0];
+p          = -0.2;
 
-opts = odeset('Mass', M, 'MassSingular', 'yes', ...
-                     'AbsTol', 1e-6, 'RelTol', 1e-3)
-datahandle = prepareDatahandleForIntegration('daeExampleRHS', ...
-                                             'integrator', integrator, 'options', opts;
+opts_ifdiff = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-9,'RelTol', 1e-6);
+opts_plain  = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-9, 'RelTol', 1e-6);
+
+datahandle = prepareDatahandleForIntegration('daeExampleRHS', 'integrator', integrator, 'options', opts_ifdiff);
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
-sol_plain = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_ode);
+sol_plain  = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_plain);
 ```
 
 ### Step 3: Visualising
 
-To look at our solution and compare them to the plain `ode15s` we can plot both in one plot as follows. Optionally
+To look at our solution and compare them to the plain `ode15s` we can plot both in one plot as follows.
 
 ```
 fig1 = figure(01);
@@ -95,34 +94,19 @@ legend([Plain_plot_1(1), IFDIFF_plot_1(1), Switch_plot]);
 hold off
 ```
 
-This gives us the following plot:
-
-![](first_daeExample/Plots/plot1.png)
-
-When we take a closer look, we see, that the integration with IFDIFF accurately dedects the switching point. 
-
-![](first_daeExample/Plots/plot1_close2.png)
 
 
-## Sensitivities
 
-Analytically, the sensitivities with respect to the parameter $p$ of the DAE $(D)$ are computed by 
+![](plots_daeExample/plot1.png)
 
-$ \frac{d t_s}{d p} = \frac{d}{d p} \left( - \ln (-p) \right) = \frac{1}{p} $
+We notice that the integrator strategy results in small steps here for the plain solver as well as IFDIFF. This is because ode15 is a multi-step method and can thus not be changed.
+However, if we take a closer look, we see, that the integration with IFDIFF is accurate around the switching point. 
 
-where $t_s$ is the switching point.
-
-Looking at a small initial perturbation $\tilde{x}_ 2(t) = - e^{-t} + \varepsilon x_2(0)$ of $x_2$ for an $\varepsilon > 0$ small enough, we get the perturbation $\tilde{t}_ s$ of the original switching point $t_s$
+![](plots_daeExample/plot1_close2.png)
 
 
-$ \tilde{x}_ 2(t_s) = - e^{-t_s} + \varepsilon x_2(0) = p \Leftrightarrow \tilde{t}_ s = -\ln(-p - \varepsilon x_2(0)) $
 
-Then we see:
+## Additional Content
 
-$ \frac{d \tilde{t}_ s}{d x_2(0)} = \frac{d}{d x_2(0)} \left(\ln (-p- \varepsilon x_2(0)) \right) = \frac{1}{-p - \varepsilon x_2(0)} = \frac{1}{p - \varepsilon } $.
-
-
-### Additional Content
-
-To further investigate this example take a look at the files `daeExample_main.m` and `daeExampleRHs.m`.
-To get a grasp of some applications of what we have learned in this README go to the folder `RLC Circuit example` which is an example about modelling with switched DAEs.
+To further investigate this example, take a look at the files `daeExample_main.m` and `daeExampleRHs.m`. 
+Additionally, go to the folder `rlcExample` to learn about solving DAEs with IFDIFF in a modelling example.
