@@ -1,25 +1,8 @@
 function solVDE = solveVDE_Gy(datahandle, sol, tspan, modelNum, sensOptions)
 %SOLVEVDE_GY Solve the VDE for Gy in the interval tspan fixed to model modelNum and return the sol object
-config = makeConfig();
 data = datahandle.getData();
 
-signature = data.SWP_detection.signature{modelNum};
-% Special handling for Filippov model.
-if iscell(signature)
-    % Assume we don't start in Filippov (given since Filippov can only begin after a switch).
-    switchingFunction = data.SWP_detection.switchingFunction{modelNum - 1};
-    rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch( ...
-        datahandle, ...
-        signature{1}, ...
-        signature{2}, ...
-        switchingFunction, t, y, p);
-else
-    if config.removeCtrlifForSensComputation
-        rhs = getModelFunction(datahandle, modelNum);
-    else
-        rhs = data.integratorSettings.preprocessed_rhs;
-    end
-end
+rhs = getRhsFromModelNum(datahandle, modelNum);
 
 parameters = data.SWP_detection.parameters;
 dim_y      = data.computeSensitivity.dim_y;
