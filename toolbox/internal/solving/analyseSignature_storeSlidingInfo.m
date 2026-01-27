@@ -24,8 +24,6 @@ if isempty(data.sliding.filippov_rhs)
     % Not in filippov mode, add NaN/entry entries.
     convexification.index   = [convexification.index, NaN(1,length(t))];
     convexification.alpha   = [convexification.alpha, NaN(1,length(t))];
-    convexification.signature_fplus  = [convexification.signature_fplus,  cell(1,length(t))]; % write empty cells
-    convexification.signature_fminus = [convexification.signature_fminus, cell(1,length(t))];
     return
 end
 
