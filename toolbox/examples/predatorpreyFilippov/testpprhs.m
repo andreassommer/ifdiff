@@ -77,24 +77,6 @@ if doEuler
     hEuler = plotit(fignum, Y_euler, 'c', namePlain(intEuler), linewidth);
 end
 
-%% Sensitivity
-dimy = length(x0_1);
-dimp = length(p);
-FDstep = generateFDstep(dimy, dimp);
-
-sensFunVDE = generateSensitivityFunction(datahandle, sol_ifdiff, FDstep, 'method', 'VDE', 'Gmatrices_intermediate', true);
-sensFunEND = generateSensitivityFunction(datahandle, sol_ifdiff, FDstep, 'method', 'END_piecewise', 'Gmatrices_intermediate', true);
-
-sensVDE = sensFunVDE(X_plot);
-sensEND = sensFunEND(X_plot);
-
-%% Plot
-VDEGy11 = arrayfun(@(x) x.Gy(1,1), sensVDE);
-fignum = fignum + 1; sensPlot(fignum, X_plot, VDEGy11, 'VDE');
-ENDGy11 = arrayfun(@(x) x.Gy(1,1), sensEND);
-fignum = fignum + 1; sensPlot(fignum, X_plot, ENDGy11, 'END');
-
-
 %% ANALYSIS
 if doErrorplot
     if (doIfdiff && doEuler)
@@ -109,16 +91,6 @@ return
 
 
 %% HELPERS
-function sensPlot(fignum, t, G, method)
-   figure(fignum); clf(fignum);
-   semilogy(t, G, t, -G);
-   xlabel('t');
-   ylabel('(G_y)_{11}');
-   legend('G', '-G');
-   title('Sens %s wrt y_1 for y_1', method);
-   drawnow
-end
-
 function errorPlot(fignum, x1, y1, y2, intname1, intname2)
    figure(fignum); clf(fignum);
    ydiff = calcDiff(y1, y2);
