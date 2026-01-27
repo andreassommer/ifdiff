@@ -51,8 +51,6 @@ filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, s
 % set filippov rhs and store some other info
 data.sliding.filippov_rhs       = filippov_rhs;
 data.sliding.index              = sliding_index;
-data.sliding.signature_fplus    = signature_fplus;
-data.sliding.signature_fminus   = signature_fminus;
 
 datahandle.setData(data);
 

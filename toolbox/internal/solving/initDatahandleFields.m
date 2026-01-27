@@ -16,7 +16,7 @@ data.SWP_detection      = initDatahandleFields_SWP_detection(tspan, initialvalue
 data.forcedBranching    = initDatahandleFields_forcedBranching();
 data.getSignature       = initDatahandleFields_getSignature(); 
 data.computeSensitivity = initDatahandleFields_computeSensitivity();
-data.sliding            = initDatahandleFields_Filippov();
+data.sliding            = initDatahandleFields_Filippov(data.sliding);
 
 datahandle.setData(data);
 

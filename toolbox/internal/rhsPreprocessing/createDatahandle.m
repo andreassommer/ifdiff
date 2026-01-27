@@ -58,5 +58,7 @@ data.paths.preprocessed_modelFunction = preprocessed.ModelFunctions_path;
 
 data.caseCtrlif = config.caseCtrlif.default;
 
+data.sliding.storeSlidingInfo = config.storeSlidingInfo;
+
 datahandle = makeClosure(data);
 end

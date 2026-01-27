@@ -30,6 +30,9 @@ end
 % Flag to set debug mode which may display additional information and warnings among other things.
 config.debugMode = false;
 
+% Flag to enable/disable storing of Filippov convexification parameters for debugging (can be costly!).
+config.storeSlidingInfo = false;
+
 % Flag to enable/disable reusing of switching functions that already exist based on the signature of a switch.
 % Always keep this enabled for best performance. Can be useful to disable for debugging and tests.
 config.reuseSwitchingFunctions = true;

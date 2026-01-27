@@ -1,18 +1,15 @@
-function sliding = initDatahandleFields_Filippov()
+function sliding = initDatahandleFields_Filippov(sliding)
 %sliding = INITDATAHANDLEFIELDS_FILIPPOV()
 %
 %Initialize struct for Filippov mode handling in IFDIFF.
 %
-%OUTPUT:
+%INPUT/OUTPUT:
 %   sliding - Struct used for Filippov mode handling in IFDIFF.
 %       struct
 %
 %See also INITDATAHANDLEFIELDS.
 
-sliding = extendODE_filippov_regime_cleanup(struct());
-
-% if true: convexification parameters and signatures are stored for every integration step
-sliding.storeSlidingInfo = false;
+sliding = extendODE_filippov_regime_cleanup(sliding);
 
 convexification.t                  = [];
 convexification.index              = [];
