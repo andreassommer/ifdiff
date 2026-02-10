@@ -1,7 +1,7 @@
 # IFDIFF - A MATLAB Toolkit for ODEs with State˗Dependent Switches
 
 
-The software package **IFDIFF** provides algorithms for the accurate numerical solution and sensitivity analysis of ordinary differential equations (ODEs) with implicit, state-dependent non-differentiabilities ("switches") in the right-hand side as well as Filippov ODEs and ODEs with state-jumps.
+The software package **IFDIFF** provides tools for the accurate numerical solution and sensitivity analysis of ordinary differential equations (ODEs) with state-dependent (implicit) non-differentiabilities ("switches") in the right-hand side as well as Filippov Sliding mode and ODEs with state-jumps.
 
 The right-hand side is supplied as standard MATLAB program code and may contain non-differentiable operators such as `min`, `max`, `abs`, `sign` or `if`-branching. 
 IFDIFF automatically detects and processes these switches, generates only the necessary switching functions (exported as MATLAB code), and determines switching points accurately up to machine precision.
@@ -9,26 +9,25 @@ IFDIFF automatically detects and processes these switches, generates only the ne
 IFDIFF handles multidimensional state and parameter vectors and produces solution structures compatible with MATLAB's built-in ODE solvers, allowing transparent use of functions such as `deval` without modification of existing code. 
 A single preparation call is sufficient to enable switching-aware integration.
 
-Within the **PErFDiff** project, the existing IFDIFF implementation is being further developed and extended to cover Filippov systems.
 
 </br>
 
 # Canonical Example
 Consider the following "canonical example" for a switched ODE system:
 
-$$
+$${
    \dot x = f(t,x,p) = \binom{f_1(t,x,p)}{f_2(t,x,p)}
-$$
+}$$
 
 with
 
-$$
+$${
   f_1(t,x,p) = 0.01 \cdot t^2 + x_2^3
   \qquad
   f_2(t,x,p) = \begin{cases} 0 ~~~if~~ x_1 < p  \\  5 ~~~if~~ p \leq x_1 < p+0.5  \\  0 ~~~if~~ x_1 \geq p+0.5  \end{cases}
-$$
+}$$
 
-and with initial value $ x(0) = (1,0)^T $, parameter $ p = 5.437 $, over time span $ t \in [0,20] $.
+and with initial value ${ x(0) = (1,0)^T }$, parameter ${ p = 5.437 }$, over time span ${ t \in [0,20] }$.
 
 This switched ODE system translates straightforward into the following matlab program:
 
@@ -60,19 +59,20 @@ Let's see what happens if we do not consider appropriate switching handling.
 
 We initialize the variables and start the integration using MATLAB's default integrator `ode45` (explicit Runge-Kutta 4(5)-solver),
 without caring for the non-differentiable `if` statements.
+
 ```matlab
-   tspan = [0 20];             % time horizon
-   x0    = [1;0];              % initial values
-   p     = 5.437;              % parameter values
-   solX  = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
-   T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
+tspan = [0 20];             % time horizon
+x0    = [1;0];              % initial values
+p     = 5.437;              % parameter values
+solX  = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
+T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
 ```
 ![Canonical Example with naive ode45](./canonex_naive.png)
 
 Contrary to wide-spread beliefs, tightening the integration tolerances is not a remedy!
 ```matlab
-   odeopts = odeset('AbsTol', 1e-20, 'RelTol', 1e-14);
-   solX2   = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
+odeopts = odeset('AbsTol', 1e-20, 'RelTol', 1e-14);
+solX2   = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
 ```
 ![Canonical Example with naive ode45](./canonex_naive_highaccuracy.png)
 
@@ -85,13 +85,16 @@ Without any warning or error, the __naive approach with tight tolerances leads t
 With the switching point detection in IFDIFF, after a single call to a preparation routine, 
 integration is just as simple as before:
 ```matlab
-   initIFDIFF();                                             % initialise IFDIFF (only once)
-   tspan = [0 20]; x0 = [1;0]; p = 5.437;                    % set time horizon, initial value, parameter
-   integrator = @ode45;                                      % choose integrator
-   odeoptions = odeset('AbsTol', 1e-5, 'RelTol', 1e-3);      % set integrator options, here: low accuracy
-   datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptions);
-   sol = solveODE(datahandle, tspan, x0, p); 
-   T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
+initIFDIFF();                                             % initialise IFDIFF (only once)
+tspan = [0 20]; x0 = [1;0]; p = 5.437;                    % set time horizon, initial value, parameter
+integrator = @ode45;                                      % choose integrator
+odeoptions = odeset('AbsTol', 1e-5, 'RelTol', 1e-3);      % set integrator options, here: low accuracy
+
+datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', ...
+                                             'integrator', integrator, ...
+                                             'options', odeoptions);
+sol = solveODE(datahandle, tspan, x0, p); 
+T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
 ```
 and __IFDIFF delivers the correct result__:  
 ![Canonical Example with ifdiff](./canonex_ifdiff.png)
@@ -135,9 +138,50 @@ Due to the augmented system size, this method may become computationally expensi
 In this approach, sensitivities are computed via finite differencing on each interval between switching events and then connected using the same update rules as in the VDE method.
 Although this requires multiple forward integrations per interval, it can be more efficient than VDE for larger systems while still providing accurate sensitivities.
 
-- **External Numerical Differentiation, Full Horizon** (`END_full`)
+- **External Numerical Differentiation, Full Horizon** (`END_full`) **NOT Recommended**
 Here, finite differencing is applied to multiple full-horizon solutions, each computed with switching point detection. Since sensitivities are not propagated across switching points, no intermediate updates are required.
-This method is generally less accurate and we do not recommend it, but may be preferable for highly unstable ODEs where interval-based propagation becomes unreliable.
+This method is generally not accurate and we do not recommend it, but may be slower for a certain class of problems.
+ 
+</br>
+
+## Example sensitivity generation for the Canonical Example
+
+1. Choose step sizes for finite differencing (also used in method `VDE` for generating state derivatives of the rhs). 
+
+    ```matlab
+    dim_y  = size(sol.y,1);                
+     dim_p  = length(parameters);
+     FDstep = generateFDstep(dim_y,dim_p);
+    ```
+
+   The `generateDFstep` function accepts several options influencing e.g. step length. 
+   See the documentation below for more information.
+
+
+2. Build the sensitivity function. In this example, the `END_piecewise` method is chosen.
+
+    ```matlab
+    sensitivity_function = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise'); 
+    ```
+3. Evaluate the sensitivity function at specific times. 
+
+    ```matlab
+    t = 0:0.1:20;
+    sensitivities = sensitivity_function(t);
+    ``
+
+The following picture shows the trajectories of the state sensitivities for the example aboves, $G_{y,ij}(t,t_0) := \frac{d y_i}{d y_{0,j}}(t)$, i.e.
+$G_{y,ij}$ denotes the sensitivity of the $i$-th solution component w.r.t. the $j$-th component of the initial value.
+
+| Comparison: Sensitivities w.r.t. initial state                        |                                                                  |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| ![Sensitivities with naive approach](./canonex_sensitivity_naive.png) | ![Sensitivities with ifdiff](./canonex_sensitivity_ifdiff.png)   |
+| __Naive approach__: Sensitivities are useless                         | __IFDIFF__: Correct and accurate sensitivities                   |
+
+While IFDIFF produces correct and accurate sensitivities, the sensitivities using the naive approach, again without any warning or hint,
+are not only inaccurate (notice the scales!), but plain wrong. 
+
+</br>
 
 The following table lists several name-value pairs that can be used to configure `generateSensitivityFunction`
 
@@ -155,58 +199,13 @@ The following table lists several name-value pairs that can be used to configure
 
 </br>
 
-## Example sensitivity generation for the Canonical Example
-
-1. Choose step sizes for finite differencing (also used in method `VDE` for generating state derivatives of the rhs). 
-
-   ```matlab
-      dim_y  = size(sol.y,1);                // state dimension
-      dim_p  = length(parameters);           // number of parameters
-      FDstep = generateFDstep(dim_y,dim_p);
-   ```
-
-   The `generateDFstep` function accepts several options influencing e.g. step length. 
-   See the documentation or the file for more information
-
-
-2. Build the sensitivity function. In this example, the `END_piecewise` method is chosen.
-
-   ```matlab
-      sensitivity_function = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise'); 
-
-3. Evaluate the sensitivity function at specific times. 
-
-   ```matlab
-      t = 0:0.1:20;
-      sensitivities = sensitivity_function(t);
-   ```
-
-</br>
-
-The following picture shows the trajectories of the state sensitivities for the example aboves, $G_{y,ij}(t,t_0) := \frac{d y_i}{d x_{0,j}}(t)$, i.e.
-$G_{y,ij}$ denotes the sensitivity of the $i$-th solution component w.r.t. the $j$-th component of the initial value.
-
-| Comparison: Sensitivities w.r.t. initial state                        |                                                                  |
-| --------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| ![Sensitivities with naive approach](./canonex_sensitivity_naive.png) | ![Sensitivities with ifdiff](./canonex_sensitivity_ifdiff.png)   |
-| __Naive approach__: Sensitivities are useless                         | __IFDIFF__: Correct and accurate sensitivities                   |
-
-</br>
-
-While IFDIFF produces correct and accurate sensitivities, the sensitivities using the naive approach, again without any warning or hint,
-are not only inaccurate (notice the scales!), but plain wrong. 
-
-Details of how to compute sensitivities with IFDIFF are given in the project's [README.md](https://github.com/andreassommer/ifdiff/blob/public/README.md).
-
-</br>
 
 # IFDIFF is simple to use!
 
-Accurate simulation of switched systems typically requires explicit formulation of switching functions and specialized integrators, placing high mathematical demands on the modeler. 
-Even minor model changes can require substantial reformulation, and with $n$ switches up to $2^n$ possible execution paths may arise, making a priori formulations infeasible for medium-sized systems.
+Correct treatment of switched systems requires elaborate formulation of switching functions and tailored integrators, placing high mathematical demands on modelers. 
+Even small model changes often imply considerable reformulation effort. Furthermore: ${n}$ switches generate up to ${ 2^n}$ possible program flows and switching functions, rendering a-priori formulations not feasible already in medium-sized models.
 
-IFDIFF handles switching events programmatically, automatically generating only the required switching functions and detecting switching times up to machine precision. 
-By extending MATLAB's standard ODE integrators (`ode45`, `ode15s`, etc.), IFDIFF can be applied directly to existing code containing state- or parameter-dependent conditionals, enabling fast prototyping without manual reformulation.
+IFDIFF programmatically handles switching events, auto-generating only required switching functions. It determines switching times up to machine precision, and ensures accurate simulation and sensitivity results. Transparently extending the Matlab integrators (ode45, ode15s, etc.), IFDIFF is applicable to existing code with state- and parameter-dependent conditionals, thus enabling fast prototyping and relieving modelers of mathematical-technical effort.
 
-While naive integration may appear slightly faster, it can silently produce incorrect trajectories and meaningless sensitivities. 
-IFDIFF instead provides reliable solutions, accurate first-order sensitivities, and explicit information about the switching structure of the model.
+Calculation times of the naive approach are a little lower than the ones of IFDIFF. 
+But it can generate arbitrarily wrong results without any notice (see the example above!). IFDIFF provides correct integration results, correct first-order sensitivities and information about the switching structure of your model.
