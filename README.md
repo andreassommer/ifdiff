@@ -9,7 +9,7 @@ The software package IFDIFF comprises:
 - ODEs with state-jumps and model switches
 - **Sensitivity generation** for switched ODEs, ODEs with state-jumps and Filippov ODEs
 
-Sensitivities can be generated w.r.t. both initial values and parameters sets.
+Sensitivities can be generated w.r.t. the initial values and w.r.t. a given parameter set.
 
 For a mathematical introduction and illustrative examples, see the  
 [IFDIFF project page](https://andreassommer.github.io/ifdiff/).
