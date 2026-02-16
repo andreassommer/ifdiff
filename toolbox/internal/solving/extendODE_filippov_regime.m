@@ -19,6 +19,7 @@ z = odextend(...
 data = datahandle.getData();
 data.SWP_detection.solution_until_t2 = z;
 data.SWP_detection.t2 = data.SWP_detection.solution_until_t2.x(end);
+data.SWP_detection.x2 = data.SWP_detection.solution_until_t2.y(:, end);
 
 % write the same solution to t3
 % that way, if the end of timespan is reached in filippov mode (i.e., here), 

@@ -61,40 +61,20 @@ while switch_detected
             error('IFDIFF:switchInFilippov', 'Switching during or right after Filippov mode.');
         end
 
+        % Filippov sliding mode integration has stopped
         data = datahandle.getData();
         if data.SWP_detection.t2 == tspan(2)
-            % clear filippov data, serves also as indicator for inactive filippov mode
+            % Reached end of integration timespan.
             data.sliding = extendODE_filippov_regime_cleanup(data.sliding);
             datahandle.setData(data);
-            break; % reached end of time span
+            break;
         end
 
-        % Left the Filippov model and continue integration with new model:
-        % Need to set switching point, switching function and new signature.
+        % Left the Filippov sliding mode. Must continue integration with new model.
         if config.debugMode
             fprintf('Left Filippov regime.\n');
         end
-
-        solveODE_solution_until_t1(datahandle)
-
-        data = datahandle.getData();
-        % Switching function for entry into Filippov regime.
-        data.SWP_detection.switchingfunctionhandles = data.SWP_detection.switchingFunction(end);
-        data.SWP_detection.switchingIndices = 1; % Doesn't matter, but required for computeSwitchingPoint
-        % Assume no jumps in Filippov regime.
-        data.SWP_detection.jumpFunction{end + 1} = [];
-        datahandle.setData(data);
-        solveODE_computeSwitchingPoint(datahandle);
-
-        % Compute actual switching point by extending solution until alpha changes.
-        extendODEuntilSwitch_Filippov(datahandle);
-
-        % clear filippov data, serves also as indicator for inactive filippov mode
-        data = datahandle.getData();
-        data.sliding = extendODE_filippov_regime_cleanup(data.sliding);
-        datahandle.setData(data);
-
-        solveODE_prepareNextStage(datahandle);
+        solveODE_prepareNextStageFilippov(datahandle);
     end
 
     % extend solution object from t2 ongoing until the next switch occurs

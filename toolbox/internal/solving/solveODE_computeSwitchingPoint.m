@@ -8,7 +8,7 @@ data = datahandle.getData();
 
 
 % preallocate for switchingIntervals
-numberofswitchingfunctions = length(data.SWP_detection.switchingfunctionhandles);
+numberofswitchingfunctions = length(data.SWP_detection.switchingIndices);
 switchingpoints = zeros(1, numberofswitchingfunctions);
 data.caseCtrlif = config.caseCtrlif.default;
 % find zero crossing of the switching function in the time interval
@@ -43,7 +43,6 @@ data.SWP_detection.switchingFunction{end + 1} = data.SWP_detection.switchingfunc
 datahandle.setData(data);
 
 end
-
 
 
 
