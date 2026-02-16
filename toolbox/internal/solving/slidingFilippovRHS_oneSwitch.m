@@ -78,6 +78,19 @@ data = datahandle.getData();
 data.sliding.alpha_last = alpha;
 datahandle.setData(data);
 
-dy = alpha*f_minus + (1-alpha)*f_plus;
+if isfinite(alpha)
+    dy = alpha*f_minus + (1-alpha)*f_plus;
+else
+    warnAlphaNotFinite(t, y, p);
+    dy = repmat(1e100, 1, length(y));
+end
+end
 
+%% Warnings
+function warnAlphaNotFinite(t, y, p)
+    id = 'IFDIFF:Filippov:AlphaNotFinite';
+    msg = ['Filippov sliding mode RHS encountered non-finite convexification parameter at\nt=%g,\ny=[%s],\np=[%s].\n', ...
+           'Returning very large finite value instead to force step size reduction and prevent NaN-poisoning.\n', ...
+           'Consider checking the domain of your RHS for undefined regions or reducing the integrators maximum step size.'];
+    warning(id, msg, t, arrayStrJoin(y, ',', '%g'), arrayStrJoin(p, ',', '%g'));
 end
