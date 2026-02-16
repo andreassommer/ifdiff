@@ -1,3 +1,6 @@
+%% Turn off warnings corresponding to filippov behaviour
+warning('off', 'IFDIFF:chattering');
+
 %% SETUP
 % parameter values p = (r1, r2, beta1, beta2, q1, q2, m, e)
 % order as in paper (see rhs file)
@@ -29,9 +32,10 @@ integrator   = @ode45;
 intOptions  = odeset('reltol', 1e-10, 'abstol', 1e-12, 'MaxStep', 0.5);
 
 % name generators
-nameIfdiff      = @(f) sprintf('ifdiff/%s', func2str(f));
-namePlainEuler  = @(f) sprintf('plain %s' , func2str(f));
-nameODE45       = @(f) sprintf('naive %s' , func2str(f));
+nameIfdiff      = @(f) sprintf('ifdiff/%s (correct)', func2str(f));
+namePlainEuler  = @(f) sprintf('plain %s (correct)' , func2str(f));
+nameODE45       = @(f) sprintf('naive %s (false)' , func2str(f));
+nameODE45_2     = @(f) sprintf('more accurate naive %s' , func2str(f));
 
 %% FIRST TIME RUN TO INITIALIZE THE JUST IN TIME COMPILER
 % Run the ifdiff integration once to compile the code and have a better runtime for a later speed check
@@ -86,22 +90,33 @@ disp("Done integrating naively.");
 fprintf('Elapsed time: %.4f seconds\n', elapsedTime);
 hNaiveODE45 = plotit(fignum, transpose(Y_naive), 'magenta', nameODE45(integrator), 1);
 
+warning('on', 'IFDIFF:chattering');
+
 %% ANALYSIS
-fignum = fignum + 1;
-errorPlot(fignum, X_plot, Y_ifdiff, Y_euler, nameIfdiff(integrator), namePlainEuler(intEuler));
+fignum2 = fignum + 1;
+errorPlot(fignum2, X_plot, Y_ifdiff, Y_euler, nameIfdiff(integrator), namePlainEuler(intEuler));
 
 %% Ask if user wants to experience Euler Solution generation
 fprintf('\nDo you want to generate an euler trajectory from scratch? \n');
-choices = {"no (exit script)", "yes"};
+choices = {"No", "Yes"};
 default_choice_index = 1;
 [idx, val] = userchoice(choices, default_choice_index);
-doEuler = false;
 if idx == 2
-    doEuler = true;
+    generateEulerSol;
 end
 
-if doEuler
-    generateEulerSol;
+fprintf('\nDo you want to generate an "accurate" ode45 solution? (Might take a very long time)\n');
+choices2 = {"No (exit script)", "Yes"};
+[idx2, val2] = userchoice(choices2, default_choice_index);
+if idx2 == 2
+    fprintf('Computing naive solution with smaller tolerances (rel = 1e-8, abs = 1e-9)');
+    % Takes naive solver about 20 minutes on Marvins machine
+    intOptions3 = odeset('reltol', 1e-8, 'abstol', 1e-9, 'MaxStep', 0.5);
+    ode45fun = @(t, y) pprhs(t, y, p);
+    tnaive = tic(); [t_naive2, Y_naive2] = ode45(ode45fun, tspan2, x0_1, intOptions3); elapsedTime = toc(tnaive);
+    disp("Done integrating naively.");
+    fprintf('Elapsed time: %.4f seconds\n', elapsedTime);
+    hNaiveODE45 = plotit(fignum, transpose(Y_naive2), 'red', nameODE45_2(integrator), 1);
 end
 
 % FINITO
