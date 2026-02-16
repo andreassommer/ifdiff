@@ -36,12 +36,13 @@ if any(isFilippov)
     throw(filippovSignatureChatteringException);
 end
 
+
 % Find unique signatures among chattering. Stop and throw if we find more than two.
 uniqueChatteringSignatures = signatures(1);
 for idxNew=2:length(signatures)
     isNewSignature = true;
     for idxOld=1:length(uniqueChatteringSignatures)
-        if signatures{idxNew} == signatures{idxOld}
+        if signatures{idxNew} == uniqueChatteringSignatures{idxOld}
             % Signature already included.
             isNewSignature = false;
             break
