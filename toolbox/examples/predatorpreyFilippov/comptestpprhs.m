@@ -32,10 +32,10 @@ integrator   = @ode45;
 intOptions  = odeset('reltol', 1e-10, 'abstol', 1e-12, 'MaxStep', 0.5);
 
 % name generators
-nameIfdiff      = @(f) sprintf('ifdiff/%s (correct)', func2str(f));
-namePlainEuler  = @(f) sprintf('plain %s (correct)' , func2str(f));
-nameODE45       = @(f) sprintf('naive %s (false)' , func2str(f));
-nameODE45_2     = @(f) sprintf('more accurate naive %s' , func2str(f));
+nameIfdiff              = @(f) sprintf('ifdiff/%s (correct)', func2str(f));
+namePlainEuler          = @(f) sprintf('plain %s (correct)' , func2str(f));
+nameINTEGRATOR          = @(f) sprintf('naive %s (false)' , func2str(f));
+nameINTEGRATOR_accurate = @(f) sprintf('more accurate naive %s' , func2str(f));
 
 %% FIRST TIME RUN TO INITIALIZE THE JUST IN TIME COMPILER
 % Run the ifdiff integration once to compile the code and have a better runtime for a later speed check
@@ -88,7 +88,7 @@ ode45fun = @(t, y) pprhs(t, y, p);
 tnaive = tic(); [t_naive, Y_naive] = ode45(ode45fun, tspan2, x0_1, intOptions2); elapsedTime = toc(tnaive);
 disp("Done integrating naively.");
 fprintf('Elapsed time: %.4f seconds\n', elapsedTime);
-hNaiveODE45 = plotit(fignum, transpose(Y_naive), 'magenta', nameODE45(integrator), 1);
+hNaiveODE45 = plotit(fignum, transpose(Y_naive), 'magenta', nameINTEGRATOR(integrator), 1);
 
 warning('on', 'IFDIFF:chattering');
 
@@ -116,7 +116,7 @@ if idx2 == 2
     tnaive = tic(); [t_naive2, Y_naive2] = ode45(ode45fun, tspan2, x0_1, intOptions3); elapsedTime = toc(tnaive);
     disp("Done integrating naively.");
     fprintf('Elapsed time: %.4f seconds\n', elapsedTime);
-    hNaiveODE45 = plotit(fignum, transpose(Y_naive2), 'red', nameODE45_2(integrator), 1);
+    hNaiveODE45 = plotit(fignum, transpose(Y_naive2), 'red', nameINTEGRATOR_accurate(integrator), 1);
 end
 
 % FINITO
@@ -168,27 +168,4 @@ function diffnorm = calcDiff(yA, yB)
      diffnorm(i) = min(tmpdiff);
      diffnorm(i) = diffnorm(i) / norm(y);
   end
-end
-
-
-function sol = explEuler(rhs, tspan, x0, stepsize)
-   xdim = length(x0);  % get dimension
-   stepcount = (tspan(end)-tspan(1))/stepsize;
-   sfac = 0.001; % store factor
-   X = zeros(xdim, ceil(stepcount*sfac)+1);
-   Xi = reshape(x0, [], 1); 
-   X(:,1) = Xi;
-   k = 2; nextout = ceil(1 / sfac);
-   for i=2:stepcount
-      Xi = Xi + stepsize * rhs(i*stepsize, Xi);
-      if (i == nextout)
-         X(:,k) = Xi; k = k + 1; 
-         nextout = nextout + ceil(1 / sfac);
-      end
-      if ~mod(floor(100*i/stepcount), 10), fprintf('.'); end
-   end
-   fprintf('\n')
-   T = linspace(tspan(1), tspan(end), ceil(stepcount*sfac)+1);
-   sol.x = T;
-   sol.y = X;
 end
