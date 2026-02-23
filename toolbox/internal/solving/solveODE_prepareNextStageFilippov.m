@@ -12,16 +12,16 @@ function solveODE_prepareNextStageFilippov(datahandle)
 %
 %OUTPUT:
 %   SWP_detection.switchingpoints - Filippov exit time appended as switching point.
-%       (m+1)x1 cell array of double
+%       1x(m+1) cell array of double
 %
 %   SWP_detection.switchingFunction - Filippov switching function appended.
-%       (m+1)x1 cell array of function_handle
+%       1x(m+1) cell array of function_handle
 %
 %   SWP_detection.jumpFunction - Empty jump function appended (assume no jumps in Filippov).
-%       (m+1)x1 cell array of (function_handle | empty)
+%       1x(m+1) cell array of (function_handle | empty)
 %
 %   SWP_detection.signature - Signature of new model at Filippov exit point appended.
-%       (m+2)x1 cell array of BranchingSignature
+%       1x(m+2) cell array of 1x? BranchingSignature
 %
 %   sliding - Clear sliding mode fields, thus disabling Filippov sliding mode.
 %       struct

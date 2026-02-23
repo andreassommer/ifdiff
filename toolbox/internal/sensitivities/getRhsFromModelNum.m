@@ -22,14 +22,13 @@ data = datahandle.getData();
 
 signature = data.SWP_detection.signature{modelNum};
 % Check for Filippov case (multiple signatures)
-if iscell(signature)
+if ~isscalar(signature)
     % TODO: Add option to also export Filippov RHS source code without ctrlifs.
     % Assume we don't start in Filippov (guaranteed since Filippov can only begin after a switch).
     switchingFunction = data.SWP_detection.switchingFunction{modelNum - 1};
     rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch( ...
         datahandle, ...
-        signature{1}, ...
-        signature{2}, ...
+        signature, ...
         switchingFunction, t, y, p);
     return
 end

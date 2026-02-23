@@ -20,17 +20,14 @@ config = makeConfig();
 t = solveODE_backtrackChattering(datahandle);
 
 % determine the signatures involved
-[signature1, signature2] = chatteringGetSignatures(datahandle, t);
+signatures = chatteringGetSignatures(datahandle, t);
 
-% only two signatures involved, so we can assume the last switching ctrlif
-% to be the chattering one
+% TODO: How should the index of the chattering ctrlif be determined? For now assume last ctrlif is chattering.
 sliding_index = datahandle.getData().SWP_detection.switchingIndices(end);
-if signature1.switchCond(sliding_index) == 1
-    signature_fplus = signature1;
-    signature_fminus = signature2;
-else
-    signature_fplus = signature2;
-    signature_fminus = signature1;
+% Ensure that first signature has non-negative switching function value, i.e. switchCond is 1/true
+if signatures(1).switchCond(sliding_index) ~= 1
+    % Need to swap.
+    signatures([1 2]) = signatures([2 1]);
 end
 
 % cut steps
@@ -38,20 +35,18 @@ solveODE_cutSteps_solution_until_t2(datahandle, t)
 
 data = datahandle.getData();
 
-% Store signature of Filippov model as combined signatures for sensitivities.
-data.SWP_detection.signature{end} = {signature_fplus, signature_fminus};
-
 % get the chattering switch's switching function:
 % We ensured there was only a single switch active during chattering,
 % so we just pick the switching function of the last switching event.
+% TODO: Is that assumption actually valid?
 switchingFunction = data.SWP_detection.switchingfunctionhandles{end};
 
-filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, signature_fplus, signature_fminus, switchingFunction,t,y,p);
+filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, signatures, switchingFunction, t, y, p);
 
-% set filippov rhs and store some other info
-data.sliding.filippov_rhs       = filippov_rhs;
-data.sliding.index              = sliding_index;
-
+% Store information about the sliding mode submodel in datahandle
+data.sliding.filippov_rhs = filippov_rhs;
+data.sliding.index = sliding_index;
+data.SWP_detection.signature{end} = signatures;
 datahandle.setData(data);
 
 if config.debugMode

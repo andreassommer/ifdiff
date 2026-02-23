@@ -1,5 +1,5 @@
-function [signature1, signature2] = chatteringGetSignatures(datahandle, t)
-% [signature1, signature2] = chatteringGetSignatures(datahandle, t)
+function signatures = chatteringGetSignatures(datahandle, t)
+% signatures = chatteringGetSignatures(datahandle, t)
 %
 % For a chattering solution, determines the signatures that appeared
 % since timepoint t. If there are more than two, throws an error since the
@@ -14,11 +14,8 @@ function [signature1, signature2] = chatteringGetSignatures(datahandle, t)
 %                       scalar
 %
 % OUTPUT:
-%   signature1:     Signature that has been encountered.
-%                       struct
-%
-%   signature2:     Signature that has been encountered.
-%                       struct
+%   signatures:     signatures that have been encountered
+%                       1x2 BranchingSignature
 
 
 data = datahandle.getData();
@@ -28,21 +25,20 @@ switchingpoints = cell2mat(data.SWP_detection.switchingpoints);
 idxChatterStart = find(switchingpoints >= t, 1);
 
 signatures = data.SWP_detection.signature(idxChatterStart:end);
-% Make sure we don't consider any signatures from previous Filippov modes.
-% Filippov signatures are stored as cells with two signatures.
-isFilippov = cellfun(@iscell, signatures);
-if any(isFilippov)
-    % Unsure if this case can be handled gracefully, for now abort.
+% Make sure we don't consider any signatures from previous sliding modes.
+% Sliding mode signatures are stored as 1xN BranchingSignature objects with N > 1
+isSliding = cellfun(@(x) ~isscalar(x), signatures);
+if any(isSliding)
+    % TODO: Unsure if this case can be handled gracefully, for now abort.
     throw(filippovSignatureChatteringException);
 end
-
 
 % Find unique signatures among chattering. Stop and throw if we find more than two.
 uniqueChatteringSignatures = signatures(1);
 for idxNew=2:length(signatures)
     isNewSignature = true;
     for idxOld=1:length(uniqueChatteringSignatures)
-        if signatures{idxNew} == uniqueChatteringSignatures{idxOld}
+        if isequal(signatures{idxNew}, uniqueChatteringSignatures{idxOld})
             % Signature already included.
             isNewSignature = false;
             break
@@ -64,9 +60,9 @@ if length(uniqueChatteringSignatures) ~= 2
     throw(invalidNumberOfChatteringSwitches);
 end
 
-% output
-[signature1, signature2] = uniqueChatteringSignatures{:};
+signatures = [uniqueChatteringSignatures{:}];
 end
+
 
 %% Exceptions
 function e = filippovSignatureChatteringException

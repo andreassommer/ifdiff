@@ -99,8 +99,8 @@ switch data.caseCtrlif
         data.computeSensitivity.ctrlifCounter = data.computeSensitivity.ctrlifCounter + 1;
         signature = data.SWP_detection.signature{modelStage};
 
-        % Cannot evaluate model with Filippov signature (i.e. two signatures).
-        if iscell(signature)
+        % Cannot evaluate model with sliding mode signature (i.e. multiple signatures).
+        if ~isscalar(signature)
             throw(evaluationWithFilippovSignatureException)
         end
 
