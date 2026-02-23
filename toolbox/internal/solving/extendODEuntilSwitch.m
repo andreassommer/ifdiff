@@ -54,8 +54,11 @@ while isempty(switchingIndices)
     data.SWP_detection.t2 = data.SWP_detection.t2 + baseOffset * 10^min(iter, config.switchingPointMaxPower);
 
     if data.SWP_detection.t2 >= data.SWP_detection.t3
-        % Okay, just use t3.
+        % Cannot find a signature change between t2 and t3.
+        % Use t3 as the switching point, since we know that a switching event has occurred there.
         data.SWP_detection.t2 = data.SWP_detection.t3;
+        data.SWP_detection.solution_until_t2 = data.SWP_detection.solution_until_t3;
+        datahandle.setData(data);
         break
     end
     datahandle.setData(data);
