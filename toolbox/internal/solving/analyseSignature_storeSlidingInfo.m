@@ -41,7 +41,7 @@ else
     % k>1
     alpha = NaN(1,k);
     for i=1:length(t)
-        unused = data.sliding.filippov_rhs(datahandle, t(i), x(:,i), data.SWP_detection.parameters); %#ok<NASGU> 
+        data.sliding.filippov_rhs(datahandle, t(i), x(:,i), data.SWP_detection.parameters);
         alpha(i) = datahandle.getData().sliding.alpha_last;
     end
 end

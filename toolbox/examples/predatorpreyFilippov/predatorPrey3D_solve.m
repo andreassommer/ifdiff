@@ -48,12 +48,16 @@ eulerDisturbH = 1e-6;
 %% Solve with IFDIFF
 datahandle = prepareDatahandleForIntegration(rhs, 'solver', intIfdiff, 'options', intOptions);
 % Enable storing of convexification data
-data = datahandle.getData();
-data.sliding.storeSlidingInfo = true;
-datahandle.setData(data);
-
-solIfdiff = solveODE(datahandle, tspan, x0, p);
-
+configNew = makeConfig();
+configNew.storeSlidingInfo = true;
+configOld = makeConfig(configNew);
+try
+    solIfdiff = solveODE(datahandle, tspan, x0, p);
+catch ME
+    makeConfig(configOld);
+    rethrow(ME);
+end
+makeConfig(configOld);
 
 %% Solve with Euler
 [owndir, ~] = fileparts(mfilename('fullpath'));
