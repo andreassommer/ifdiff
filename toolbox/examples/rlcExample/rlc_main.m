@@ -1,4 +1,5 @@
 % RLC circuit with fuse
+% for more details, see rlcExample_README.md
 
 %% Setup and integration
 integrator = @ode15s;

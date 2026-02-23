@@ -140,7 +140,9 @@ config.swfreq_haltOnWarning = false;
 
 
 % last point strategy for one-step solvers
-config.last_point_strategy = true;
+config.last_point_strategy.enabled = true;  % or false
+config.last_point_strategy.is_compatible_solver = @(solver) any(cellfun(@(x) isequal(x, solver), {@ode23, @ode45, @ode78, @ode89, @ode113, @ode23t, @ode23tb}));
+config.last_point_strategy.is_active = @(solver) config.last_point_strategy.enabled && config.last_point_strategy.is_compatible_solver(solver);
 
 config_out = config;
 end

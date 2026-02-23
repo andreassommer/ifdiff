@@ -1,4 +1,5 @@
 % DAE Example Main
+% for more details, see daeExample_README.md
 
 %% Setup and integration
 integrator = @ode15s;
