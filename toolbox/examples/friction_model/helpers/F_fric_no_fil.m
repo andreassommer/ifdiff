@@ -1,4 +1,4 @@
-function res = F_fric_mod(x, mu_rel, epsilon, F_s, k, delta)
+function res = F_fric_no_fil(x, mu_rel, epsilon, F_s, k, delta)
 if mu_rel <= -epsilon
     res = F_s / (1 - delta * mu_rel);
     %res = -F_s * mu_rel;
