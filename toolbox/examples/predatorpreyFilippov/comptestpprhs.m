@@ -14,9 +14,9 @@ beta2 = 0.896;
 beta1 = 7.81; q2 = 1.5; r2 = 0.3;
 
 % initial values, parameters, timespan
-a = 0.286975;
-x0_1 = [a ; a ; r1-r2];
-p = [r1, r2, beta1, beta2, q1, q2, m, e, aq];
+a     = 0.286975;
+x0_1  = [a ; a ; r1-r2];
+p     = [r1, r2, beta1, beta2, q1, q2, m, e, aq];
 tspan = [0 100];
 
 % configure plotting
@@ -26,10 +26,12 @@ figure(fignum); clf; hold('on');
 plotit = @plotter;
 
 % solver selection and configuration
-intEuler    = @explEuler;
-eulerStep   = 1e-7;
-integrator   = @ode45;
-intOptions  = odeset('reltol', 1e-10, 'abstol', 1e-12, 'MaxStep', 0.5);
+intEuler   = @explEuler;
+eulerStep  = 1e-7;
+integrator = @ode45;    % naive integrator to compare with
+intOptions = odeset('reltol', 1e-10, 'abstol', 1e-12, 'MaxStep', 0.5); % options for ifdiff integrator
+naiveintOptions = odeset('reltol', 1e-5, 'abstol', 1e-6, 'MaxStep', 0.5); % for naive integration
+naiveintOptions_accurate = odeset('reltol', 1e-7, 'abstol', 1e-8, 'MaxStep', 0.5);
 
 % name generators
 nameIfdiff              = @(f) sprintf('ifdiff/%s (correct)', func2str(f));
@@ -61,7 +63,6 @@ hIFDIFF = plotit(fignum, Y_ifdiff, 'g', nameIfdiff(integrator), linewidth);
 [owndir, ~] = fileparts(mfilename('fullpath'));
 euler_fname = fullfile(owndir, sprintf('sol_euler_red_%.0e.mat', eulerStep));
 EulerFileIsPresent = isfile(euler_fname);
-doEuler = true;
 if EulerFileIsPresent
     fprintf('Loading sol_euler from file %s\n', euler_fname);
     tmp = load(euler_fname, 'sol_euler_ds');
@@ -80,12 +81,11 @@ if doEuler
     hEuler = plotit(fignum, Y_euler, 'c', namePlainEuler(intEuler), linewidth);
 end
 
-% Compute unmodified ODE45 solution
-intOptions2 = odeset('reltol', 1e-5, 'abstol', 1e-6, 'MaxStep', 0.5);
-disp("Doing naive integration with base ode45 without IFDIFF...");
+% Compute unmodified naive solution
+fprintf('Doing naive integration with base %s without IFDIFF...', func2str(integrator));
 tspan2 = linspace(0, 100, 10000);
-ode45fun = @(t, y) pprhs(t, y, p);
-tnaive = tic(); [t_naive, Y_naive] = ode45(ode45fun, tspan2, x0_1, intOptions2); elapsedTime = toc(tnaive);
+RHSfun = @(t, y) pprhs(t, y, p);
+tnaive = tic(); [t_naive_acc, Y_naive] = integrator(RHSfun, tspan2, x0_1, naiveintOptions); elapsedTime = toc(tnaive);
 disp("Done integrating naively.");
 fprintf('Elapsed time: %.4f seconds\n', elapsedTime);
 hNaiveODE45 = plotit(fignum, transpose(Y_naive), 'magenta', nameINTEGRATOR(integrator), 1);
@@ -97,26 +97,23 @@ fignum2 = fignum + 1;
 errorPlot(fignum2, X_plot, Y_ifdiff, Y_euler, nameIfdiff(integrator), namePlainEuler(intEuler));
 
 %% Ask if user wants to experience Euler Solution generation
-fprintf('\nDo you want to generate an euler trajectory from scratch? \n');
-choices = {"No", "Yes"};
 default_choice_index = 1;
-[idx, val] = userchoice(choices, default_choice_index);
+fprintf('\nDo you want to generate an euler trajectory from scratch? \n');
+euler_traj_choices = {"No", "Yes"};
+[idx, val] = userchoice(euler_traj_choices, default_choice_index);
 if idx == 2
     generateEulerSol;
 end
 
-fprintf('\nDo you want to generate an "accurate" ode45 solution? (Might take a very long time)\n');
-choices2 = {"No (exit script)", "Yes"};
-[idx2, val2] = userchoice(choices2, default_choice_index);
+fprintf('\nDo you want to generate an "accurate" %s solution? (Might take a very long time)\n', func2str(integrator));
+acc_naive_choices = {"No (exit script)", "Yes"};
+[idx2, val2] = userchoice(acc_naive_choices, default_choice_index);
 if idx2 == 2
     fprintf('Computing naive solution with smaller tolerances (rel = 1e-7, abs = 1e-8)');
-    % Takes naive solver about 20 minutes on Marvins machine
-    intOptions3 = odeset('reltol', 1e-7, 'abstol', 1e-8, 'MaxStep', 0.5);
-    ode45fun = @(t, y) pprhs(t, y, p);
-    tnaive = tic(); [t_naive2, Y_naive2] = ode45(ode45fun, tspan2, x0_1, intOptions3); elapsedTime = toc(tnaive);
-    disp("Done integrating naively.");
-    fprintf('Elapsed time: %.4f seconds\n', elapsedTime);
-    hNaiveODE45 = plotit(fignum, transpose(Y_naive2), 'red', nameINTEGRATOR_accurate(integrator), 1);
+    RHSfun = @(t, y) pprhs(t, y, p);
+    tnaive = tic(); [t_naive_acc, Y_naive_acc] = ode45(RHSfun, tspan2, x0_1, naiveintOptions_accurate); elapsedTime = toc(tnaive);
+    fprintf('\nDone integrating naively. Elapsed time: %.4f seconds\n', elapsedTime);
+    hNaiveODE45 = plotit(fignum, transpose(Y_naive_acc), 'red', nameINTEGRATOR_accurate(integrator), 1);
 end
 
 % FINITO
