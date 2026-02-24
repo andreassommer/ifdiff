@@ -109,9 +109,9 @@ fprintf('\nDo you want to generate an "accurate" ode45 solution? (Might take a v
 choices2 = {"No (exit script)", "Yes"};
 [idx2, val2] = userchoice(choices2, default_choice_index);
 if idx2 == 2
-    fprintf('Computing naive solution with smaller tolerances (rel = 1e-8, abs = 1e-9)');
+    fprintf('Computing naive solution with smaller tolerances (rel = 1e-7, abs = 1e-8)');
     % Takes naive solver about 20 minutes on Marvins machine
-    intOptions3 = odeset('reltol', 1e-8, 'abstol', 1e-9, 'MaxStep', 0.5);
+    intOptions3 = odeset('reltol', 1e-7, 'abstol', 1e-8, 'MaxStep', 0.5);
     ode45fun = @(t, y) pprhs(t, y, p);
     tnaive = tic(); [t_naive2, Y_naive2] = ode45(ode45fun, tspan2, x0_1, intOptions3); elapsedTime = toc(tnaive);
     disp("Done integrating naively.");
