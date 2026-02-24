@@ -1,8 +1,3 @@
-<script
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-  type="text/javascript">
-</script>
-
 # RLC Circuit (Voltage-controlled switch)
 
 This example models an **RLC electrical circuit** with a fuse using a differential-algebraic equation (DAE) formulation. 
@@ -11,13 +6,9 @@ The system exhibits state-dependent switching between two modes depending on the
 ## Physical Description
 
 The circuit consists of:
-
 - an inductor $L$
-
 - a capacitor $C$
-
-- two possible resistanive elements $R_1$ and $R_2$
-
+- two resistors $R_1$ and $R_2$
 - a DC supply voltage $V_s$
 
 When the capacitor voltage exceeds a threshold $V_{\text{th}}$, the circuit switches from high to low resistance.
@@ -25,19 +16,35 @@ Such a behavior may be observed​
 
 ## Model
 
-The system states are $ x = (i_L, V_C, i_C)^T$. The inductor $L$ follows
-Kirchhoff's Voltage Law for the supply $V_s=Ri_L+L\dot{i}_L + V_C $ ($R$ is $R_1$ or $R_2$ depending on the case).
-The capacitator $C$ follows the capacitor-current-voltage relation $i_C=C\dot{V}_C$ where $V_C$ is the potential difference between
-the capacitor's positive and negative plates.
+The system states are $x = (i_L, V_C, i_C)^T$.
 
-The algebraic constraint in out model is Kirchhoff's Current Law at the inductor-capacitor node:
-Inductor current equals capacitor current since they are in series in the circuit.
+The inductor $L$ follows Kirchhoff's Voltage Law for the supply $V_s=Ri_L+L\dot{i}_L + V_C$ ($R$ is $R_1$ or $R_2$ depending on the case).
+
+The capacitator $C$ follows the capacitor-current-voltage relation $i_C=C\dot{V}_C$ where $V_C$ is the potential difference between the capacitor's positive and negative plates.
+
+The algebraic constraint in this model is Kirchhoff's Current Law at the inductor-capacitor node:
+
+The inductor current is equal to the capacitor current since they are connected in series in the circuit.
 
 With this, the DAE system is given by:
 
-$ (\text D_{\text{RLC}} ) \quad \begin{cases} \dot{i}_L = \begin{cases} \frac{V_s - R_1 i_L - V_C}{L} \quad \text{if}  \quad V_C > V_{\text{th}} \\ \frac{V_s - R_2 i_L - V_C}{L} \quad \text{if} \quad V_C \leq V_{\text{th}} \end{cases} \\ \dot{V}_C = \frac{i_C}{C} \\ i_L−i_C = 0 \end{cases}$
+$$(\text D_{\text{RLC}}) \quad 
+\begin{cases}
+    \dot{i}_L = 
+    \begin{cases}
+        \frac{V_s - R_1 i_L - V_C}{L}, & \text{if } V_C > V_{\text{th}} \\
+        \frac{V_s - R_2 i_L - V_C}{L}, & \text{if } V_C \leq V_{\text{th}}
+    \end{cases} \\
+    \dot{V}_C = \frac{i_C}{C} \\
+    i_L−i_C = 0
+\end{cases}
+$$
 
-The system is an index 1 DAE since differentiating yields the second-order ODE $L\ddot{i}_L+R\dot{i}L+\frac{1}{C}i_L=0$.
+The system is an index 1 DAE since differentiating yields the second-order ODE:
+
+$$
+\ddot{i}_L+R\dot{i}_L+\frac{1}{C}i_L=0
+$$
 
 
 ## Solution with IFDIFF
@@ -79,8 +86,8 @@ datahandle = prepareDatahandleForIntegration('rlcRHS', 'integrator', integrator,
 
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
 sol_plain  = integrator(@(t, x) rlcRHS(t, x, p), tspan, x0, opts_plain);
-
 ```
+
 To compare both solutions, we can plot them and mark the switch.
 
 ```
@@ -111,7 +118,7 @@ hold off;
 ![](plots_rlc/rlc_plot_1.png)
 ![](plots_rlc/rlc_plot_close.png)
 
-To further investigate this example, take a look at the files `rlc_main.m` and `rlcRHs.m`.
+To further investigate this example, take a look at the files `rlc_main.m` and `rlcRHS.m`.
 
 ## Sources
 
