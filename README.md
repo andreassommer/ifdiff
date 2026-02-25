@@ -28,7 +28,7 @@ There are two ways to install IFDIFF.
 
 1. Download the current release file `IFDIFF_Toolbox.mltbx`.
 2. Open MATLAB and navigate to the directory containing the file.
-3. Right-click the file and select **Open**.
+3. Right-click the file and select **Install**.
 4. For a detailed introduction, open `GettingStarted.mlx`, which is included with the toolbox.
 
 Note: You can also open the Getting Started guide directly in 
@@ -44,7 +44,7 @@ Note: You can also open the Getting Started guide directly in
 
 # Usage
 
-Onnce every new MATLAB session run
+Once every new MATLAB session run
 
  `initIFDIFF();` 
 

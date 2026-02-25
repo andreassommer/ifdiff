@@ -140,7 +140,7 @@ Although this requires multiple forward integrations per interval, it can be mor
 
 - **External Numerical Differentiation, Full Horizon** (`END_full`) **NOT Recommended**
 Here, finite differencing is applied to multiple full-horizon solutions, each computed with switching point detection. Since sensitivities are not propagated across switching points, no intermediate updates are required.
-This method is generally not accurate and we do not recommend it, but may be slower for a certain class of problems.
+This method is generally not accurate and we do not recommend it, but may be faster for a certain class of problems.
  
 </br>
 
