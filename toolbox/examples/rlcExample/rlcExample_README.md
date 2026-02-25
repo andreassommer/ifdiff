@@ -16,11 +16,11 @@ Such a behavior may be observed​
 
 ## Model
 
-The system states are $x = (i_L, V_C, i_C)^T$.
+The system states are $x = (I_L, V_C, I_C)^T$.
 
-The inductor $L$ follows Kirchhoff's Voltage Law for the supply $V_s=Ri_L+L\dot{i}_L + V_C$ ($R$ is $R_1$ or $R_2$ depending on the case).
+The inductor $L$ follows Kirchhoff's Voltage Law for the supply $V_s=RI_L+L\dot{I}_L + V_C$ ($R$ is $R_1$ or $R_2$ depending on the case).
 
-The capacitator $C$ follows the capacitor-current-voltage relation $i_C=C\dot{V}_C$ where $V_C$ is the potential difference between the capacitor's positive and negative plates.
+The capacitator $C$ follows the capacitor-current-voltage relation $I_C=C\dot{V}_C$ where $V_C$ is the potential difference between the capacitor's positive and negative plates.
 
 The algebraic constraint in this model is Kirchhoff's Current Law at the inductor-capacitor node:
 
@@ -30,20 +30,20 @@ With this, the DAE system is given by:
 
 $$(\text D_{\text{RLC}}) \quad 
 \begin{cases}
-    \dot{i}_L = 
+    \dot{I}_L = 
     \begin{cases}
-        \frac{V_s - R_1 i_L - V_C}{L}, & \text{if } V_C > V_{\text{th}} \\
-        \frac{V_s - R_2 i_L - V_C}{L}, & \text{if } V_C \leq V_{\text{th}}
+        \frac{V_s - R_1 I_L - V_C}{L}, & \text{if } V_C > V_{\text{th}} \\
+        \frac{V_s - R_2 I_L - V_C}{L}, & \text{if } V_C \leq V_{\text{th}}
     \end{cases} \\
-    \dot{V}_C = \frac{i_C}{C} \\
-    i_L−i_C = 0
+    \dot{V}_C = \frac{I_C}{C} \\
+    I_L−I_C = 0
 \end{cases}
 $$
 
 The system is an index 1 DAE since differentiating yields the second-order ODE:
 
 $$
-\ddot{i}_L+R\dot{i}_L+\frac{1}{C}i_L=0
+\ddot{I}_L+R\dot{I}_L+C^{-1}I_L=0
 $$
 
 
@@ -56,17 +56,17 @@ function dx = rlcRHS(~,x,p)
     dx  = zeros(3,1);
     L   = p(1); R1  = p(2); R2  = p(3);
     C   = p(4); Vs  = p(5); Vth = p(6);
-    iL  = x(1); VC  = x(2); iC  = x(3);
+    IL  = x(1); VC  = x(2); IC  = x(3);
     
     % Mode 1: High resistance (fuse intact)
     if VC > Vth
-        dx(1) = (Vs - R1*iL - VC)/L;
+        dx(1) = (Vs - R1*IL - VC)/L;
     else
     % Mode 2: Low resistance (fuse blown)
-        dx(1) = (Vs - R2*iL - VC)/L;
+        dx(1) = (Vs - R2*IL - VC)/L;
     end 
-    dx(2) = iC/C;
-    dx(3) = iL - iC; % algebraic constraint
+    dx(2) = IC/C;
+    dx(3) = IL - IC; % algebraic constraint
 end
 ```
 
@@ -99,7 +99,7 @@ hold on;
 Plot_ifdiff_1   = plot(sol_ifdiff.x, sol_ifdiff.y(1,:), 'ro--', 'DisplayName', 'IFDIFF'); 
 Plot_plain_1    = plot(sol_plain.x, sol_plain.y(1,:), 'k.-', 'DisplayName', 'plain ode15s');
 Switch_plot_1   = xline(sol_ifdiff.switches, 'b', 'LineWidth', 1.0, 'DisplayName', 'Switch');
-ylabel('i_L (A)');
+ylabel('I_L (A)');
 xlabel('Time (s)');
 legend();
 hold off;
@@ -108,14 +108,14 @@ subplot(2,1,2);
 hold on
 Plot_ifdiff_2  = plot(sol_ifdiff.x, sol_ifdiff.y(2,:), 'ro--', 'DisplayName', 'IFDIFF' );
 Plot_plain_2   =  plot(sol_plain.x, sol_plain.y(2,:), 'k.-', 'DisplayName', 'plain ode15s');
-ylabel('i_C (A) = i_L (A) (via constraint)');
+ylabel('I_C (A) = I_L (A) (via constraint)');
 Switch_plot_2  = xline(sol_ifdiff.switches, 'b', 'LineWidth', 1.0, 'DisplayName', 'Switch');
 xlabel('Time (s)');
 legend();
 hold off;
 ```
 
-![](plots_rlc/rlc_plot_1.png)
+![](plots_rlc/rlc_plot.png)
 ![](plots_rlc/rlc_plot_close.png)
 
 To further investigate this example, take a look at the files `rlc_main.m` and `rlcRHS.m`.

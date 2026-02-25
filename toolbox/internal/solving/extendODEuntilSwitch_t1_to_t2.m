@@ -6,42 +6,33 @@ function extendODEuntilSwitch_t1_to_t2(datahandle)
 config = makeConfig();
 data = datahandle.getData();
 
-% last integrator step before switch
-ti = data.SWP_detection.solution_until_t1.x(end); 
-
-% solution at the last time point before switch
-x = deval(data.SWP_detection.solution_until_t1, ti); 
-solution  = data.SWP_detection.solution_until_t1; 
-
-end_point = data.SWP_detection.t2; 
-
-% new step size
-delta_t = end_point - ti;
-
-options   = data.integratorSettings.options;
+solution  = data.SWP_detection.solution_until_t1;
+ti        = solution.x(end);    % last integrator step before switch
+x         = solution.y(:, end); % solution at the last time point before switch
+ 
 solver    = solution.solver;
+options   = data.integratorSettings.options;
+end_point = data.SWP_detection.t2;
 
-% Common setup for all solvers
 ctrlif_setForcedBranchingSignature(datahandle, ti, x);
 data = datahandle.getData();
 data.caseCtrlif = config.caseCtrlif.extendODEuntilSwitch;
 datahandle.setData(data);
 
-z = odextend(solution, [], end_point, [], options);
-data = datahandle.getData();
-data.SWP_detection.solution_until_t2 = z;
-
-% last point strategy for one step solvers
-if config.last_point_strategy.is_active(solver)
+if config.last_point_strategy.is_active(solver) % last point strategy for one step solvers
+ 
+    % new step size
+    delta_t = end_point - ti;
 
     data.integratorSettings.options.InitialStep = delta_t;
     data.integratorSettings.options.AbsTol = 1;
     data.integratorSettings.options.RelTol = 1;
 
-    datahandle.setData(data);
-
     z = odextend(solution, [], end_point, [], options);
     data = datahandle.getData();
+    data.SWP_detection.solution_until_t2 = z;
+else
+    z = odextend(solution, [], end_point, [], options);
     data.SWP_detection.solution_until_t2 = z;
 end
 

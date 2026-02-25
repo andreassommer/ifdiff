@@ -36,8 +36,6 @@ t2FromRootFinding = data.SWP_detection.t2;
 baseOffset = 16*eps(data.SWP_detection.t2);
 iter = 0;
 
-%disp(config.switchingPointErrorThreshold)
-
 while isempty(switchingIndices)
     data = datahandle.getData();
 
