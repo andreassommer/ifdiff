@@ -9,32 +9,23 @@ data = datahandle.getData();
 solution  = data.SWP_detection.solution_until_t1;
 ti        = solution.x(end);    % last integrator step before switch
 x         = solution.y(:, end); % solution at the last time point before switch
- 
-solver    = solution.solver;
-options   = data.integratorSettings.options;
 end_point = data.SWP_detection.t2;
+options   = data.integratorSettings.options;
 
+% Setup forced branching signature.
 ctrlif_setForcedBranchingSignature(datahandle, ti, x);
 data = datahandle.getData();
 data.caseCtrlif = config.caseCtrlif.extendODEuntilSwitch;
 datahandle.setData(data);
 
-if config.last_point_strategy.is_active(solver) % last point strategy for one step solvers
- 
-    % new step size
-    delta_t = end_point - ti;
-
-    data.integratorSettings.options.InitialStep = delta_t;
-    data.integratorSettings.options.AbsTol = 1;
-    data.integratorSettings.options.RelTol = 1;
-
-    z = odextend(solution, [], end_point, [], options);
-    data = datahandle.getData();
-    data.SWP_detection.solution_until_t2 = z;
-else
-    z = odextend(solution, [], end_point, [], options);
-    data.SWP_detection.solution_until_t2 = z;
+% Modified options for one step solvers to reach end point in one step.
+if config.last_point_strategy.is_active(solution.solver)
+    % Since the one step solver accepted the larger step t3 > t2, a smaller step to t2 should also be accepted.
+    options = data.integratorSettings.options;
+    options.MaxStep = inf;
+    options.InitialStep = inf;
 end
 
+data.SWP_detection.solution_until_t2 = odextend(solution, [], end_point, [], options);
 datahandle.setData(data);
 end
