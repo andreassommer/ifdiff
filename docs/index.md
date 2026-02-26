@@ -9,9 +9,6 @@ IFDIFF automatically detects and processes these switches, generates only the ne
 IFDIFF handles multidimensional state and parameter vectors and produces solution structures compatible with MATLAB's built-in ODE solvers, allowing transparent use of functions such as `deval` without modification of existing code. 
 A single preparation call is sufficient to enable switching-aware integration.
 
-
-</br>
-
 # Canonical Example
 Consider the following "canonical example" for a switched ODE system:
 
@@ -53,8 +50,6 @@ and a second "kink" once the first component reaches `p+0.5`.
 
 Let's see what happens if we do not consider appropriate switching handling. 
 
-</br>
-
 # Naive Integration with ode45 fails unnoticed
 
 We initialize the variables and start the integration using MATLAB's default integrator `ode45` (explicit Runge-Kutta 4(5)-solver),
@@ -77,8 +72,6 @@ solX2   = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
 ![Canonical Example with naive ode45](./canonex_naive_highaccuracy.png)
 
 Without any warning or error, the __naive approach with tight tolerances leads to the same (wrong) result__. Again, no kinks visible. 
-
-</br>
 
 # Reliable integration with IFDIFF
 
@@ -107,8 +100,6 @@ Note that the `sol` structure returned by `solveODE` is an augmented version of 
 by  MATLAB's very own integrators (see [MATLAB documentation](https://de.mathworks.com/help/matlab/ref/deval.html#bu7iw_j-sol)), 
 and can thus be evaluated  using `deval`. That means, IFDIFF can be used transparently within existing code!
 
-</br>
-
 ## Remarks
 
 While in some cases forcing a small integration step size (for example by using `odeset('MaxStep',1e-2)` in the example above) may produce a visually plausible solution, this approach is not a reliable remedy.
@@ -119,8 +110,6 @@ In the example above, choosing a parameter value of `p = 100` would eliminate al
 Secondly, when non-differentiabilities are ignored, there is no principled way to choose an appropriate maximum step size. The integrator provides neither warnings nor error estimates indicating that switching events have been missed.
 
 Thirdly, and as demonstrated in the following section, this approach completely fails to produce meaningful sensitivities.
-
-</br>
 
 # Sensitivity Generation
 
@@ -142,8 +131,6 @@ Although this requires multiple forward integrations per interval, it can be mor
 Here, finite differencing is applied to multiple full-horizon solutions, each computed with switching point detection. Since sensitivities are not propagated across switching points, no intermediate updates are required.
 This method is generally not accurate and we do not recommend it, but may be faster for a certain class of problems.
  
-</br>
-
 ## Example sensitivity generation for the Canonical Example
 
 1. Choose step sizes for finite differencing (also used in method `VDE` for generating state derivatives of the rhs). 
@@ -168,7 +155,7 @@ This method is generally not accurate and we do not recommend it, but may be fas
     ```matlab
     t = 0:0.1:20;
     sensitivities = sensitivity_function(t);
-    ``
+    ```
 
 The following picture shows the trajectories of the state sensitivities for the example aboves, $G_{y,ij}(t,t_0) := \frac{d y_i}{d y_{0,j}}(t)$, i.e.
 $G_{y,ij}$ denotes the sensitivity of the $i$-th solution component w.r.t. the $j$-th component of the initial value.
@@ -180,8 +167,6 @@ $G_{y,ij}$ denotes the sensitivity of the $i$-th solution component w.r.t. the $
 
 While IFDIFF produces correct and accurate sensitivities, the sensitivities using the naive approach, again without any warning or hint,
 are not only inaccurate (notice the scales!), but plain wrong. 
-
-</br>
 
 The following table lists several name-value pairs that can be used to configure `generateSensitivityFunction`
 
@@ -196,9 +181,6 @@ The following table lists several name-value pairs that can be used to configure
    | method                  | String with VDE/END_piecewise/END_full                                              | VDE                                   |
    | directions_y            | Matrix containing directions for directional derivatives w.r.t initial values.      | Identity matrix with dimension n_y    |
    | directions_p            | Matrix containing directions for directional derivatives w.r.t parameters.          | Identity matrix with dimension n_p    |
-
-</br>
-
 
 # IFDIFF is simple to use!
 
