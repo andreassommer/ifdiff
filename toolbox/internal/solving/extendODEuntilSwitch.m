@@ -35,6 +35,7 @@ switchingIndices = getSwitchingIndices(datahandle, 0);
 t2FromRootFinding = data.SWP_detection.t2;
 baseOffset = 16*eps(data.SWP_detection.t2);
 iter = 0;
+
 while isempty(switchingIndices)
     data = datahandle.getData();
 
@@ -51,6 +52,7 @@ while isempty(switchingIndices)
     % We can not start integrating from the old t2 because this would result in integration over a tiny
     % interval whose result would vanish due to limited floating point accuracy.
     data.SWP_detection.t2 = data.SWP_detection.t2 + baseOffset * 10^min(iter, config.switchingPointMaxPower);
+    
     datahandle.setData(data);
 
     % Check if there is a new signature.
