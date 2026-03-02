@@ -14,8 +14,7 @@ if sign(bisection.sw1) == sign(bisection.sw3)
     % even number of zero crossings instead? Should probably address this
     % case by recursively cutting the interval and try if we can find a
     % subinterval [t1, t3*] with different signs on the edges.
-    error([ 'The switch between t=', num2str(bisection.t1), ' and t=', num2str(bisection.t3), ...
-            'could not be determined. The signature did not change.\n'])
+    throw(noSignChangeException(bisection.t1, bisection.t3));
 end
 
 
@@ -23,4 +22,10 @@ end
 %                   where at the edges the switching function is nonzero,
 %                   without provoking other issues?
 
+end
+
+%% Exceptions
+function e = noSignChangeException(t1, t2)
+msg = 'Unable to determine switching point: No sign change in switching function between t=%g and t=%g.\n';
+e = MException('IFDIFF:Bisection:NoSignChange', msg, t1, t2);
 end

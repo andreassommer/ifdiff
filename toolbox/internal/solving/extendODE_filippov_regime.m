@@ -19,15 +19,13 @@ z = odextend(...
 data = datahandle.getData();
 data.SWP_detection.solution_until_t2 = z;
 data.SWP_detection.t2 = data.SWP_detection.solution_until_t2.x(end);
+data.SWP_detection.x2 = data.SWP_detection.solution_until_t2.y(:, end);
 
 % write the same solution to t3
 % that way, if the end of timespan is reached in filippov mode (i.e., here), 
 % the solution returned to the user is not cut off at the old t3
 data.SWP_detection.solution_until_t3 = z;
 data.SWP_detection.t3 = data.SWP_detection.solution_until_t2.x(end);
-
-% clear filippov data, serves also as indicator for inactive filippov mode
-data.sliding = extendODE_filippov_regime_cleanup(data.sliding);
 
 datahandle.setData(data);
 

@@ -60,14 +60,21 @@ while switch_detected
         if checkForSwitchingIndices(datahandle)
             error('IFDIFF:switchInFilippov', 'Switching during or right after Filippov mode.');
         end
-        if datahandle.getData().SWP_detection.t2 == tspan(2)
-            break; % reached end of time span
-        else
-            if config.debugMode
-                fprintf('Left Filippov regime.\n');
-            end
-            solveODE_prepareNextStage(datahandle);
+
+        % Filippov sliding mode integration has stopped
+        data = datahandle.getData();
+        if data.SWP_detection.t2 == tspan(2)
+            % Reached end of integration timespan.
+            data.sliding = extendODE_filippov_regime_cleanup(data.sliding);
+            datahandle.setData(data);
+            break;
         end
+
+        % Left the Filippov sliding mode. Must continue integration with new model.
+        if config.debugMode
+            fprintf('Left Filippov regime.\n');
+        end
+        solveODE_prepareNextStageFilippov(datahandle);
     end
 
     % extend solution object from t2 ongoing until the next switch occurs

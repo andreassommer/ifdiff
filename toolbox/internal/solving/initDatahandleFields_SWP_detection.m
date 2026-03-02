@@ -26,9 +26,7 @@ function SWP_detection = initDatahandleFields_SWP_detection(tspan, initialvalues
     SWP_detection.function_index_t3 = [];
     
     SWP_detection.signature = {};
-    SWP_detection.signature.function_index = {};
-    SWP_detection.signature.ctrlif_index = {};
-    SWP_detection.signature.switch_cond = {};
+    SWP_detection.signatureSwitchIndex = [];
 
     SWP_detection.solution_until_t1 = {};
     SWP_detection.solution_until_t2 = {};

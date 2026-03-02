@@ -121,6 +121,7 @@ classdef BranchingSignature
             end
         end
 
+        %% Getters and Setters
         % Getters retrieve the cached value for str and hash.
         function str = get.str(this)
             str = this.strCached;
@@ -150,5 +151,10 @@ classdef BranchingSignature
             this.functionIndex = val;
             this = this.updateCache();
         end
+
+        %% Comparison operators
+        % For equality checks use isequal (checks for matching classes and properties, also works for arrays).
+        % NOTE: Checked properties seem to include private and hidden properties.
+        % This should not be an issue, since here the public properties matching ensures the private ones matching also.
     end
 end

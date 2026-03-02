@@ -11,13 +11,8 @@ function sliding = initDatahandleFields_Filippov()
 
 sliding = extendODE_filippov_regime_cleanup(struct());
 
-% if true: convexification parameters and signatures are stored for every integration step
-sliding.storeSlidingInfo = false;
-
 convexification.t                  = [];
 convexification.index              = [];
 convexification.alpha              = [];
-convexification.signature_fminus   = {};
-convexification.signature_fplus    = {};
 sliding.convexification = convexification;
 end

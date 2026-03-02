@@ -1,9 +1,9 @@
 function solveODE_setFilippovRHS(datahandle)
-% Sets datahandle.sliding.filippovRHS to a RHS that allows to slide/run 
+% Sets datahandle.sliding.filippovRHS to a RHS that allows to slide/run
 % on the zero-manifold associated to a function that is inconsistently switching.
 %
 % INPUT:
-% 'datahandle':         datahandle containing the integration and 
+% 'datahandle':         datahandle containing the integration and
 %                       switching data.
 %
 % OUTPUT:
@@ -20,41 +20,30 @@ config = makeConfig();
 t = solveODE_backtrackChattering(datahandle);
 
 % determine the signatures involved
-[signature1, signature2] = chatteringGetSignatures(datahandle, t);
+signatures = chatteringGetSignatures(datahandle, t);
 
-% only two signatures involved, so we can assume the last switching ctrlif
-% to be the chattering one
-sliding_index = datahandle.getData().SWP_detection.switchingIndices(end);
-if signature1.switch_cond(sliding_index) == 1
-    signature_fplus = signature1;
-    signature_fminus = signature2;
-else
-    signature_fplus = signature2;
-    signature_fminus = signature1;
+sliding_index = datahandle.getData().SWP_detection.signatureSwitchIndex(end);
+% Ensure that first signature has non-negative switching function value, i.e. switchCond is 1/true
+if signatures(1).switchCond(sliding_index) ~= 1
+    % Need to swap.
+    signatures([1 2]) = signatures([2 1]);
 end
-
 
 % cut steps
 solveODE_cutSteps_solution_until_t2(datahandle, t)
 
-% get the chattering switch's switching function:
-% We ensured there was only a single switch active during chattering, 
-% so we just pick the switching function of the last switching event.
-switchingFunction = datahandle.getData().SWP_detection.switchingfunctionhandles{end};
-
-filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, signature_fplus, signature_fminus, switchingFunction,t,y,p);
-
-% set filippov rhs and store some other info
 data = datahandle.getData();
-data.sliding.filippov_rhs       = filippov_rhs;
-data.sliding.index              = sliding_index;
-data.sliding.signature_fplus    = signature_fplus;
-data.sliding.signature_fminus   = signature_fminus;
+switchingFunction = data.SWP_detection.switchingFunction{end};
+
+filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, signatures, switchingFunction, t, y, p);
+
+% Store information about the sliding mode submodel in datahandle
+data.sliding.filippov_rhs = filippov_rhs;
+data.sliding.index = sliding_index;
+data.SWP_detection.signature{end} = signatures;
 datahandle.setData(data);
 
-% message
 if config.debugMode
     fprintf("Entered Filippov regime.\n");
 end
-
 end

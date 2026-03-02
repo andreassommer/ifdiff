@@ -27,7 +27,7 @@ nIntegrationSteps = 1;
 
 % get maxStep size by default
 defaultMaxStep = 0.1*abs(data.SWP_detection.tspan(1)-data.SWP_detection.tspan(2));
-data.integratorSettings.optionsForcedBranching.InitialStep = defaultMaxStep; 
+data.integratorSettings.optionsForcedBranching.InitialStep = defaultMaxStep;
 data.caseCtrlif = config.caseCtrlif.forcedBranching;
 datahandle.setData(data)
 % initialisation of nIntegrationSteps s.th. the first iteration of while is executed
@@ -38,11 +38,11 @@ ctrlif_setForcedBranchingSignature(datahandle, data.SWP_detection.tspan(1), data
 % while loop as long as there are only 2 timpoints or less during the integration
 % algorithm
 while nIntegrationSteps <= 2
-    
+
     % getData since the ode options may have been changed.
     data = datahandle.getData();
-    
-    
+
+
     % caution: .optionsForcedBranching contains analyseSignature(...,datahandle).
     % switching point detection magic is done in analyseSignature(...,datahandle).
     z = data.integratorSettings.numericIntegrator(...
@@ -50,51 +50,33 @@ while nIntegrationSteps <= 2
         data.SWP_detection.tspan,...
         data.SWP_detection.initialvalues, ...
         data.integratorSettings.optionsForcedBranching);
-    
+
     data = datahandle.getData();
     data.SWP_detection.solution_until_t3 = z;
-    
+
     nIntegrationSteps = length(data.SWP_detection.solution_until_t3.x);
-    
+
     % reduce max step size if number of timepoints not high enough
     if nIntegrationSteps <= 2
-        
+
         data.integratorSettings.optionsForcedBranching.InitialStep = data.integratorSettings.optionsForcedBranching.InitialStep/2;
         %warning('First integration step contains switch. odeextend would fail, reduce step size only for first integration step')
     end
-    
+
     % save new MaxStep size to datahandle.
-    datahandle.setData(data);    
+    datahandle.setData(data);
 end
 
 % get signature
 data.SWP_detection.t1 = data.SWP_detection.solution_until_t3.x(end-1);
 data.SWP_detection.t3 = data.SWP_detection.solution_until_t3.x(end);
 
-% signature matrix
-data.SWP_detection.signature.function_index{1} = data.forcedBranching.function_index_forcedBranching;
-data.SWP_detection.signature.ctrlif_index{1} = data.forcedBranching.ctrlif_index_forcedBranching;
-data.SWP_detection.signature.switch_cond{1} = data.forcedBranching.switch_cond_forcedBranching;
+firstModelSignature = BranchingSignature( ...
+    data.mtreeplus{2, 1}, ...
+    data.forcedBranching.switch_cond_forcedBranching, ...
+    data.forcedBranching.ctrlif_index_forcedBranching, ...
+    data.forcedBranching.function_index_forcedBranching);
+data.SWP_detection.signature{1} = firstModelSignature;
+
 datahandle.setData(data);
-
-
 end % first integraion round done, if no switch occured, .t3 = tspan(2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

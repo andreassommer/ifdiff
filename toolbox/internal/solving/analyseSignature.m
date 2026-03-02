@@ -10,7 +10,7 @@ function status = analyseSignature(t, x, flag, datahandle)
 % If ifdiff is in Filippov mode, the integration also stops upon reaching
 % the end of a Filippov regime.
 %
-% If datahandle.sliding.storeSlidingInfo is true, this function stores 
+% If config.storeSlidingInfo is true, this function stores
 % detailed information about sliding mode intervals. 
 % In particular, convex-combination parameters and the 
 % convexified signatures are stored.
@@ -39,6 +39,7 @@ function status = analyseSignature(t, x, flag, datahandle)
 % 'status': The status of the output function.
 %           status = 0: nothing to do; status = 1: stop/halt integration
 
+config = makeConfig();
 data = datahandle.getData();
 
 switch flag
@@ -79,7 +80,7 @@ switch flag
             end
         end
         % sliding info
-        if data.sliding.storeSlidingInfo
+        if config.storeSlidingInfo
             datahandle.setData(data);
             convexification = analyseSignature_storeSlidingInfo(t,x,datahandle);
             data = datahandle.getData();
