@@ -30,15 +30,12 @@ end
 
 data = datahandle.getData(); 
 
-% find the minimum right side of the intervals (first occuring
-% switching point)
-[firstswitch, index] = min(switchingpoints(1,:));
+% Find switch that occurs first (i.e. earliest switching time)
+[firstSwitch, firstSwitchIdx] = min(switchingpoints);
 
-data.SWP_detection.switchingIndices  = data.SWP_detection.switchingIndices(switchingpoints(1,:) == firstswitch);
-z = switchingpoints(:, switchingpoints(1,:) == firstswitch);
-
-data.SWP_detection.t2 = z(1);
-data.SWP_detection.switchingFunction{end + 1} = data.SWP_detection.switchingfunctionhandles{index}; 
+data.SWP_detection.signatureSwitchIndex(end + 1) = data.SWP_detection.switchingIndices(firstSwitchIdx);
+data.SWP_detection.t2 = firstSwitch;
+data.SWP_detection.switchingFunction{end + 1} = data.SWP_detection.switchingfunctionhandles{firstSwitchIdx};
 
 datahandle.setData(data);
 

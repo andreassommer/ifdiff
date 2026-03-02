@@ -30,9 +30,10 @@ switchingpoints = cell2mat(SWP_detection.switchingpoints);
 
 indicesCut = switchingpoints <= t_cut;
 
-SWP_detection.switchingpoints   = SWP_detection.switchingpoints(indicesCut);
-SWP_detection.switchingFunction = SWP_detection.switchingFunction(indicesCut);
-SWP_detection.jumpFunction      = SWP_detection.jumpFunction(indicesCut);
+SWP_detection.switchingpoints      = SWP_detection.switchingpoints(indicesCut);
+SWP_detection.signatureSwitchIndex = SWP_detection.signatureSwitchIndex(indicesCut);
+SWP_detection.switchingFunction    = SWP_detection.switchingFunction(indicesCut);
+SWP_detection.jumpFunction         = SWP_detection.jumpFunction(indicesCut);
 t2 = data.SWP_detection.solution_until_t2.x(end);
 x2 = data.SWP_detection.solution_until_t2.y(:,end);
 SWP_detection.t2 = t2;

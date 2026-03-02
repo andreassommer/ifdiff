@@ -22,8 +22,7 @@ t = solveODE_backtrackChattering(datahandle);
 % determine the signatures involved
 signatures = chatteringGetSignatures(datahandle, t);
 
-% TODO: How should the index of the chattering ctrlif be determined? For now assume last ctrlif is chattering.
-sliding_index = datahandle.getData().SWP_detection.switchingIndices(end);
+sliding_index = datahandle.getData().SWP_detection.signatureSwitchIndex(end);
 % Ensure that first signature has non-negative switching function value, i.e. switchCond is 1/true
 if signatures(1).switchCond(sliding_index) ~= 1
     % Need to swap.
@@ -34,12 +33,7 @@ end
 solveODE_cutSteps_solution_until_t2(datahandle, t)
 
 data = datahandle.getData();
-
-% get the chattering switch's switching function:
-% We ensured there was only a single switch active during chattering,
-% so we just pick the switching function of the last switching event.
-% TODO: Is that assumption actually valid?
-switchingFunction = data.SWP_detection.switchingfunctionhandles{end};
+switchingFunction = data.SWP_detection.switchingFunction{end};
 
 filippov_rhs = @(datahandle, t, y, p) slidingFilippovRHS_oneSwitch(datahandle, signatures, switchingFunction, t, y, p);
 

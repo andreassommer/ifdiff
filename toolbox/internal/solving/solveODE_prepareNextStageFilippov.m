@@ -37,6 +37,7 @@ swp.x2 = {x, x};
 % Therefore, just use the last integration step (where the exit was first detected).
 swp.switchingpoints{end + 1} = t;
 swp.switchingFunction(end + 1) = swp.switchingFunction(end);
+swp.signatureSwitchIndex(end + 1) = swp.signatureSwitchIndex(end);
 
 % Assume no jumps in Filippov sliding mode.
 swp.jumpFunction{end + 1} = [];
