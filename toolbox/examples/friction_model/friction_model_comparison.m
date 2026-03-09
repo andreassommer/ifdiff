@@ -18,7 +18,7 @@
 % Solver setup
 integrator = @ode45;
 optionsOde = odeset('AbsTol', 1e-20, 'RelTol', 1e-6);
-optionsSens = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
+optionsSens = odeset('AbsTol', 1e-10, 'RelTol', 1e-10);
 % Model setup
 tspan = [0, 30];
 y0 = [1.133944669704; 0];
@@ -98,15 +98,63 @@ title(slidingAxSol, [titleSol, ' (Sliding Mode)'], 'FontSize', fontszTitle);
 
 %% Compute sensitivities for model with sliding mode
 %TODO
+fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(slidingRhs));
+slidingFDstep = generateFDstep(dimY, dimP);
+warnChatteringState = warning('off', warnChatteringId);
+try
+    slidingSensFun = generateSensitivityFunction( ...
+        slidingDatahandle, slidingSol, slidingFDstep, 'integrator_options', optionsSens);
+    slidingSens = slidingSensFun(tplot);
+catch ME
+    warning(warnChatteringState);
+    rethrow(ME);
+end
+warning(warnChatteringState);
+fprintf('Finished computing sensitivities.\n');
+
+%% Plot sensitivities for model with sliding mode
+slidingFigSens = figure;
+slidingTilesSens = tiledlayout(slidingFigSens, dimY, dimY);
+slidingGy = zeros(dimY, dimY, length(tplot));
+for row=1:dimY
+    for col=1:dimY
+        slidingGy(row, col, :) = arrayfun(@(x) x.Gy(row, col), slidingSens);
+        slidingAxSens = nexttile(slidingTilesSens);
+        scatter(slidingAxSens, tplot, squeeze(slidingGy(row, col, :)), ...
+            'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
+        slidingSensTitle = sprintf('Gy%d%d filippov', row, col);
+        setupPlotDefaults(slidingAxSens, slidingSol, 0, {slidingSensTitle});
+        ylabel(slidingAxSens, slidingSensTitle, 'FontSize', fontszLabel);
+        title(slidingAxSens, slidingSensTitle, 'FontSize', fontszTitle);
+    end
+end
 
 %% Plot difference in solution between models
 absDiffY = abs(slidingYplot - noSlidingYplot);
 figDiff = figure;
 axDiff = axes(figDiff);
 semilogy(axDiff, tplot, absDiffY', 'LineWidth', lw);
-setupPlotDefaults(axDiff, slidingSol, epsilon, {'Diff Position', 'Diff Velocity'});
+setupPlotDefaults(axDiff, noSlidingSol, epsilon, {'Diff Position', 'Diff Velocity'});
 ylabel(axDiff, 'Absolute Difference', 'FontSize', fontszLabel);
 title(axDiff, 'Difference of sliding mode and non sliding mode solutions', 'FontSize', fontszTitle);
+
+%% Plot difference in sensitivities between models
+absDiffGy = abs(slidingGy - noSlidingGy);
+figDiffG = figure;
+diffTilesSens = tiledlayout(figDiffG, dimY, dimY);
+for row=1:dimY
+    for col=1:dimY
+        slidingAxDiffSens = nexttile(diffTilesSens);
+        scatter(slidingAxDiffSens, tplot, squeeze(absDiffGy(row, col, :)), ...
+            'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
+        set(slidingAxDiffSens, 'YScale', 'log');
+        slidingSensTitle = sprintf('Gy%d%d difference', row, col);
+        setupPlotDefaults(slidingAxDiffSens, slidingSol, 0, {slidingSensTitle});
+        ylabel(slidingAxDiffSens, slidingSensTitle, 'FontSize', fontszLabel);
+        title(slidingAxDiffSens, slidingSensTitle, 'FontSize', fontszTitle);
+    end
+end
+
 
 %% Plot switching function
 titleSwitchingFunction = 'Evolution of first switching condition';
