@@ -12,6 +12,9 @@ tmp/
 # Compiled MEX binaries (all platforms)
 *.mex*
 
+# Matlab binaries e.g. matrix files
+*.mat
+
 # Packaged app and toolbox files
 *.mlappinstall
 *.mltbx
