@@ -2,218 +2,194 @@
 % paper by: R. Leine, D. van Campen, A. de Kraker, and L. van den Steen
 % doi: 10.1023/A:1008289604683
 
-% The system describes dry friction of a spring suspended weight sitting on a 
+% The system describes dry friction of a spring suspended weight sitting on a
 % constantly moving conveyor belt. The weight moves along with the belt
 % until spring tension becomes too high and the weight is pushed back.
-% This creates a switched periodic motion. 
+% This creates a switched periodic motion.
 
 % The corresponding ODE can be formulated in a filippov and non-filippov
 % variant and serves as a perfect example to test the accuracy of not only
 % the filippov integration but also the resulting sensitivities.
 
-% Both formulations can be found in "Numerical Solution of Optimal Control 
+% Both formulations can be found in "Numerical Solution of Optimal Control
 % Problems with Explicit and Implicit Switches" by Andreas Meyer
 % chapter: 15.3
 
+% Solver setup
 integrator = @ode45;
-t0 = 0;
-tf = 30;
-timeinterval = [t0,tf];
-initstates   = [1.133944669704  0 ];
-p(1) = 1.0;   %k
-p(2) = 1.0;   %m
-p(3) = 0.2;   %mu_b
-p(4) = 1;     %F_s
-p(5) = 3;     %delta
+optionsOde = odeset('AbsTol', 1e-20, 'RelTol', 1e-6);
+optionsSens = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
+% Model setup
+tspan = [0, 30];
+y0 = [1.133944669704; 0];
+k       = 1;
+m       = 1;
+mu_b    = 0.2;
+F_s     = 1;
+delta   = 3;
 epsilon = 1e-11;
-p(6) = epsilon; %epsilon
+p = [k, m, mu_b, F_s, delta, epsilon];
+% Plot setup
+tstep = 0.01;
+tplot = tspan(1):tstep:tspan(end);
+lw = 2;
+fontszLabel = 12;
+fontszTitle = 14;
+legendSol = {'Position of Weight', 'Velocity of Weight'};
+titleSol = 'ODE Solution to Friction Model';
 
-% saving current warning state for filippov detection (then turn off warning)
-initial_filippov_warning_state = warning('query', 'IFDIFF:chattering').state;
-warning('off', 'IFDIFF:chattering');
+%% Solving the friction model variant without sliding mode
+noSlidingRhs = @friction_RHS_no_filippov;
+[noSlidingSol, noSlidingDatahandle] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
 
-%% Solving the friction model variant without filippov mode
-% preprocessing
-fprintf('Preprocessing...\n  ');
-odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-6);
-filename = 'friction_RHS_no_filippov';
-dhandle = prepareDatahandleForIntegration(filename, 'integrator', integrator, 'options', odeoptions);
-fprintf('Done, now integrate...\n');
+%% Plot solution for model without sliding mode
+noSlidingYplot = deval(noSlidingSol, tplot);
+noSlidingFigSol = figure;
+noSlidingAxSol = axes(noSlidingFigSol);
+plot(noSlidingAxSol, tplot, noSlidingYplot', 'LineWidth', lw);
+setupPlotDefaults(noSlidingAxSol, noSlidingSol, 0, legendSol);
+title(noSlidingAxSol, titleSol, 'FontSize', fontszTitle);
 
-% integrate
+%% Compute sensitivities for model without sliding mode
+fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(noSlidingRhs));
+FDstep = generateFDstep(length(y0), length(p));
+warnChatteringState = warning('off', warnChatteringId);
 try
-    sol_no_filippov = solveODE(dhandle, timeinterval, initstates, p);
+    noSlidingSensFun = generateSensitivityFunction( ...
+        noSlidingDatahandle, noSlidingSol, FDstep, 'integrator_options', optionsSens);
+    noSlidingSens = noSlidingSensFun(tplot);
 catch ME
-    warning(initial_filippov_warning_state, 'IFDIFF:chattering');
-    warning('Problem integrating model variant wihtout filippov behaviour...');
-    rethrow(ME);
-end
-fprintf('Done \n');
-
-% results
-T = t0:0.01:tf;
-Y_no_fil = deval(sol_no_filippov, T);
-
-figure(1); hold on; box on;
-
-integrator_steps_marker_vals = zeros(length(sol_no_filippov.x));
-
-plot(T, Y_no_fil(1,:), 'LineWidth', 2);
-plot(T, Y_no_fil(2,:), 'LineWidth', 2);
-plot(sol_no_filippov.x, integrator_steps_marker_vals, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
-xline(sol_no_filippov.switches, '--r', 'LineWidth', 1.5);
-
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('States', 'FontSize', 12);
-title('ODE Solution to Friction Model', 'FontSize', 14);
-
-legend({'Position of Weight','Velocity of Weight'}, 'Location', 'best');
-grid on;
-
-set(gca, 'FontSize', 12, 'LineWidth', 1.2);
-
-%% Computing VDE-sensitivities
-
-dim_y = size(sol_no_filippov.y, 1);
-dim_p = length(p);
-FDstep = generateFDstep(dim_y, dim_p);
-integrator_options = odeset('AbsTol', 1e-14, 'RelTol', 1e-12);
-try
-    sensitivities_function_VDE = generateSensitivityFunction(dhandle, sol_no_filippov, FDstep, 'integrator_options', integrator_options);
-    sens = sensitivities_function_VDE(T);
-catch ME
-    warning(initial_filippov_warning_state, 'IFDIFF:chattering');
-    warning('Problem with sensitivities in model variant wihtout filippov behaviour...');
+    warning(warnChatteringState);
     rethrow(ME)
 end
-Gy11 = arrayfun(@(x) x.Gy(1, 1), sens);
-Gy12 = arrayfun(@(x) x.Gy(1, 2), sens);
-Gy21 = arrayfun(@(x) x.Gy(2, 1), sens);
-Gy22 = arrayfun(@(x) x.Gy(2, 2), sens);
+warning(warnChatteringState);
+fprintf('Finished computing sensitivities.\n');
 
-figure(500); box on;
+%% Plot sensitivities for model without filippov
+noSlidingFigSens = figure;
+plotSensitivityAll(noSlidingFigSens, noSlidingSens, noSlidingSol);
 
-Gy = {Gy11, Gy12, Gy21, Gy22};
-names = {'Gy11','Gy12','Gy21','Gy22'};
+%% Solving the friction model variant with sliding mode
+slidingRhs = @friction_RHS_filippov;
+[slidingSol, slidingDatahandle] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
 
-% plot the sensitivities w.r.t. the initial states
-for k = 1:4
-    subplot(2,2,k)
-    hold on
-    
-    scatter(T, Gy{k}, 'LineWidth',0.5,'Color',[0 0.5 0],'Marker','.')
-    plot(sol_no_filippov.x, integrator_steps_marker_vals, 'rx','MarkerSize',8,'LineWidth',1,'Color',[0 0 0.5])
+%% Plot solution for model with sliding mode
+slidingYplot = deval(slidingSol, tplot);
+slidingFigSol = figure;
+slidingAxSol = axes(slidingFigSol);
+plot(slidingAxSol, tplot, slidingYplot', 'LineWidth', lw);
+setupPlotDefaults(slidingAxSol, slidingSol, 0, legendSol);
+title(slidingAxSol, [titleSol, ' (Sliding Mode)'], 'FontSize', fontszTitle);
 
-    xline(sol_no_filippov.switches,'--r','LineWidth',1.5);
+%% Compute sensitivities for model with sliding mode
+%TODO
 
-    xlabel('Time (s)','FontSize',12)
-    ylabel(names{k},'FontSize',12)
-    title(names{k},'FontSize',14)
-    legend(names{k},'Location','best')
-    grid on
-    set(gca,'FontSize',12,'LineWidth',1.2)
-end
+%% Plot difference in solution between models
+absDiffY = abs(slidingYplot - noSlidingYplot);
+figDiff = figure;
+axDiff = axes(figDiff);
+semilogy(axDiff, tplot, absDiffY', 'LineWidth', lw);
+setupPlotDefaults(axDiff, slidingSol, epsilon, {'Diff Position', 'Diff Velocity'});
+ylabel(axDiff, 'Absolute Difference', 'FontSize', fontszLabel);
+title(axDiff, 'Difference of sliding mode and non sliding mode solutions', 'FontSize', fontszTitle);
+
+%% Plot switching function
+titleSwitchingFunction = 'Evolution of first switching condition';
+nu_rel = (noSlidingYplot(2,:) - mu_b);
+figSwitchingFunction = figure;
+tilesSwitchingFunction = tiledlayout(figSwitchingFunction, 2, 1);
+axSwitchingFunction = nexttile(tilesSwitchingFunction);
+scatter(axSwitchingFunction, tplot, nu_rel, 'LineWidth', 0.5, 'Marker', '.');
+setupPlotDefaults(axSwitchingFunction, slidingSol, 0, {'\nu_{rel}'});
+ylabel(axSwitchingFunction, '\nu_{rel} (switching function)', 'FontSize', fontszLabel);
+title(axSwitchingFunction, titleSwitchingFunction, 'FontSize', fontszTitle);
+% Zoomed in version
+axSwitchingFunctionZoomed = copyobj([axSwitchingFunction, legend(axSwitchingFunction)], tilesSwitchingFunction);
+axSwitchingFunctionZoomed(1).Layout.Tile = 2;
+% Copy text separately due to fontsize bug
+axSwitchingFunctionZoomed(1).XLabel = copyobj(axSwitchingFunction.XLabel, axSwitchingFunctionZoomed(1));
+axSwitchingFunctionZoomed(1).YLabel = copyobj(axSwitchingFunction.YLabel, axSwitchingFunctionZoomed(1));
+ylim(axSwitchingFunctionZoomed(1), [-2*epsilon, 2*epsilon]);
+title(axSwitchingFunctionZoomed(1), [titleSwitchingFunction, ' (Zoomed)'], 'FontSize', fontszTitle);
 
 
-%% Solving the friction model variant with filippov mode
-% preprocessing
-fprintf('Preprocessing...\n  ');
-filenamefil = 'friction_RHS_filippov';
-dhandle_filippov = prepareDatahandleForIntegration(filenamefil, 'integrator', integrator, 'options', odeoptions);
-fprintf('Done, now integrate...\n');
+%% Helpers
+function [sol, datahandle] = solveWithIFDIFF(rhs, int, opts, tspan, x0, p)
+fprintf('Preprocessing %s ...\n', func2str(rhs));
+datahandle = prepareDatahandleForIntegration(rhs, 'integrator', int, 'options', opts);
+fprintf('Finished preprocessing, now integrating ...\n');
 
-% integrate
+warnState = warning('off', warnChatteringId);
 try
-    sol_filippov = solveODE(dhandle_filippov, timeinterval, initstates, p);
+    sol = solveODE(datahandle, tspan, x0, p);
 catch
-    warning(initial_filippov_warning_state, 'IFDIFF:chattering');
-    warning('Problem integrating model variant wiht filippov behaviour...');
+    warning(warnState);
     rethrow(ME);
 end
-fprintf('Done \n');
+warning(warnState);
 
-% results
-T = t0:0.01:tf;
-Y_filippov = deval(sol_filippov, T);
+fprintf('Finished integrating.\n');
+end
 
-figure(2); hold on; box on;
+function id = warnChatteringId
+id = 'IFDIFF:chattering';
+end
 
-integrator_steps_marker_fil = zeros(length(sol_filippov.x));
+function setupPlotDefaults(ax, sol, intStepHeight, legendEntries)
+hold(ax, 'on');
+box(ax, 'on');
+grid(ax, 'on');
 
-plot(T, Y_filippov(1,:), 'LineWidth', 2);
-plot(T, Y_filippov(2,:), 'LineWidth', 2);
-plot(sol_filippov.x, integrator_steps_marker_fil, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
+plotIntegratorSteps(ax, sol.x, intStepHeight);
+plotSwitches(ax, sol.switches);
 
-xline(sol_filippov.switches, '--r', 'LineWidth', 1.5);
+fontsz = 12;
+set(ax, 'FontSize', fontsz, 'LineWidth', 1.2);
+xlabel(ax, 'Time (s)', 'FontSize', fontsz);
+ylabel(ax, 'States', 'FontSize', fontsz);
+legend(ax, [legendEntries, {'Integrator Steps', 'Switches'}], 'Location', 'best');
 
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('States', 'FontSize', 12);
-title('ODE Solution to Friction Model (Filippov)', 'FontSize', 14);
+hold(ax, 'off');
+end
 
-legend({'Position of Weight','Velocity of Weight'}, 'Location', 'best');
-grid on;
+function plotIntegratorSteps(ax, t, y)
+plot(ax, t, y .* ones(1, length(t)), ...
+    'x', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5], 'DisplayName', 'Integrator Steps');
+end
 
-set(gca, 'FontSize', 12, 'LineWidth', 1.2);
+function plotSwitches(ax, t)
+xline(ax, t, '--r', 'LineWidth', 1.5, 'DisplayName', 'Switches');
+end
 
-%% Compute filippov sensitivities
-% to do
+function plotSensitivity(ax, t, Gy, sol, name)
+hold(ax, 'on');
+box(ax, 'on');
+grid(ax, 'on');
+% Plot sensitivity
+scatter(ax, t, Gy, 'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
+plotIntegratorSteps(ax, sol.x, 0);
+plotSwitches(ax, sol.switches);
+% Label plot
+fontsz = 12;
+set(ax, 'FontSize', fontsz, 'LineWidth', 1.2);
+title(ax, name, 'FontSize', 14);
+xlabel(ax, 'Time (s)', 'FontSize', fontsz);
+ylabel(ax, name, 'FontSize', fontsz);
+legend(ax, {name, 'Integrator Steps', 'Switches'}, 'Location', 'best');
 
-%% creating difference plot
+hold(ax, 'off');
+end
 
-figure(3); hold on; box on;
-
-integrator_steps_marker_fil = epsilon * ones(length(sol_filippov.x));
-fildiff = abs(Y_filippov - Y_no_fil);
-
-plot(T, fildiff(1,:), T, fildiff(2,:), 'LineWidth', 2);
-plot(sol_filippov.x, integrator_steps_marker_fil, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
-
-xline(sol_no_filippov.switches, '--r', 'LineWidth', 1.5);
-
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('Difference', 'FontSize', 12);
-title('Difference of filippov and non-filippov integrations', 'FontSize', 14);
-
-legend({'Diff Position','Diff Velocity'}, 'Location', 'best');
-grid on;
-
-set(gca, 'FontSize', 12, 'LineWidth', 1.2, 'YScale', 'log');
-
-%% Display of the switching functions
-
-nu_rel = (Y_no_fil(2,:) - p(3));
-
-figure(4); 
-subplot(2, 1, 1); hold on; box on;
-
-scatter(T, nu_rel, 'LineWidth', 0.5, Marker='.');
-plot(sol_filippov.x, 0, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
-
-xline(sol_no_filippov.switches, '--r', 'LineWidth', 1.5);
-
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('\nu_{rel} (switching function)', 'FontSize', 12);
-title('Evolution of first switching condition', 'FontSize', 14);
-
-legend({'\nu_{rel}'}, 'Location', 'best');
-grid on;
-
-set(gca, 'FontSize', 12, 'LineWidth', 1.2);
-
-subplot(2, 1, 2); hold on; box on;
-
-scatter(T, nu_rel, 'LineWidth', 0.5, Marker='.');
-plot(sol_filippov.x, 0, 'rx', 'MarkerSize', 8, 'LineWidth', 1, 'Color', [0, 0, 0.5]);
-
-xline(sol_no_filippov.switches, '--r', 'LineWidth', 1.5);
-
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('\nu_{rel} (switching function)', 'FontSize', 12);
-title('Evolution of first switching condition', 'FontSize', 14);
-ylim([-2 * epsilon 2 * epsilon]);
-legend({'\nu_{rel}'}, 'Location', 'best');
-grid on;
-set(gca, 'FontSize', 12, 'LineWidth', 1.2);
-
-% return warining state to what it was before running the code
-warning(initial_filippov_warning_state, 'IFDIFF:chattering');
+function plotSensitivityAll(fig, sens, sol)
+t = [sens.t];
+dimY = size(sens(1).Gy, 1);
+tiles = tiledlayout(fig, dimY, dimY);
+for row=1:dimY
+    for col=1:dimY
+        Gy = arrayfun(@(x) x.Gy(row, col), sens);
+        ax = nexttile(tiles);
+        name = sprintf('Gy%d%d', row, col);
+        plotSensitivity(ax, t, Gy, sol, name);
+    end
+end
+end
