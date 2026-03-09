@@ -29,6 +29,8 @@ F_s     = 1;
 delta   = 3;
 epsilon = 1e-11;
 p = [k, m, mu_b, F_s, delta, epsilon];
+dimY = length(y0);
+dimP = length(p);
 % Plot setup
 tstep = 0.01;
 tplot = tspan(1):tstep:tspan(end);
@@ -52,7 +54,7 @@ title(noSlidingAxSol, titleSol, 'FontSize', fontszTitle);
 
 %% Compute sensitivities for model without sliding mode
 fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(noSlidingRhs));
-FDstep = generateFDstep(length(y0), length(p));
+FDstep = generateFDstep(dimY, dimP);
 warnChatteringState = warning('off', warnChatteringId);
 try
     noSlidingSensFun = generateSensitivityFunction( ...
@@ -65,9 +67,22 @@ end
 warning(warnChatteringState);
 fprintf('Finished computing sensitivities.\n');
 
-%% Plot sensitivities for model without filippov
+%% Plot sensitivities for model without sliding mode
 noSlidingFigSens = figure;
-plotSensitivityAll(noSlidingFigSens, noSlidingSens, noSlidingSol);
+noSlidingTilesSens = tiledlayout(noSlidingFigSens, dimY, dimY);
+noSlidingGy = zeros(dimY, dimY, length(tplot));
+for row=1:dimY
+    for col=1:dimY
+        noSlidingGy(row, col, :) = arrayfun(@(x) x.Gy(row, col), noSlidingSens);
+        noSlidingAxSens = nexttile(noSlidingTilesSens);
+        scatter(noSlidingAxSens, tplot, squeeze(noSlidingGy(row, col, :)), ...
+            'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
+        noSlidingSensTitle = sprintf('Gy%d%d', row, col);
+        setupPlotDefaults(noSlidingAxSens, noSlidingSol, 0, {noSlidingSensTitle});
+        ylabel(noSlidingAxSens, noSlidingSensTitle, 'FontSize', fontszLabel);
+        title(noSlidingAxSens, noSlidingSensTitle, 'FontSize', fontszTitle);
+    end
+end
 
 %% Solving the friction model variant with sliding mode
 slidingRhs = @friction_RHS_filippov;
@@ -159,37 +174,4 @@ end
 
 function plotSwitches(ax, t)
 xline(ax, t, '--r', 'LineWidth', 1.5, 'DisplayName', 'Switches');
-end
-
-function plotSensitivity(ax, t, Gy, sol, name)
-hold(ax, 'on');
-box(ax, 'on');
-grid(ax, 'on');
-% Plot sensitivity
-scatter(ax, t, Gy, 'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
-plotIntegratorSteps(ax, sol.x, 0);
-plotSwitches(ax, sol.switches);
-% Label plot
-fontsz = 12;
-set(ax, 'FontSize', fontsz, 'LineWidth', 1.2);
-title(ax, name, 'FontSize', 14);
-xlabel(ax, 'Time (s)', 'FontSize', fontsz);
-ylabel(ax, name, 'FontSize', fontsz);
-legend(ax, {name, 'Integrator Steps', 'Switches'}, 'Location', 'best');
-
-hold(ax, 'off');
-end
-
-function plotSensitivityAll(fig, sens, sol)
-t = [sens.t];
-dimY = size(sens(1).Gy, 1);
-tiles = tiledlayout(fig, dimY, dimY);
-for row=1:dimY
-    for col=1:dimY
-        Gy = arrayfun(@(x) x.Gy(row, col), sens);
-        ax = nexttile(tiles);
-        name = sprintf('Gy%d%d', row, col);
-        plotSensitivity(ax, t, Gy, sol, name);
-    end
-end
 end
