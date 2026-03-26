@@ -1,33 +1,35 @@
-%% Source: Stick-Slip Vibrations Induced by Alternate Friction Models
-% paper by: R. Leine, D. van Campen, A. de Kraker, and L. van den Steen
-% doi: 10.1023/A:1008289604683
-
-% The system describes dry friction of a spring suspended weight sitting on a
-% constantly moving conveyor belt. The weight moves along with the belt
-% until spring tension becomes too high and the weight is pushed back.
-% This creates a switched periodic motion.
-
+%% Comparison of two formulations of stick slip vibrations using ifdiff
 % The corresponding ODE can be formulated in a filippov and non-filippov
 % variant and serves as a perfect example to test the accuracy of not only
 % the filippov integration but also the resulting sensitivities.
-
+%
+% Both formulations of the system describe dry friction of a spring 
+% suspended weight sitting on a constantly moving conveyor belt. The 
+% weight moves along with the belt until spring tension becomes too high 
+% and the weight is pushed back. This creates a switched periodic motion.
+%
+% Source: Stick-Slip Vibrations Induced by Alternate Friction Models
+% paper by: R. Leine, D. van Campen, A. de Kraker, and L. van den Steen
+% doi: 10.1023/A:1008289604683
+%
 % Both formulations can be found in "Numerical Solution of Optimal Control
 % Problems with Explicit and Implicit Switches" by Andreas Meyer
 % chapter: 15.3
 
 % Solver setup
-integrator = @ode45;
-optionsOde = odeset('AbsTol', 1e-20, 'RelTol', 1e-6);
+integrator = @ode15s;
+optionsOde = odeset('AbsTol', 1e-10, 'RelTol', 1e-6);
 optionsSens = odeset('AbsTol', 1e-10, 'RelTol', 1e-10);
 % Model setup
 tspan = [0, 30];
-y0 = [1.133944669704; 0];
+%y0 = [1.133944669704; 0]; % starts in maximal value of system
+y0 = [1, 0];
 k       = 1;
 m       = 1;
 mu_b    = 0.2;
 F_s     = 1;
 delta   = 3;
-epsilon = 1e-11;
+epsilon = 1e-10;
 p = [k, m, mu_b, F_s, delta, epsilon];
 dimY = length(y0);
 dimP = length(p);
@@ -56,6 +58,7 @@ title(noSlidingAxSol, titleSol, 'FontSize', fontszTitle);
 fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(noSlidingRhs));
 FDstep = generateFDstep(dimY, dimP);
 warnChatteringState = warning('off', warnChatteringId);
+tStart = tic;
 try
     noSlidingSensFun = generateSensitivityFunction( ...
         noSlidingDatahandle, noSlidingSol, FDstep, 'integrator_options', optionsSens);
@@ -64,8 +67,9 @@ catch ME
     warning(warnChatteringState);
     rethrow(ME)
 end
+tEnd = toc(tStart);
 warning(warnChatteringState);
-fprintf('Finished computing sensitivities.\n');
+fprintf('Finished computing sensitivities. Took %.4f seconds.\n', tEnd);
 
 %% Plot sensitivities for model without sliding mode
 noSlidingFigSens = figure;
@@ -101,6 +105,7 @@ title(slidingAxSol, [titleSol, ' (Sliding Mode)'], 'FontSize', fontszTitle);
 fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(slidingRhs));
 slidingFDstep = generateFDstep(dimY, dimP);
 warnChatteringState = warning('off', warnChatteringId);
+tStart = tic;
 try
     slidingSensFun = generateSensitivityFunction( ...
         slidingDatahandle, slidingSol, slidingFDstep, 'integrator_options', optionsSens);
@@ -109,8 +114,9 @@ catch ME
     warning(warnChatteringState);
     rethrow(ME);
 end
+tEnd = toc(tStart);
 warning(warnChatteringState);
-fprintf('Finished computing sensitivities.\n');
+fprintf('Finished computing sensitivities. Took %.4f seconds.\n', tEnd);
 
 %% Plot sensitivities for model with sliding mode
 slidingFigSens = figure;
@@ -183,15 +189,17 @@ datahandle = prepareDatahandleForIntegration(rhs, 'integrator', int, 'options', 
 fprintf('Finished preprocessing, now integrating ...\n');
 
 warnState = warning('off', warnChatteringId);
+tStart = tic;
 try
     sol = solveODE(datahandle, tspan, x0, p);
 catch
     warning(warnState);
     rethrow(ME);
 end
+tEnd = toc(tStart);
 warning(warnState);
 
-fprintf('Finished integrating.\n');
+fprintf('Finished integrating. Took %.4f seconds\n', tEnd);
 end
 
 function id = warnChatteringId
