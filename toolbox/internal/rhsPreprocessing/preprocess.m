@@ -15,6 +15,9 @@ preprocessed.rhs = cell(4,1);
 preprocessed.rhs{1,1} = filename;
 preprocessed.rhs{2,1} = [config.preprocessedRhsNamePrefix, filename];
 preprocessed.rhs{3,1} = mtreeplus(strcat(filename, '.m'), '-file', '-comments');
+% Before we do any mtree analysis or modifications, replace all elseif blocks by else-if blocks.
+% Note: This operation preserves if/elseif ignore comments.
+preprocessed.rhs{3,1} = mtree_replaceElseif(preprocessed.rhs{3,1});
 preprocessed.rhs{4,1} = [mtree_getIgnoredIfs(preprocessed.rhs{3,1}) mtree_getJumpUpdateIgnores(preprocessed.rhs{3,1})];
 
 % get all paths that are required to execute filename.m (we want to
