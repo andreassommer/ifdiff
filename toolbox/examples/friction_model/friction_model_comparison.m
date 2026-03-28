@@ -101,7 +101,6 @@ setupPlotDefaults(slidingAxSol, slidingSol, 0, legendSol);
 title(slidingAxSol, [titleSol, ' (Sliding Mode)'], 'FontSize', fontszTitle);
 
 %% Compute sensitivities for model with sliding mode
-%TODO
 fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(slidingRhs));
 slidingFDstep = generateFDstep(dimY, dimP);
 warnChatteringState = warning('off', warnChatteringId);
