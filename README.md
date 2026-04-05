@@ -1,3 +1,13 @@
+# Workshop: Thursday, July 09, 2026
+## Filippov-ODEs and DAEs with State-dependent Switches
+
+**Theory and Hands-On Practical with IFDIFF**
+**Thursday, July 09, 2026**
+
+Time: 9–16h • Place: CIP Pool 1 & 2 • 3rd Floor • Mathematikon
+Im Neuenheimer Feld 205 • 69120 Heidelberg and **Online**
+
+Participation is free. Registration will be open soon!
 # IFDIFF - A MATLAB Toolkit for ODEs with State˗Dependent Switches
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
 
