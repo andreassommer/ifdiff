@@ -5,7 +5,7 @@
 
 **Thursday, July 09, 2026 • 9:00–16:00**
 
-Mathematikon • CIP Pools 3rd Floor • and **Online**
+Mathematikon • CIP Pools 3rd Floor • and **Online**  
 Im Neuenheimer Feld 205 • 69120 Heidelberg
 
 Participation is free. [Register here!](https://t1p.de/ifdiff2026)
