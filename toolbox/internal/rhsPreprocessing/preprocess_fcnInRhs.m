@@ -19,7 +19,8 @@ occursUnignored              = zeros(1, l);
 for i = 1:l
     
     mtree_fcn = mtreeplus([preprocessed.fcn{1,i}, '.m'], '-file', '-comments');
-
+    % First, replace elseif by else-if
+    mtree_fcn = mtree_replaceElseif(mtree_fcn);
     fcn{4,i} = [mtree_getIgnoredIfs(mtree_fcn), mtree_getJumpUpdateIgnores(mtree_fcn)];
     [mtree_fcn, ctrlif_new] = preprocess_addCtrlif(mtree_fcn, preprocessed.ctrlif_index, fcn{4,i});
 

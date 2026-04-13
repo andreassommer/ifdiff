@@ -20,7 +20,13 @@ function nodeIndices = mtree_getIgnoredIfs(mtreeobj)
             % search in the if body and every elseif/else body for more if nodes and add these to the list
             bodyIndex = mtreeobj.T(ifIndex, cIndex.indexLeftchild);
             while bodyIndex ~= 0
-                bodySubtree = Tree(select(mtreeobj, mtreeobj.T(bodyIndex, cIndex.indexRightchild)));
+                bodyContentStartIndex = mtreeobj.T(bodyIndex, cIndex.indexRightchild);
+                % Body of if/else may be empty
+                if bodyContentStartIndex == 0
+                    bodyIndex = mtreeobj.T(bodyIndex, cIndex.indexNextNode);
+                    continue
+                end
+                bodySubtree = Tree(select(mtreeobj, bodyContentStartIndex));
                 subtreeRIndex = mtree_rIndex(bodySubtree);
 
                 ifs  = getOrDefault(subtreeRIndex.BODY, 'IF', []);
