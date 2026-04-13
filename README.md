@@ -29,31 +29,45 @@ For a mathematical introduction and illustrative examples, see the
 
 A compact, self-explanatory MATLAB example is provided in this file. ([`Readme_Example.m`](./toolbox/examples/Readme_Example.m))
 
-
-</br>
-
-
 # Installation
 
-There are two ways to install IFDIFF.
+There are two ways to install IFDIFF locally. Alternatively, you may use IFDIFF without any local installation in the cloud-based "MATLAB Online" environment. In that case, simply press the "Open in MATLAB Online" button below to import the IFDIFF project in MATLAB Online.
 
-## Installation Method (Recommended)
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
 
-1. Download the current release file `IFDIFF_Toolbox.mltbx`.
-2. Open MATLAB and navigate to the directory containing the file.
-3. Right-click the file and select **Install**.
-4. For a detailed introduction, open `GettingStarted.mlx`, which is included with the toolbox.
+## Install Toolbox (Recommended)
 
-Note: You can also open the Getting Started guide directly in 
-[MATLAB Online](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx) and then continue with the [First Run Prerequisites](#first-run-prerequisites).
+1. Download the IFDIFF toolbox file (`IFDIFF_Toolbox_vXXX.mltbx`) from the [releases page](https://github.com/andreassommer/ifdiff/releases/latest).
+2. Open MATLAB and navigate to the directory containing the toolbox file.
+3. Install the toolbox file:
+    - From the GUI (recommended):
+        - **MATLAB R2025a or newer**: Double click the toolbox file in the MATLAB Files panel.
+        - **MATLAB R2024b or older**: Right-click the toolbox file in the MATLAB Current Folder browser and select **Install**.
 
-## Installation Method (Alternative)
+    - From the command window (alternative):
+        - **MATLAB R2016a or newer**: Run the following command in the MATLAB Command Window (after replacing the placeholder text `'IFDIFF_Toolbox_vXXX.mltbx'` with the actual name of your toolbox file):
+
+        ```MATLAB
+        matlab.addons.toolbox.installToolbox('IFDIFF_Toolbox_vXXX.mltbx');
+        ```
+
+4. For a detailed introduction to IFDIFF, view the Gettings Started Guide (`GettingStarted.mlx`). The guide should open automatically after installing the toolbox file from the GUI.  
+You can also open the guide manually:
+    - From the MATLAB Add-On Manager (recommended):
+        1. Open the MATLAB Add-On Manager (Home tab > Environment section > Add-Ons > Manage Add-Ons).
+        2. Find the "IFDIFF Toolbox" Add-On in the list of installed Add-Ons.
+        3. Open the context menu by right-clicking the "IFDIFF Toolbox" Add-On or clicking on the three dots that appear on the right when hovering over the "IFDIFF Toolbox" Add-On.
+        4. Click on the "View Getting Started Guide" button in the context menu.
+    - From the file browser (alternative):
+        1. Open the toolbox installation folder. See the [MATLAB Documentation on the Default Add-On Installation Folder](https://www.mathworks.com/help/matlab/matlab_env/get-add-ons.html#buy5hl8-1) for detailed instructions on how to find the installation folder.
+        2. In the toolbox folder, navigate to the subfolder `doc` and open the file `GettingStarted.mlx` in MATLAB.
+
+## Install Full Repository (Alternative)
 
 1. Navigate to a location of your choice on your PC (e.g. Desktop).
-2. Clone the repository `git clone https://github.com/andreassommer/ifdiff.git`
+2. Clone the repository `git clone https://github.com/andreassommer/ifdiff.git`.
 3. Open MATLAB and navigate to the cloned `ifdiff` directory.
-
-</br>
+4. For a detailed introduction to IFDIFF, open the Gettings Started Guide (`GettingStarted.mlx`) in MATLAB. You can find the guide in the subfolder `toolbox/doc` contained in the cloned `ifdiff` directory.
 
 # Usage
 
