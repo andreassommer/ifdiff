@@ -3,12 +3,13 @@
 
 **Theory and Hands-On Practical with IFDIFF**
 
-**Thursday, July 09, 2026**
+**Thursday, July 09, 2026 • 9:00–16:00**
 
-Time: 9–16h • CIP Pool 1 & 2 • 3rd Floor • Mathematikon
-Im Neuenheimer Feld 205 • 69120 Heidelberg • and **Online**
+Mathematikon • CIP Pools 3rd Floor • and **Online**
+Im Neuenheimer Feld 205 • 69120 Heidelberg
 
-Participation is free. Register here: https://t1p.de/ifdiff2026
+
+Participation is free. [Register here!](https://t1p.de/ifdiff2026)
 
 ![Poster](ifdiff-workshop-2026-poster.png)
 ![Program](ifdiff-workshop-2026-program.png)
