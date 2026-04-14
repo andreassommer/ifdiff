@@ -24,12 +24,12 @@ optionsSens = odeset('AbsTol', 1e-10, 'RelTol', 1e-10);
 tspan = [0, 30];
 %y0 = [1.133944669704; 0]; % starts in maximal value of system
 y0 = [1, 0];
-k       = 1;
-m       = 1;
-mu_b    = 0.2;
-F_s     = 1;
-delta   = 3;
-epsilon = 1e-10;
+k       = 1;      % spring constant
+m       = 1;      % mass
+mu_b    = 0.2;    % velocity relative to the conveyerbelt
+F_s     = 1;      % max static friction force
+delta   = 3;      % Physics constant
+epsilon = 1e-10;  % numerical zero parameter
 p = [k, m, mu_b, F_s, delta, epsilon];
 dimY = length(y0);
 dimP = length(p);
@@ -44,7 +44,7 @@ titleSol = 'ODE Solution to Friction Model';
 
 %% Solving the friction model variant without sliding mode
 noSlidingRhs = @friction_RHS_no_filippov;
-[noSlidingSol, noSlidingDatahandle] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
+[noSlidingSol, noSlidingDatahandle, dataNoFil] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
 
 %% Plot solution for model without sliding mode
 noSlidingYplot = deval(noSlidingSol, tplot);
@@ -89,8 +89,12 @@ for row=1:dimY
 end
 
 %% Solving the friction model variant with sliding mode
+configNew = makeConfig();
+configNew.storeSlidingInfo = true;
+configOld = makeConfig(configNew);
 slidingRhs = @friction_RHS_filippov;
-[slidingSol, slidingDatahandle] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+[slidingSol, slidingDatahandle, dataFil] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+makeConfig(configOld);
 
 %% Plot solution for model with sliding mode
 slidingYplot = deval(slidingSol, tplot);
@@ -180,9 +184,47 @@ axSwitchingFunctionZoomed(1).YLabel = copyobj(axSwitchingFunction.YLabel, axSwit
 ylim(axSwitchingFunctionZoomed(1), [-2*epsilon, 2*epsilon]);
 title(axSwitchingFunctionZoomed(1), [titleSwitchingFunction, ' (Zoomed)'], 'FontSize', fontszTitle);
 
+%% Plot alpha Parameter and check against analytical parameter
+t_alpha = dataFil.sliding.convexification.t;
+alpha = dataFil.sliding.convexification.alpha;
+figAlpha = figure;
+axAlpha = axes(figAlpha);
+hold(axAlpha, 'on');
+% compute analytical alphas
+slidingYForAlpha = deval(slidingSol, t_alpha);
+x1Sliding = slidingYForAlpha(1, :);
+alpha_anal = (F_s - k * x1Sliding) / (2 * F_s);
+alpha_anal_defined_areas = alpha_anal;
+alpha_anal_defined_areas(isnan(alpha)) = NaN;
+plot(axAlpha, t_alpha, alpha_anal, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], 'DisplayName', 'Analytical $\alpha$ (undefined regions)',LineStyle='--');
+plot(axAlpha, t_alpha, alpha_anal_defined_areas, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], 'DisplayName', 'Analytical $\alpha$');
+plot(axAlpha, t_alpha, alpha,'LineWidth', lw,'Color', [0.8500 0.9250 0.0980],'DisplayName', 'Numerical $\alpha$ (IFDIFF)');
+xlabel(axAlpha, 'Time t [s]', 'Interpreter', 'latex');
+ylabel(axAlpha, '$\alpha$', 'Interpreter', 'latex');
+title(axAlpha, 'Comparison of Analytical and Numerical $\alpha$ (analytical in terms of numerical sol obj)','Interpreter', 'latex');
+legend(axAlpha, 'Location', 'best', 'Interpreter', 'latex');
+grid(axAlpha, 'on');
+box(axAlpha, 'on');
+set(axAlpha, 'FontSize', 12, 'LineWidth', 1);
+
+%% Plot difference between analytical and numerical alpha
+alpha_diff = alpha - alpha_anal_defined_areas;
+
+figDiff = figure;
+axDiff = axes(figDiff);
+hold(axDiff, 'on');
+plot(axDiff, t_alpha, alpha_diff, 'LineWidth', lw, 'Color', [0.6350 0.0780 0.1840],'DisplayName', '$\alpha_{\mathrm{num}} - \alpha_{\mathrm{anal}}$');
+xlabel(axDiff, 'Time t [s]', 'Interpreter', 'latex');
+ylabel(axDiff, '$\Delta \alpha$', 'Interpreter', 'latex');
+title(axDiff, 'Difference between Numerical and Analytical $\alpha$', 'Interpreter', 'latex');
+legend(axDiff, 'Location', 'best', 'Interpreter', 'latex');
+grid(axDiff, 'on');
+box(axDiff, 'on');
+set(axDiff, 'FontSize', 12, 'LineWidth', 1);
+
 
 %% Helpers
-function [sol, datahandle] = solveWithIFDIFF(rhs, int, opts, tspan, x0, p)
+function [sol, datahandle, data] = solveWithIFDIFF(rhs, int, opts, tspan, x0, p)
 fprintf('Preprocessing %s ...\n', func2str(rhs));
 datahandle = prepareDatahandleForIntegration(rhs, 'integrator', int, 'options', opts);
 fprintf('Finished preprocessing, now integrating ...\n');
@@ -199,6 +241,7 @@ tEnd = toc(tStart);
 warning(warnState);
 
 fprintf('Finished integrating. Took %.4f seconds\n', tEnd);
+data = datahandle.getData();
 end
 
 function id = warnChatteringId
