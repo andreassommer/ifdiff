@@ -51,7 +51,7 @@ There are two ways to install IFDIFF locally. Alternatively, you may use IFDIFF 
         matlab.addons.toolbox.installToolbox('IFDIFF_Toolbox_vXXX.mltbx');
         ```
 
-4. For a detailed introduction to IFDIFF, view the Gettings Started Guide (`GettingStarted.mlx`). The guide should open automatically after installing the toolbox file from the GUI.  
+4. For a detailed introduction to IFDIFF, view the Getting Started Guide (`GettingStarted.mlx`). The guide should open automatically after installing the toolbox file from the GUI.  
 You can also open the guide manually:
     - From the MATLAB Add-On Manager (recommended):
         1. Open the MATLAB Add-On Manager (Home tab > Environment section > Add-Ons > Manage Add-Ons).
