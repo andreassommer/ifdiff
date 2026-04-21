@@ -18,19 +18,19 @@
 
 % Solver setup
 integrator = @ode15s;
-optionsOde = odeset('AbsTol', 1e-10, 'RelTol', 1e-6);
+optionsOde = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
 optionsSens = odeset('AbsTol', 1e-10, 'RelTol', 1e-10);
 % Model setup
 tspan = [0, 30];
 %y0 = [1.133944669704; 0]; % starts in maximal value of system
 y0 = [1, 0];
-k       = 1;      % spring constant
+k       = 0.9;      % spring constant
 m       = 1;      % mass
-mu_b    = 0.2;    % velocity relative to the conveyerbelt
-F_s     = 1;      % max static friction force
-delta   = 3;      % Physics constant
+v_b    = 0.2;    % velocity relative to the conveyerbelt
+F_s     = 1.2;      % max static friction force
+delta   = 3.2;      % Physics constant
 epsilon = 1e-10;  % numerical zero parameter
-p = [k, m, mu_b, F_s, delta, epsilon];
+p = [k, m, v_b, F_s, delta, epsilon];
 dimY = length(y0);
 dimP = length(p);
 % Plot setup
@@ -167,7 +167,7 @@ end
 
 %% Plot switching function
 titleSwitchingFunction = 'Evolution of first switching condition';
-nu_rel = (noSlidingYplot(2,:) - mu_b);
+nu_rel = (noSlidingYplot(2,:) - v_b);
 figSwitchingFunction = figure;
 tilesSwitchingFunction = tiledlayout(figSwitchingFunction, 2, 1);
 axSwitchingFunction = nexttile(tilesSwitchingFunction);
@@ -196,6 +196,8 @@ x1Sliding = slidingYForAlpha(1, :);
 alpha_anal = (F_s - k * x1Sliding) / (2 * F_s);
 alpha_anal_defined_areas = alpha_anal;
 alpha_anal_defined_areas(isnan(alpha)) = NaN;
+alpha_anal_defined_areas(alpha_anal_defined_areas > 1) = NaN;
+alpha_anal_defined_areas(alpha_anal_defined_areas < 0) = NaN;
 plot(axAlpha, t_alpha, alpha_anal, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], 'DisplayName', 'Analytical $\alpha$ (undefined regions)',LineStyle='--');
 plot(axAlpha, t_alpha, alpha_anal_defined_areas, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], 'DisplayName', 'Analytical $\alpha$');
 plot(axAlpha, t_alpha, alpha,'LineWidth', lw,'Color', [0.8500 0.9250 0.0980],'DisplayName', 'Numerical $\alpha$ (IFDIFF)');
@@ -213,7 +215,7 @@ alpha_diff = alpha - alpha_anal_defined_areas;
 figDiff = figure;
 axDiff = axes(figDiff);
 hold(axDiff, 'on');
-plot(axDiff, t_alpha, alpha_diff, 'LineWidth', lw, 'Color', [0.6350 0.0780 0.1840],'DisplayName', '$\alpha_{\mathrm{num}} - \alpha_{\mathrm{anal}}$');
+semilogx(axDiff, t_alpha, alpha_diff, 'LineWidth', lw, 'Color', [0.6350 0.0780 0.1840],'DisplayName', '$\alpha_{\mathrm{num}} - \alpha_{\mathrm{anal}}$');
 xlabel(axDiff, 'Time t [s]', 'Interpreter', 'latex');
 ylabel(axDiff, '$\Delta \alpha$', 'Interpreter', 'latex');
 title(axDiff, 'Difference between Numerical and Analytical $\alpha$', 'Interpreter', 'latex');
