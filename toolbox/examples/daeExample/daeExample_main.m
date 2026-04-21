@@ -15,12 +15,19 @@ datahandle = prepareDatahandleForIntegration('daeExampleRHS', 'integrator', inte
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
 sol_plain  = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_plain);
 
+%% Euler Solution Comparison
+h = 1e-6;
+newtonOpts.maxIter = 3;
+newtonOpts.tol = 1e-8;
+sol_euler = explicitEulerDAE(@(t,x,p) daeExampleRHS(t,x,p), tspan, x0, p, h, newtonOpts);
+
 %% Plots
 clf;
 fig1 = figure(01);
 hold on;
-IFDIFF_plot_1 = plot(sol_ifdiff.x, sol_ifdiff.y, 'ro--', 'DisplayName', 'IFDIFF'); 
-Plain_plot_1  = plot(sol_plain.x, sol_plain.y, 'ko-', 'DisplayName', 'plain ode15s');
+Euler_plot = plot(sol_euler.x, sol_euler.y, 'g-o', 'DisplayName', 'Explicit Euler');
+IFDIFF_plot_1 = plot(sol_ifdiff.x, sol_ifdiff.y, 'r*--', 'DisplayName', 'IFDIFF'); 
+Plain_plot_1  = plot(sol_plain.x, sol_plain.y, 'k*-', 'DisplayName', 'plain ode15s');
 Switch_plot   = xline(sol_ifdiff.switches, 'b', 'LineWidth', 1.0, 'DisplayName', 'Switch');
-legend([Plain_plot_1(1), IFDIFF_plot_1(1), Switch_plot]);
+legend([Plain_plot_1(1), IFDIFF_plot_1(1), Euler_plot(1), Switch_plot]);
 hold off;
