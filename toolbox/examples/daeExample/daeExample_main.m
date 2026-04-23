@@ -3,7 +3,7 @@
 
 %% Setup and integration
 integrator = @ode15s;
-x0         = [1; -1];
+x0         = [0.5; -0.5];
 tspan      = [0 5];
 M          = [1 0; 0 0];
 p          = -0.2;
@@ -14,6 +14,10 @@ opts_plain  = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-9, 'RelTol',
 datahandle = prepareDatahandleForIntegration('daeExampleRHS', 'integrator', integrator, 'options', opts_ifdiff);
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
 sol_plain  = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_plain);
+
+%% Explicit Euler for Comparison
+h = 1e-6;
+sol_euler = explicitEulerDAE(@(t,x,p) rlcRHS(t,x,p), 1, tspan, x0, p, h);
 
 %% Plots
 clf;
