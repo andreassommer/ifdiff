@@ -3,7 +3,7 @@
 
 %% Setup and integration
 integrator = @ode15s;
-x0         = [0.5; -0.5];
+x0         = [1; -1];
 tspan      = [0 5];
 M          = [1 0; 0 0];
 p          = -0.2;
@@ -17,7 +17,7 @@ sol_plain  = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_plain);
 
 %% Explicit Euler for Comparison
 h = 1e-6;
-sol_euler = explicitEulerDAE(@(t,x,p) rlcRHS(t,x,p), 1, tspan, x0, p, h);
+sol_euler = explicitEulerDAE(@(t,x,p) daeExampleRHS(t,x,p), 1, tspan, x0, p, h);
 
 %% Plots
 clf;
