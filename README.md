@@ -33,7 +33,7 @@ A compact, self-explanatory MATLAB example is provided in this file. ([`Readme_E
 
 ## Installation
 
-There are two ways to install IFDIFF locally. Alternatively, you may use IFDIFF without any local installation in the cloud-based "MATLAB Online" environment. In that case, simply press the "Open in MATLAB Online" button below to import the IFDIFF repository in MATLAB Online.
+There are two ways to install IFDIFF locally. Alternatively, you may use IFDIFF without any local installation in the cloud-based "MATLAB Online" environment. In that case, press the "Open in MATLAB Online" button below to import the IFDIFF repository in MATLAB Online.
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
 
@@ -75,7 +75,7 @@ You can also open the guide manually:
 
 For a step-by-step usage example and background explanation, see the [IFDIFF  project page](https://andreassommer.github.io/ifdiff/).
 
-Afterwards, you can check out our Getting Started Guide in MATLAB for a hands-on walkthrough on how to use IFDIFF. If you have trouble finding the Getting Started Guide, please refer to the last step of the [installation section](#installation) for [toolbox installations](#install-toolbox-recommended) or [full repository installations](#install-full-repository-alternative) (whichever applies in your case).
+Afterwards, you can check out the Getting Started Guide in MATLAB for a hands-on walkthrough on how to use IFDIFF. If you have trouble finding the Getting Started Guide, please refer to the last step of the [installation section](#installation) for [toolbox installations](#install-toolbox-recommended) or [full repository installations](#install-full-repository-alternative) (whichever applies in your case).
 
 ### Prerequisites
 
@@ -91,7 +91,7 @@ After running the command, you will receive a prompt in the Command Window askin
 
 #### On Each MATLAB Session (required only for non-toolbox installations)
 
-If you have not installed IFDIFF as a toolbox, then you must manually setup the MATLAB path to access IFDIFF functions on each MATLAB session before you can use IFDIFF. To do this, simply run the following command in the MATLAB Command Window:
+If you have not installed IFDIFF as a toolbox, then you must manually setup the MATLAB path to access IFDIFF functions on each MATLAB session before you can use IFDIFF. To do this, run the following command in the MATLAB Command Window:
 
 ```MATLAB
 initIFDIFF
