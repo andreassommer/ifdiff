@@ -196,8 +196,8 @@ x1Sliding = slidingYForAlpha(1, :);
 alpha_anal = (F_s - k * x1Sliding) / (2 * F_s);
 alpha_anal_defined_areas = alpha_anal;
 alpha_anal_defined_areas(isnan(alpha)) = NaN;
-alpha_anal_defined_areas(alpha_anal_defined_areas > 1) = NaN;
-alpha_anal_defined_areas(alpha_anal_defined_areas < 0) = NaN;
+alpha_anal_defined_areas(alpha_anal_defined_areas > 1) = NaN; % cut all values for alpha that are not viable for diff plot
+alpha_anal_defined_areas(alpha_anal_defined_areas < 0) = NaN; % this means values that are not between 0 and 1
 plot(axAlpha, t_alpha, alpha_anal, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], 'DisplayName', 'Analytical $\alpha$ (undefined regions)',LineStyle='--');
 plot(axAlpha, t_alpha, alpha_anal_defined_areas, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], 'DisplayName', 'Analytical $\alpha$');
 plot(axAlpha, t_alpha, alpha,'LineWidth', lw,'Color', [0.8500 0.9250 0.0980],'DisplayName', 'Numerical $\alpha$ (IFDIFF)');
@@ -221,6 +221,7 @@ ylabel(axDiff, '$\Delta \alpha$', 'Interpreter', 'latex');
 title(axDiff, 'Difference between Numerical and Analytical $\alpha$', 'Interpreter', 'latex');
 legend(axDiff, 'Location', 'best', 'Interpreter', 'latex');
 grid(axDiff, 'on');
+xlim(axDiff, t_alpha([1 end]));
 box(axDiff, 'on');
 set(axDiff, 'FontSize', 12, 'LineWidth', 1);
 
