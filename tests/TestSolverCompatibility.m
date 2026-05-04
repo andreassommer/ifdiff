@@ -183,6 +183,20 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-3);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
+        function testOde23sCanonex(testCase)
+            setCanonexParameters(testCase);
+            [~, sol] = solveWith(testCase, @ode23s);
+
+            testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-5);
+            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
+        end
+        function testOde23sSubway(testCase)
+            setSubwayParameters(testCase);
+            [~, sol] = solveWith(testCase, @ode23s);
+
+            testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-3);
+            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
+        end
 
     end
 
