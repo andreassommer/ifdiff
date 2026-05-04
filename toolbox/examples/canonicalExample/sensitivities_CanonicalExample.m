@@ -2,7 +2,7 @@
 
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);
+datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', integrator, 'options', odeoptionsrhs_test);
 
 tspan         = [0 20];
 initialvalues = [1;0];
@@ -40,7 +40,7 @@ sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, FDstep
 
 t_plot = 0:0.01:20;
 %sensitivities_END_plot = sensitivities_function_ENDpiecewise(t_plot);
-sensitivities_END_plot = sensitivities_function_VDE(t_plot);
+sensitivities_END_plot = sensitivities_function_VDE(t_plot); %correct?
 
 sensdata_y11 = arrayfun( @(x) x.Gy(1,1), sensitivities_END_plot);
 sensdata_y12 = arrayfun( @(x) x.Gy(1,2), sensitivities_END_plot);
