@@ -145,7 +145,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             [~, sol] = solveWith(testCase, @ode15s);
 
             testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
-            testCase.verifyEqual(sol.switches, testCase.expected_SWPS, "RelTol", 1e-5)
+            testCase.verifyEqual(sol.switches,  testCase.expected_SWPs, "RelTol", 1e-5)
         end 
         function testOde113Canonex(testCase)
             setCanonexParameters(testCase);
@@ -180,7 +180,13 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-3);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
+        function testOde23tDAE(testCase)
+            setDAEParameters(testCase);
+            [~, sol] = solveWith(testCase, @ode23t);
 
+            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
+            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-4);
+        end
         function testOde23tbCanonex(testCase)
             setCanonexParameters(testCase);
             [~, sol] = solveWith(testCase, @ode23tb);
@@ -211,13 +217,6 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             [~, sol] = solveWith(testCase, @ode23s);
 
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-3);
-            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
-        end
-        function testOde23sDAE(testCase)
-            setDAEParameters(testCase);
-            [~, sol] = solveWith(testCase, @ode23s);
-
-            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
     end
@@ -254,7 +253,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             datahandle = prepareDatahandleForIntegration( ...
                 testCase.rhsFunction, ...
                 'integrator', ...
-                func2str(integrator), ...
+                 integrator, ...
                 'options', ...
                 testCase.odeoptions ...
                 );
