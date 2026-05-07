@@ -15,12 +15,6 @@ datahandle = prepareDatahandleForIntegration('daeExampleRHS', 'integrator', inte
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
 sol_plain  = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_plain);
 
-%% Euler Solution Comparison
-h = 1e-6;
-newtonOpts.maxIter = 3;
-newtonOpts.tol = 1e-8;
-sol_euler = explicitEulerDAE(@(t,x,p) daeExampleRHS(t,x,p), tspan, x0, p, h, newtonOpts);
-
 %% Plots
 clf;
 fig1 = figure(01);
