@@ -33,6 +33,16 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         subway_odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-10);
         subway_xEnd = [2112.07361577; 0.00124794; 4124.77885608];
         subway_SWPs = [0.63166061, 2.43955402, 3.64338000, 5.60010643, 12.60705000, 45.78275000, 57.16005000];
+
+        % DAE example
+        dae_tspan = [0 5];
+        dae_x0 = [1; -1];
+        dae_p = -0.2
+        dae_rhsFunction = 'daeExampleRHS';
+        dae_odeoptions = odeset('Mass', [1 0; 0 0], 'MassSingular', 'yes', 'AbsTol', 1e-9,'RelTol', 1e-6);
+        dae_xEnd = [0.199999951200446; -0.199999951200446]
+        dae_SWP = [1.609435443361949];
+
     end
     properties (Access = private)
         % For a given problem, these four parameters need to be set appropriately (see setCanonexParameters for example)
@@ -130,7 +140,6 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-4);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
-
         function testOde113Canonex(testCase)
             setCanonexParameters(testCase);
             [~, sol] = solveWith(testCase, @ode113);
@@ -218,6 +227,15 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.odeoptions = testCase.subway_odeoptions;
             testCase.expected_xEnd = testCase.subway_xEnd;
             testCase.expected_SWPs = testCase.subway_SWPs;
+        end
+        function testCase = setDAEParameter(testCase)
+            testCase.tspan = testCase.dae_tspan;
+            testCase.x0 = testCase.dae_x0;
+            testCase.p = testCase.dae_p;
+            testCase.rhsFunction = testCase.dae_rhsFunction;
+            testCase.odeoptions = testCase.dae_odeoptions;
+            testCase.expected_xEnd = testCase.dae_xEnd;
+            testCase.expected_SWPs = testCase.dae_SWP;
         end
         function [data, sol] = solveWith(testCase, integrator)
             datahandle = prepareDatahandleForIntegration( ...
