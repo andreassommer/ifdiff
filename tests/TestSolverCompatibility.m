@@ -34,7 +34,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         subway_xEnd = [2112.07361577; 0.00124794; 4124.77885608];
         subway_SWPs = [0.63166061, 2.43955402, 3.64338000, 5.60010643, 12.60705000, 45.78275000, 57.16005000];
 
-        % DAE example
+        % DAE example: input parameters and expected results
         dae_tspan = [0 5];
         dae_x0 = [1; -1];
         dae_p = -0.2
@@ -124,7 +124,6 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-5);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
-
         function testOde15sCanonex(testCase)
             setCanonexParameters(testCase);
             [~, sol] = solveWith(testCase, @ode15s);
@@ -144,8 +143,8 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             setDAEParameters(testCase);
             [~, sol] = solveWith(testCase, @ode15s);
 
-            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
-            testCase.verifyEqual(sol.switches,  testCase.expected_SWPs, "RelTol", 1e-5)
+            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-6);
+            testCase.verifyEqual(sol.switches,  testCase.expected_SWPs, "RelTol", 1e-6)
         end 
         function testOde113Canonex(testCase)
             setCanonexParameters(testCase);
@@ -184,6 +183,8 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             setDAEParameters(testCase);
             [~, sol] = solveWith(testCase, @ode23t);
 
+            % lower tolerance since ode23t is an order 2 method 
+            % (uses trapezoidal rule)
             testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-4);
         end
