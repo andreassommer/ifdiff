@@ -41,7 +41,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         dae_rhsFunction = 'daeExampleRHS';
         dae_odeoptions = odeset('Mass', [1 0; 0 0], 'MassSingular', 'yes', 'AbsTol', 1e-9,'RelTol', 1e-6);
         dae_xEnd = [0.199999951200446; -0.199999951200446]
-        dae_SWP = [1.609435443361949];
+        dae_SWPs = [1.609435443361949];
 
     end
     properties (Access = private)
@@ -140,6 +140,13 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-4);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
+        function testOde15sDAE(testCase)
+            setDAEParameters(testCase);
+            [~, sol] = solveWith(testCase, @ode15s);
+
+            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
+            testCase.verifyEqual(sol.switches, testCase.expected_SWPS, "RelTol", 1e-5)
+        end 
         function testOde113Canonex(testCase)
             setCanonexParameters(testCase);
             [~, sol] = solveWith(testCase, @ode113);
@@ -206,7 +213,13 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.verifyEqual(sol.y(:,end), testCase.expected_xEnd, "RelTol", 1e-3);
             testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
         end
+        function testOde23sDAE(testCase)
+            setDAEParameters(testCase);
+            [~, sol] = solveWith(testCase, @ode23s);
 
+            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
+            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-5);
+        end
     end
 
     methods (Access = private)
@@ -228,14 +241,14 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
             testCase.expected_xEnd = testCase.subway_xEnd;
             testCase.expected_SWPs = testCase.subway_SWPs;
         end
-        function testCase = setDAEParameter(testCase)
+        function testCase = setDAEParameters(testCase)
             testCase.tspan = testCase.dae_tspan;
             testCase.x0 = testCase.dae_x0;
             testCase.p = testCase.dae_p;
             testCase.rhsFunction = testCase.dae_rhsFunction;
             testCase.odeoptions = testCase.dae_odeoptions;
             testCase.expected_xEnd = testCase.dae_xEnd;
-            testCase.expected_SWPs = testCase.dae_SWP;
+            testCase.expected_SWPs = testCase.dae_SWPs;
         end
         function [data, sol] = solveWith(testCase, integrator)
             datahandle = prepareDatahandleForIntegration( ...
