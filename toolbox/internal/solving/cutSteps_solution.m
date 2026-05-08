@@ -42,6 +42,10 @@ switch solver
         solution.idata.kvec(t>t_cut)        = [];
         solution.idata.dif3d(:, :, t>t_cut) = [];
     
+    case 'ode23s'
+        solution.idata.k1(:, t>t_cut)    = [];
+        solution.idata.k2(:, t>t_cut)    = [];
+    
     case 'ode113'
         solution.idata.klastvec(t>t_cut)    = [];
         solution.idata.phi3d(:, :, t>t_cut) = [];
