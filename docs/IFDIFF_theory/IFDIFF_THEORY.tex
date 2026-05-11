@@ -1,0 +1,159 @@
+% TeX document-id = {b1acbbad-72ab-4ca3-a41f-72ea1aefdd7b}
+% !TeX program = pdflatex
+% !TeX spellcheck = en_US
+
+\documentclass[a4wide,12pt, headings=big, chapterprefix=true, twoside]{article}
+%\usepackage{tikz}
+%\usepackage{pgfplots}
+%\usepackage{pgfplotstable}
+% Gleitumgebungen
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+%\usepackage{nicematrix} % for matrix entries spanning several rows or columns
+\usepackage{multirow}
+
+%_Header____________________________________________________________________________
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+% Even pages (left pages)
+\fancyhead[L]{\thepage}                             % page number (outer side)
+\fancyhead[R]{\nouppercase{\leftmark}}               % section title
+% Odd pages (right pages)
+%\fancyhead[LO]{\nouppercase{\rightmark}}              % subsection title
+%\fancyhead[RO]{\thepage}                             % page number (outer side)
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\renewcommand{\subsectionmark}[1]{\markright{#1}}
+
+%\usepackage[section]{placeins}
+
+%\pgfplotsset{compat=1.18, width=10cm}
+\usepackage[ngerman,english]{babel}
+\usepackage[T1]{fontenc}
+%\setkomafont{chapter}{\fontsize{24bp}{18.8bp}\normalfont\bfseries}
+%\setkomafont{section}{\fontsize{20bp}{18.8bp}\normalfont\bfseries}
+%\setkomafont{subsection}{\fontsize{18bp}{18.8bp}\normalfont\bfseries}
+%\setkomafont{subsubsection}{\fontsize{16bp}{18.8bp}\normalfont\bfseries}
+%\usepackage[scaled=0.92]{helvet}
+%\usepackage{mathptmx}
+%\usepackage{sectsty}
+%\usepackage{fontspec}
+%\allsectionsfont{\normalfont}
+% Mathematische Pakete
+\usepackage{amsmath, mathtools}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{thmtools}
+\usepackage{booktabs}
+\usepackage{subcaption}
+% Kosmetik
+\usepackage[many]{tcolorbox}
+\tcbuselibrary{breakable}
+% Quellen
+\usepackage[style=alphabetic]{biblatex}
+\addbibresource{bibly.bib}
+% bessere referenzierungen für figures etc.
+\usepackage[colorlinks, linkcolor=blue, citecolor=red]{hyperref}
+\renewcommand{\chapterautorefname}{Chapter}
+\usepackage{cleveref}
+
+% pseudocode
+%\usepackage{algorithmicx}
+%\usepackage{algpseudocodex}
+%\usepackage{algorithm}
+%\usepackage{pseudocode}
+%\usepackage{algorithmic}
+
+% for quotes
+\usepackage{csquotes}
+
+% some new commands that make writing a lot easier
+% Set-shorts
+\newcommand{\N}{\ensuremath{\mathbb{N}}}   % natural numbers
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}}   % integers
+\newcommand{\Q}{\ensuremath{\mathbb{Q}}}   % rationals
+\newcommand{\R}{\ensuremath{\mathbb{R}}}   % real numbers
+\newcommand{\C}{\ensuremath{\mathbb{C}}}   % complex numbers
+
+% some matrices (place in math mode)
+\newcommand{\mT}{\mathbf{T}}
+\newcommand{\mD}{\mathbf{D}}
+\newcommand{\mQ}{\mathbf{Q}}
+\newcommand{\mV}{\mathbf{V}}
+\newcommand{\mG}{\mathbf{G}}
+\newcommand{\mP}{\mathbf{P}}
+\newcommand{\mI}{\mathbf{I}}
+\newcommand{\mE}{\mathbf{E}}
+\newcommand{\mA}{\mathbf{A}}
+\newcommand{\mM}{\mathbf{M}}
+\newcommand{\mB}{\mathbf{B}}
+\newcommand{\mU}{\mathbf{U}}
+\newcommand{\mR}{\mathbf{R}}
+\newcommand{\blockmat}[1]{\begin{pmatrix} \mathbf{#1}_1 & \\ & \mathbf{#1}_2 \end{pmatrix}}
+\newcommand{\blockmatt}[1]{\begin{pmatrix} \mathbf{#1}_1^t & \\ & \mathbf{#1}_2^t \end{pmatrix}}
+\newcommand{\vrel}{\ensuremath{v_{\text{rel}}}}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\ronesys}[3]{\mathbf{#1} + #2 \mathbf{#3 #3}^t}
+\newcommand{\ronesysMod}[3]{\mathbf{#1} + #2 \mathbf{\hat{#3} \hspace{1pt} \hat{#3}}^t}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Satz-/Definitions-/Beweisumgebungen mit amsthm
+%\newtheorem{satz}{Satz}[section]
+%\newtheorem{lemma}[satz]{Lemma}
+%\newtheorem{theorem}[satz]{Theorem}
+%\newtheorem{corollary}[satz]{Corollary}
+%\theoremstyle{definition}
+%\newtheorem{definition}[satz]{Definition}
+%\newtheorem{remark}[satz]{Remark}
+%\newtheorem{example}[satz]{Example}
+%\newtheorem{exercise}[satz]{Exercise}
+%\newtheorem{erinnerung}[satz]{Erinnerung}
+%\newtheorem{notation}[satz]{Notation}
+%\newtheorem{definition-lemma}[satz]{Definition/Lemma}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{theorem}[theorem]{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{erinnerung}[theorem]{Erinnerung}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{definition-lemma}[theorem]{Definition/Lemma}
+
+%\newtheorem{customalgorithm}[theorem]{Algorithm}
+%\newenvironment{algorithmcustom}[1][htb]
+%{\begin{algorithm}[#1]
+%		\let\thealgorithm\thecustomalgorithm
+%		\begin{algorithmic}[1]}
+%		{\end{algorithmic}
+%\end{algorithm}}
+
+% thm styles
+\input{styles/thm}
+
+\begin{document}
+	\input{styles/title}
+	%\maketitle
+	
+	\tableofcontents
+	
+	\newpage
+	
+	\input{chapters/StickSlip}
+	
+	\newpage
+	
+	\appendix
+	
+	\printbibliography
+	
+\end{document}
