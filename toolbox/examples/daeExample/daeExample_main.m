@@ -16,7 +16,7 @@ sol_ifdiff = solveODE(datahandle, tspan, x0, p);
 sol_plain  = integrator(@(t, x) daeExampleRHS(t, x, p), tspan, x0, opts_plain);
 
 %% Explicit Euler for Comparison
-h = 1e-6;
+h = 1e-5;
 sol_euler = explicitEulerDAE(@(t,x,p) daeExampleRHS(t,x,p), 1, tspan, x0, p, h);
 
 %% Plots
