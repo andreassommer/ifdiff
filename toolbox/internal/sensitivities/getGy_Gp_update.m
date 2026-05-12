@@ -40,7 +40,6 @@ end
 data.computeSensitivity.modelStage = startModel;
 datahandle.setData(data);
 
-dbstop if naninf
 rhs = getRhsFromModelNum(datahandle, startModel);
 % Calculate the remaining update matrices for the update formula until modelNum.
 for i = startModel : (endModel-1)
@@ -79,7 +78,7 @@ for i = startModel : (endModel-1)
     fplus = rhs(datahandle, ts, yPlus, parameters);
 
     % Calculate the updates according to the update formula
-    Updates.Uy_new{i} = unit + del_jumpy + (fplus - (del_jumpt + (uni   t+del_jumpy)*fminus)) * del_sigmay / diff_sigmat;
+    Updates.Uy_new{i} = unit + del_jumpy + (fplus - (del_jumpt + (unit+del_jumpy)*fminus)) * del_sigmay / diff_sigmat;
 
     if Gp_flag
         del_sigmap = del_f_del_p(datahandle, switchingFunction, tsMinus, yMinus, parameters, h_p);
