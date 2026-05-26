@@ -17,7 +17,7 @@ else
     fMinus = [];
 end
 
-% Compute: f_m - f_p - jump_t - jump_y*f_m
+% Compute: f_p - f_m - jump_t - jump_y*f_m
 % Also apply updates: s += jump_y*s; for parameters additionally do s += jump_p*dir_p
 switchDiscontinuity = zeros(dimy, 1);
 if ~isempty(fPlusFunc)
