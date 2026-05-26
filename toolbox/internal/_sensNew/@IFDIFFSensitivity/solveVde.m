@@ -11,7 +11,7 @@ else
     fDpPartial = @(t, y, p) finiteDifference(@(x) rhs(t, y, x), p, h, initialDirP);
 end
 
-rhsVde = @(t, G) vdeRhs(t, G, this.solution, this.parameters, nDirY, fDyPartial, fDpPartial);
+rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, fDyPartial, fDpPartial);
 initialValues = initialValues(:);
 sol = this.integrator(rhsVde, tspan, initialValues, this.integratorOptions);
 end

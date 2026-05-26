@@ -1,18 +1,20 @@
-function dG = vdeRhs(t, G, sol, p, nDirY, fDyPartial, fDpPartial)
-y = deval(sol, t);
+function dt = vdeRhs(t, sens, p, solNominalTrajectory, nDirY, fDyPartialFunc, fDpPartialFunc)
+y = deval(solNominalTrajectory, t);
 dimy = length(y);
 
-matrixG = reshape(G, dimy, []);
-nDir = size(matrixG, 2);
+sensMatrix = reshape(sens, dimy, []);
+% Separate columns into initial value and parameter sensitivities.
+nDir = size(sensMatrix, 2);
 nDirP = nDir - nDirY;
 
 % State propagation applies to both sensitivities w.r.t. initial values and parameters.
-matrixDG = fDyPartial(t, y, p, matrixG);
+sensMatrix = fDyPartialFunc(t, y, p, sensMatrix);
 
 % Add source term for parameter sensitivities.
 if nDirP > 0
-    matrixDG(:, nDirY+1:end) = matrixDG(:, nDirY+1:end) + fDpPartial(t, y, p);
+    sensMatrix(:, nDirY+1:end) = sensMatrix(:, nDirY+1:end) + fDpPartialFunc(t, y, p);
 end
 
-dG = matrixDG(:);
+% Flatten output in column-major order.
+dt = sensMatrix(:);
 end
