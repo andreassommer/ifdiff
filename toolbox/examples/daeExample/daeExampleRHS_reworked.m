@@ -1,5 +1,5 @@
 function f = daeExampleRHS_reworked(~, x, p)
-
+    %
     f = zeros(2,1);
 
     % algebraic constraint
