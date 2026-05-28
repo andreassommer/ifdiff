@@ -1,5 +1,6 @@
 function sol = explicitEulerDAE(rhs, DifferentialVars, tspan, x0, p, h, newtonOpts)
-% explicitEulerDAE - Explicit Euler solver for semi-explicit, index 1 DAEs
+% explicitEulerDAE - Explicit Euler solver for semi-explicit, DAEs of
+% differential index 1
 %
 % Solves: M * x' = f(t,x) by explicit Euler method
 % INPUT:

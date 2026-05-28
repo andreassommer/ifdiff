@@ -1,4 +1,4 @@
-function dx = rlcRHS(~,x,p)
+function dx = rhsRLC(~,x,p)
     dx  = zeros(3,1);
     L   = p(1); R1  = p(2); R2  = p(3);
     C   = p(4); Vs  = p(5); Vth = p(6);

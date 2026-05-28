@@ -1,4 +1,4 @@
-function dx = coulomb_rhs(t,x,U)
+function dx = rhsCoulomb(t,x,U)
 % INPUT:   t - time
 %          x - state
 %          U - function handle of one variable (time) [voltage]

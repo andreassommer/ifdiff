@@ -1,4 +1,4 @@
-function f = daeExampleRHS_reworked(~, x, p)
+function f = rhsDaeExample(~, x, p)
     %
     f = zeros(2,1);
 
