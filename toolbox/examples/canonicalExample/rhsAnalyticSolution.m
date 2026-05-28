@@ -1,4 +1,4 @@
-function [funcSolPiecewise, tSwitch, switchingFunc, varargout] = canonicalExampleAnalyticSolution()
+function [funcSolPiecewise, tSwitch, switchingFunc, varargout] = rhsAnalyticSolution()
 %[funcSolPiecewise, tSwitch, switchingFunc, varargout] = CANONICALEXAMPLEANALYTICSOLUTION()
 %[funcSolPiecewise, tSwitch, switchingFunc, t0, y0, p] = CANONICALEXAMPLEANALYTICSOLUTION()
 %

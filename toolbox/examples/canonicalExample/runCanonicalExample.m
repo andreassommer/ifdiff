@@ -4,13 +4,19 @@ tf = 20;
 timeinterval = [t0,tf];
 initstates   = [1  0 ];
 p            = 5.437;
+odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12);
+
+%%
+fprintf('Integration with %s...\n  ', func2str(integrator));
+th = tic();
+sol_matlab = integrator(@(t,x) rhsCanonicalExample(t,x,p), timeinterval, initstates, odeoptions);
+time_matlab = toc(th); fprintf('Took %g seconds\n', time_matlab);
 
 %%
 fprintf('Preprocessing...\n  ');
-odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12);
-filename = 'canonicalExampleRHS';
+filename = 'rhsCanonicalExample';
 th = tic();
-dhandle = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', odeoptions);
+dhandle = prepareDatahandleForIntegration(filename, 'integrator', integrator, 'options', odeoptions);
 time_prepare = toc(th); fprintf('Took %g seconds\n', time_prepare);
 
 %%
@@ -18,13 +24,6 @@ fprintf('Integration with ifdiff/%s...\n  ', func2str(integrator));
 th = tic();
 sol_ifdiff = solveODE(dhandle, timeinterval, initstates, p);
 time_ifdiff = toc(th); fprintf('Took %g seconds\n', time_ifdiff);
-
-%% 
-fprintf('Integration with %s...\n  ', func2str(integrator));
-th = tic();
-sol_matlab = integrator(@(t,x) canonicalExampleRHS(t,x,p), timeinterval, initstates, odeoptions);
-time_matlab = toc(th); fprintf('Took %g seconds\n', time_matlab);
-
 
 %%
 % do explicit euler integration
@@ -38,7 +37,7 @@ T(1) = t0;               % copy initial time point
 dt = (tf-t0) / N_euler;  % time increment
 for k = 1:N_euler
    T(k+1)   = t0 + k*dt;
-   X(:,k+1) = X(:,k) + dt * canonicalExampleRHS(T(k), X(:,k), p);
+   X(:,k+1) = X(:,k) + dt * rhsCanonicalExample(T(k), X(:,k), p);
 end
 time_euler = toc(th); fprintf('Took %g seconds\n', time_euler);
 skipper = floor(N_euler/1000);

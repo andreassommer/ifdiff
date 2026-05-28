@@ -3,7 +3,7 @@ tf = 20;
 tPlotStep = 0.01;
 
 %% Analytical solution
-[solTrue, switches, switchingFunctions, t0, y0, p] = canonicalExampleAnalyticSolution;
+[solTrue, switches, switchingFunctions, t0, y0, p] = rhsAnalyticSolution;
 tspan = [t0, tf];
 tPlot = t0:tPlotStep:tf;
 
@@ -26,7 +26,7 @@ set(gca, 'Box', 'off');
 %% Solution ifdiff
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);
+datahandle    = prepareDatahandleForIntegration('rhsCanonicalExample', 'integrator', integrator, 'options', odeoptionsrhs_test);
 sol           = solveODE(datahandle, tspan, y0, p);
 
 %% Plot analytical solution vs. ifdiff
