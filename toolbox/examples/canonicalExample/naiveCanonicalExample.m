@@ -13,11 +13,11 @@ p     = 5.437;
 % integrate
 fprintf('Integrating ...')
 tic
-sol = integrator(@(t,x) canonicalExampleRHS(t,x,p), tspan, y0, options);
+sol = integrator(@(t,x) rhsCanonicalExample(t,x,p), tspan, y0, options);
 toc
 fprintf('Integrating with limited step size...')
 tic
-soltrue = integrator(@(t,x) canonicalExampleRHS(t,x,p), tspan, y0, optionsExact);
+soltrue = integrator(@(t,x) rhsCanonicalExample(t,x,p), tspan, y0, optionsExact);
 toc
 
 % evaluate solution

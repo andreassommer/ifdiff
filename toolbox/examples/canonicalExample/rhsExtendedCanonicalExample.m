@@ -1,4 +1,4 @@
-function dx = canonicalExampleRHS_extended(t,x,p)
+function dx = rhsExtendedCanonicalExample(t,x,p)
 dx = zeros(2,1);
 %dx(1) = 0.01 * t.^2  +  x(2).^2;
 dx(1) = 0.01*t + x(2); 
