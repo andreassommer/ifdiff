@@ -32,7 +32,7 @@ T(1) = times.t0;                        % copy initial time point
 dt = (times.tf - times.t0) / Neuler;    % time increment
 for k = 1:Neuler
    T(k+1)   = times.t0 + k*dt;
-   X(:,k+1) = X(:,k) + dt * coulomb_rhs(T(k), X(:,k), Ufun);
+   X(:,k+1) = X(:,k) + dt * rhsCoulomb(T(k), X(:,k), Ufun);
    %if k > 10; break; end
 end
 fprintf('Euler integration took %g seconds.\n', toc());
@@ -43,7 +43,7 @@ Xeuler = X;
 % try with ode-solver
 odesolver = @ode15s;
 tic
-sol = odesolver(@(t,x) coulomb_rhs(t,x,@U_umax3), [times.t0, times.tf], x0);
+sol = odesolver(@(t,x) rhsCoulomb(t,x,@U_umax3), [times.t0, times.tf], x0);
 fprintf('%s integration took %g seconds.\n', func2str(odesolver), toc());
 Tode = Teuler;
 Xode = deval(sol, Tode);

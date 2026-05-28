@@ -18,15 +18,15 @@ p   = [L; R1; R2; C; Vs; Vth];
 opts_ifdiff = odeset('Mass', M,'AbsTol', 1e-8, 'RelTol', 1e-5);
 opts_plain  = odeset('Mass', M,'AbsTol', 1e-8, 'RelTol', 1e-5);
 
-datahandle = prepareDatahandleForIntegration('rlcRHS', 'integrator', integrator, 'options', opts_ifdiff);
+datahandle = prepareDatahandleForIntegration('rhsRLC', 'integrator', integrator, 'options', opts_ifdiff);
 
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
-sol_plain  = integrator(@(t, x) rlcRHS(t, x, p), tspan, x0, opts_plain);
+sol_plain  = integrator(@(t, x) rhsRLC(t, x, p), tspan, x0, opts_plain);
 
 
 %% Explicit Euler (for comparison)
-h = 1e-6;
-sol_euler = explicitEulerDAE(@(t,x,p) rlcRHS(t,x,p), 2, tspan, x0, p, h);
+h = 1e-4;
+sol_euler = explicitEulerDAE(@(t,x,p) rhsRLC(t,x,p), 2, tspan, x0, p, h);
 
 %% Plots
 clf;

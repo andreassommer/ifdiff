@@ -123,12 +123,12 @@ legend([Plain_plot_1(1), IFDIFF_plot_1(1), Switch_plot]);
 hold off
 ```
 
-![](plots_daeExample/plot1.png)
+![](plotsDaeExample/plot1.png)
 
 We notice that the integrator strategy results in small steps here for the plain solver as well as IFDIFF. This is standard behavior for `ode15s` which is a multi-step method; it is not a defect caused by improper treatment of switching events.
 However, if we take a closer look, we see that the integration with IFDIFF is accurate around the switching point. 
 
-![](plots_daeExample/plot1_close.png)
+![](plotsDaeExample/plot1_close.png)
 
 ## Additional Content
 
