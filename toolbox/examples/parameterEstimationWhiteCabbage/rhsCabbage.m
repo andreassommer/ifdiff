@@ -1,4 +1,4 @@
-function dy = whiteCabbageRHS(t, y, p)
+function dy = rhsCabbage(t, y, p)
    %RHS for growth of white cabbage model
    
    dy = zeros(3,1);
