@@ -1,12 +1,12 @@
 %% Solution ifdiff
 
 integrator = @ode45;
-odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-datahandle    = prepareDatahandleForIntegration('whiteCabbageRHS', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);
+odeoptionsrhs = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
+datahandle    = prepareDatahandleForIntegration('rhsCabbage', 'integrator', integrator, 'options', odeoptionsrhs);
 
 tspan         = [0 118];
 initialvalues = [2.48252;0;0];
-parameters_ODE = getParams_Cabbage();
+parameters_ODE = getParamsCabbage();
 sol = solveODE(datahandle, tspan, initialvalues, parameters_ODE);
 %s = rng;
 
@@ -29,9 +29,8 @@ end
 
 %% Generation of residual function
 integrator_residual = @solveODE;
-RHS = @whiteCabbageRHS;
 method = 'VDE';
-residual_function = generateResidualFunction(t, datahandle, sol, measurements, tspan, parameters_ODE, RHS, FDstep, integrator_residual, method);
+residual_function = generateResidualFunction(t, datahandle, sol, measurements, tspan, parameters_ODE, @rhsCabbage, FDstep, integrator_residual, method);
 
 %% Parameter estimation
 options = optimoptions('lsqnonlin','SpecifyObjectiveGradient',true, 'Algorithm','levenberg-marquardt', 'Display', 'iter', 'DerivativeCheck', 'off', 'typicalX', [parameters_ODE;1;1;1]);%, 'TolX', 1e-14, 'TolFun', 1e-14);
@@ -39,8 +38,7 @@ parameters_init = [1.2*parameters_ODE; measurements(1:dim_y)];
 tic;
 [param_opt,resnorm,residual,exitflag,output,lambda,jacobian] = lsqnonlin(residual_function, parameters_init, [], [], options);
 toc;
-percent = (param_opt*100./[getParams_Cabbage();2.48252;0;0])-100
-param_opt
+percent = (param_opt*100./[getParamsCabbage();2.48252;0;0])-100*param_opt;
 
 %% Joint confidence intervals
 CI = nlparci(param_opt,residual,'jacobian',jacobian);

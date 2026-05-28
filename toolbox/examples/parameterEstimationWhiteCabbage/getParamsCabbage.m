@@ -1,4 +1,4 @@
-function parameters = getParams_Cabbage()
+function parameters = getParamsCabbage()
    %Parameters for growth of white cabbage model 
    
    parameters(1) = 34469.4; %a

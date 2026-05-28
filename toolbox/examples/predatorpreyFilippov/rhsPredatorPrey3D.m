@@ -1,4 +1,4 @@
-function dx = predatorPrey3D_rhs(~, x, p)
+function dx = rhsPredatorPrey3D(~, x, p)
 % 2-Prey-1-Predatory Model
 %
 % Source:
