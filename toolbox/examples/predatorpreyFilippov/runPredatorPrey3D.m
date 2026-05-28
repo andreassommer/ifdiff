@@ -5,11 +5,7 @@ tspan = [0, 100];
 % Integrator
 intIfdiff  = @ode45;
 intOptions = odeset('reltol', 1e-5, 'abstol', 1e-12);
-<<<<<<< HEAD
-eulerStep = 1e-5; 
-=======
 eulerStep = 1e-7; 
->>>>>>> d197a43 (Renamed files to fit new naming scheme by Pilar)
 
 % Parameter values required for Shilnikov behavior in the paper (see RHS file).
 m     = 0.790;
@@ -29,23 +25,7 @@ a  = 0.286975;
 x0 = [a; a; r1-r2];
 
 % RHS function dx = f(t, x, p), must be implemented in separate file for IFDIFF.
-<<<<<<< HEAD
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey.m
 rhs = @rhsPredatorPrey;
-========
-rhs = @rhsPredatorPrey3D;
->>>>>>>> d6700f1 (rename in White Cabbage and Predator Prey Filippov):toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
-=======
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
-rhs = @rhsPredatorPrey;
-========
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
-rhs = @rhsPredatorPrey3D;
-========
-rhs = @rhsPredatorPrey;
->>>>>>>> 5dee82a (Renamed files to fit new naming scheme by Pilar):toolbox/examples/predatorpreyFilippov/runPredatorPrey.m
->>>>>>>> d197a43 (Renamed files to fit new naming scheme by Pilar):toolbox/examples/predatorpreyFilippov/runPredatorPrey.m
->>>>>>> d197a43 (Renamed files to fit new naming scheme by Pilar)
 
 % Plotting
 plot_n = 10000;
