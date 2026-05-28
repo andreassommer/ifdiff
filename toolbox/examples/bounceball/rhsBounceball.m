@@ -1,4 +1,4 @@
-function dx = rhs_bounceball(t, x, p)
+function dx = rhsBounceball(t, x, p)
     % t:    time
     % x:    state
     % p:    parameter vector
