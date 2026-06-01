@@ -44,7 +44,14 @@ titleSol = 'ODE Solution to Friction Model';
 
 %% Solving the friction model variant without sliding mode
 noSlidingRhs = @friction_RHS_no_filippov;
-[noSlidingSol, noSlidingDatahandle, dataNoFil] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
+warnChatteringState = warning('off', warnChatteringId);
+try
+    [noSlidingSol, noSlidingDatahandle, dataNoFil] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
+catch ME
+    warning(warnChatteringState);
+    rethrow(ME)
+end
+warning(warnChatteringState);
 
 %% Plot solution for model without sliding mode
 noSlidingYplot = deval(noSlidingSol, tplot);
@@ -93,7 +100,14 @@ configNew = makeConfig();
 configNew.storeSlidingInfo = true;
 configOld = makeConfig(configNew);
 slidingRhs = @friction_RHS_filippov;
-[slidingSol, slidingDatahandle, dataFil] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+warnChatteringState = warning('off', warnChatteringId);
+try
+    [slidingSol, slidingDatahandle, dataFil] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+catch ME
+    warning(warnChatteringState);
+    rethrow(ME)
+end
+warning(warnChatteringState);
 makeConfig(configOld);
 
 %% Plot solution for model with sliding mode
@@ -167,11 +181,11 @@ end
 
 %% Plot switching function
 titleSwitchingFunction = 'Evolution of first switching condition';
-nu_rel = (noSlidingYplot(2,:) - v_b);
+v_rel = (noSlidingYplot(2,:) - v_b);
 figSwitchingFunction = figure;
 tilesSwitchingFunction = tiledlayout(figSwitchingFunction, 2, 1);
 axSwitchingFunction = nexttile(tilesSwitchingFunction);
-scatter(axSwitchingFunction, tplot, nu_rel, 'LineWidth', 0.5, 'Marker', '.');
+scatter(axSwitchingFunction, tplot, v_rel, 'LineWidth', 0.5, 'Marker', '.');
 setupPlotDefaults(axSwitchingFunction, slidingSol, 0, {'\nu_{rel}'});
 ylabel(axSwitchingFunction, '\nu_{rel} (switching function)', 'FontSize', fontszLabel);
 title(axSwitchingFunction, titleSwitchingFunction, 'FontSize', fontszTitle);
@@ -195,10 +209,9 @@ slidingYForAlpha = deval(slidingSol, t_alpha);
 x1Sliding = slidingYForAlpha(1, :);
 alpha_anal = (F_s - k * x1Sliding) / (2 * F_s);
 alpha_anal_defined_areas = alpha_anal;
-alpha_anal_defined_areas(isnan(alpha)) = NaN;
-alpha_anal_defined_areas(alpha_anal_defined_areas > 1) = NaN; % cut all values for alpha that are not viable for diff plot
-alpha_anal_defined_areas(alpha_anal_defined_areas < 0) = NaN; % this means values that are not between 0 and 1
-plot(axAlpha, t_alpha, alpha_anal, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], 'DisplayName', 'Analytical $\alpha$ (undefined regions)',LineStyle='--');
+% cut all values that are not in the regions where alpha parameter is meaningful
+alpha_anal_defined_areas(alpha_anal_defined_areas > 1 | alpha_anal_defined_areas < 0 | isnan(alpha)) = NaN;
+plot(axAlpha, t_alpha, alpha_anal, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], 'DisplayName', 'Analytical $\alpha$ (undefined regions)','LineStyle','--');
 plot(axAlpha, t_alpha, alpha_anal_defined_areas, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], 'DisplayName', 'Analytical $\alpha$');
 plot(axAlpha, t_alpha, alpha,'LineWidth', lw,'Color', [0.8500 0.9250 0.0980],'DisplayName', 'Numerical $\alpha$ (IFDIFF)');
 xlabel(axAlpha, 'Time t [s]', 'Interpreter', 'latex');
@@ -236,7 +249,7 @@ warnState = warning('off', warnChatteringId);
 tStart = tic;
 try
     sol = solveODE(datahandle, tspan, x0, p);
-catch
+catch ME
     warning(warnState);
     rethrow(ME);
 end
