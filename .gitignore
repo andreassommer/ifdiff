@@ -46,3 +46,14 @@ octave-workspace
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# LaTeX related files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.out
+*.xml
+*.gz
+*.toc
