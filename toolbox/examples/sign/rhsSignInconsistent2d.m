@@ -1,4 +1,4 @@
-function dx = sign_inconsistent_rhs_2d(t,x,p)
+function dx = rhsSignInconsistent2d(t,x,p)
 
 dx = zeros(2,1);
 sign_value = sign(x(2)-p(1));

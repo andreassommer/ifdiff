@@ -1,5 +1,5 @@
 integrator = @ode45;
-initstates   = [1];
+initstates   = 1;
 p            = 0;
 
 doIfdiff = true;
@@ -12,9 +12,9 @@ if doIfdiff
 
     fprintf('Preprocessing...\n  ');
     odeoptions = odeset( 'AbsTol', 1e-14, 'MaxStep', 2);
-    filename = 'sign_inconsistent_rhs';
+    filename = 'rhsSignInconsistent';
     datahandle = prepareDatahandleForIntegration(filename, ...
-        'integrator', func2str(integrator), 'options', odeoptions);
+        'integrator', integrator, 'options', odeoptions);
     
     fprintf('Integration with ifdiff/%s...\n  ', func2str(integrator));
     tic
