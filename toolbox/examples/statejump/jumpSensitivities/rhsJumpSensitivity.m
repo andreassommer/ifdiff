@@ -1,4 +1,4 @@
-function dx = jumpSensitivityRHS(~, x, p)
+function dx = rhsJumpSensitivity(~, x, p)
 %JUMPSENSITIVITYRHS A simple jumping model for testing sensitivity computation across jumps.
     dx = 0;
     sigma = x(1) - (1/p(1));
