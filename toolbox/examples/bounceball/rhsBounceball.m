@@ -14,13 +14,22 @@ function dx = rhsBounceball(t, x, p)
 
     dx  = zeros(2,1);
     m   = p(2);
+    g   = p(3);
+    threshold = 1e-6;
+    % if E
+    E = 0.5*m*x(2)^2 + m*g*x(1);
     
     % RHS logic
-    if x(1)>=0
-        g =  exp(2*t)*p(3);
+    if E < threshold
+        g = 0;
     else
-        g = -exp(2*t)*p(3);
+        if x(1)>=0
+            g =  exp(2*t)*g;
+        else
+            g = -exp(2*t)*g;
+        end
     end
+
 
     dx(1) = x(2);
     dx(2) = -g/m;
