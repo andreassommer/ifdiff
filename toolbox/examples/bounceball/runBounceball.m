@@ -7,7 +7,7 @@ p            = [0.9, 1, 9.81];
 
 fprintf('Preprocessing...\n  ');
 odeoptions = odeset( 'AbsTol', 1e-14, 'RelTol', 1e-12);
-filename = 'rhs_bounceball';
+filename = 'rhsBounceball';
 tic
 handlerhs_test = prepareDatahandleForIntegration(filename, 'integrator', integrator, 'options', odeoptions);
 toc
