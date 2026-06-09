@@ -5,12 +5,6 @@ classdef IFDIFFSensitivity
     properties
         datahandle
         solution
-        Uy
-        Up
-        UyAccumulated
-        UpAccumulated
-        GySol = {}
-        GpSol
         parameters
         tspan
         switches
@@ -19,8 +13,6 @@ classdef IFDIFFSensitivity
         switchesLeftY
         dimy
         dimp
-        fdStep
-        modelBoundaries
         integrator
         integratorOptions
         dirY
@@ -43,7 +35,6 @@ classdef IFDIFFSensitivity
 
             this.tspan = data.SWP_detection.tspan;
             this.switches = sort(sol.switches);
-            this.modelBoundaries = [this.tspan(1), this.switches, this.tspan(end)];
 
             [isSwitchInSol, switchesIdx] = ismember(this.switches, sol.x);
             if ~all(isSwitchInSol)
@@ -55,10 +46,9 @@ classdef IFDIFFSensitivity
 
             this.switchesLeft = this.switches;
             this.switchesLeftY = this.switchesY;
+            % Use left limit of switch if there was a jump.
             this.switchesLeft(sol.jumps) = sol.x(switchesIdx(sol.jumps) - 1);
             this.switchesLeftY(:, sol.jumps) = sol.y(:, switchesIdx(sol.jumps) - 1);
-
-            this.fdStep = generateFDstep(this.dimy, this.dimp);
 
             this.integrator = data.integratorSettings.numericIntegrator;
             this.integratorOptions = data.integratorSettings.options;
@@ -73,7 +63,66 @@ classdef IFDIFFSensitivity
             this.dirP = dirP;
         end
 
-        function this = eval(this, timepoints)
+        function sol = solveVde(this, idxModel, tspan, initialValues, nDirY)
+            rhs = getRhsFromModelNum(this.datahandle, idxModel);
+            rhs = @(t, y, p) rhs(this.datahandle, t, y, p);
+
+            h = 1e-6; % TODO: temporarily hard-coded
+            fDyPartial = @(t, y, p, v) finiteDifference(@(x) rhs(t, x, p), y, h, v);
+            nDirP = size(initialValues, 2) - nDirY;
+            if nDirP > 0
+                fDpPartial = @(t, y, p) finiteDifference(@(x) rhs(t, y, x), p, h, this.dirP);
+            else
+                fDpPartial = [];
+            end
+
+            rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, fDyPartial, fDpPartial);
+            initialValues = initialValues(:);
+            sol = this.integrator(rhsVde, tspan, initialValues, this.integratorOptions);
+        end
+
+        function [sens, fPlus] = applySensitivitySwitchUpdate(this, sens, idxModel, fMinus)
+            tMinus = this.switchesLeft(idxModel);
+            tPlus = this.switches(idxModel);
+            yMinus = this.switchesLeftY(:, idxModel);
+            yPlus = this.switchesY(:, idxModel);
+
+            % TODO: Fix ugly workaround after datahandle refactor.
+            % If the submodel is not exported as a separate function and instead relies on the datahandle,
+            % then we have to evaluate fMinus here, so that the signature is set correctly for fPlus.
+            if makeConfig().removeCtrlifForSensComputation
+                fMinusEval = fMinus(this.datahandle, tMinus, yMinus, this.parameters);
+                fMinus = @(~, ~, ~, ~) fMinusEval;
+            end
+            fPlus = getRhsFromModelNum(this.datahandle, idxModel + 1);
+
+            % Setup derivatives.
+            sigma = this.switchingFunctions{idxModel};
+            jump = this.jumpFunctions{idxModel};
+            h = 1e-6; % TODO: temporarily hard-coded
+            sigmat = @(t, y, p, v) finiteDifference(@(x) sigma([], x, y, p), t, h, v);
+            sigmay = @(t, y, p, v) finiteDifference(@(x) sigma([], t, x, p), y, h, v);
+            sigmap = @(t, y, p, v) finiteDifference(@(x) sigma([], t, y, x), p, h, v);
+            if isempty(jump)
+                jumpt = [];
+                jumpy = [];
+                jumpp = [];
+            else
+                jumpt = @(t, y, p, v) finiteDifference(@(x) jump([], x, y, p), t, h, v);
+                jumpy = @(t, y, p, v) finiteDifference(@(x) jump([], t, x, p), y, h, v);
+                jumpp = @(t, y, p, v) finiteDifference(@(x) jump([], t, y, x), p, h, v);
+            end
+
+            sens = computeSensitivitySwitchUpdate( ...
+                sens, this.dirP, ...
+                tMinus, tPlus, yMinus, yPlus, this.parameters, ...
+                @(t, y, p) fMinus(this.datahandle, t, y, p), @(t, y, p) fPlus(this.datahandle, t, y, p), ...
+                sigmat, sigmay, sigmap, ...
+                jumpt, jumpy, jumpp);
+        end
+
+        function sensSol = eval(this, timepoints)
+            % Ensure timepoints are strictly increasing.
             [t, ~, idxTimepointsUndoSort] = unique(timepoints);
 
             if t(1) < this.tspan(1) || t(end) > this.tspan(end)
@@ -82,57 +131,31 @@ classdef IFDIFFSensitivity
                     'the solution interval of the IVP.']);
             end
 
+            % TODO: May cache solution from previous runs for the same parameters.
+            % For now, always start solving from the first model.
             idxModelStart = 1;
-            % Find the switch, that would come after the last evaluation timepoint
-            idxModelEnd = find(t(end) <= this.modelBoundaries, 1) - 1;
+            % Determine the model of the last evaluation timepoint.
+            idxModelEnd = find(t(end) <= [this.switches, this.tspan(end)], 1);
 
-            tstart = this.tspan(1);
-            sens = [this.dirY, zeros(this.dimy, size(this.dirP, 2))];
+            tModelStart = this.tspan(1);
+            sensInitialValue = [this.dirY, zeros(this.dimy, size(this.dirP, 2))];
             nDirY = size(this.dirY, 2);
-            if idxModelEnd > idxModelStart
-                fMinus = getRhsFromModelNum(this.datahandle, idxModelStart);
-            end
+            
+            % Integrate each submodel until switch and apply update at the end.
             for idxModel=idxModelStart:idxModelEnd-1
-                tend = this.switchesLeft(idxModel);
-                sol = this.solveVde(idxModel, [tstart, tend], sens, nDirY, this.dirP);
-                tstart = this.switches(idxModel);
-                this.GySol{idxModel} = sol;
-
-                sens = reshape(sol.y(:, end), this.dimy, []);
-
-                % Update (not on last iteration)
-                yMinus = this.switchesLeftY(:, idxModel);
-                yPlus = this.switchesY(:, idxModel);
-                fPlus = getRhsFromModelNum(this.datahandle, idxModel + 1);
-                sigma = this.switchingFunctions{idxModel};
-                jump = this.jumpFunctions{idxModel};
-                h = 1e-6;
-                sigmat = @(t, y, p, v) finiteDifference(@(x) sigma([], x, y, p), t, h, v);
-                sigmay = @(t, y, p, v) finiteDifference(@(x) sigma([], t, x, p), y, h, v);
-                sigmap = @(t, y, p, v) finiteDifference(@(x) sigma([], t, y, x), p, h, v);
-                if isempty(jump)
-                    jumpt = [];
-                    jumpy = [];
-                    jumpp = [];
-                else
-                    jumpt = @(t, y, p, v) finiteDifference(@(x) jump([], x, y, p), t, h, v);
-                    jumpy = @(t, y, p, v) finiteDifference(@(x) jump([], t, x, p), y, h, v);
-                    jumpp = @(t, y, p, v) finiteDifference(@(x) jump([], t, y, x), p, h, v);
+                tModelEnd = this.switchesLeft(idxModel);
+                sensSol(idxModel) = this.solveVde(idxModel, [tModelStart, tModelEnd], sensInitialValue, nDirY); %#ok<AGROW>
+                tModelStart = this.switches(idxModel);
+                % Update initial value for next VDE at switch.
+                sensInitialValue = reshape(sensSol(idxModel).y(:, end), this.dimy, []);
+                if idxModel == idxModelStart
+                    fMinus = getRhsFromModelNum(this.datahandle, idxModelStart);
                 end
-                sens = applySensitivitySwitchUpdate( ...
-                    sens, this.dirP, size(this.dirY, 2), ...
-                    tend, tstart, yMinus, yPlus, this.parameters, ...
-                    @(t,y,p) fMinus(this.datahandle,t,y,p), @(t,y,p) fPlus(this.datahandle,t,y,p), ...
-                    sigmat, sigmay, sigmap, ...
-                    jumpt, jumpy, jumpp);
-                fMinus = fPlus;
+                [sensInitialValue, fMinus] = this.applySensitivitySwitchUpdate(sensInitialValue, idxModel, fMinus);
             end
-            idxModel = idxModel + 1;
-            tend = t(end);
-            sol = this.solveVde(idxModel, [tstart, tend], sens, nDirY, this.dirP);
-            this.GySol{idxModel} = sol;
+            % No more switches left, so solve until the end.
+            tModelEnd = t(end);
+            sensSol(idxModelEnd) = this.solveVde(idxModelEnd, [tModelStart, tModelEnd], sensInitialValue, nDirY);
         end
-
-        sol = solveVde(this, idxModel, tspan, initialValues, nDirY, initialDirP)
     end
 end

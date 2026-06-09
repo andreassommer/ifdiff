@@ -20,7 +20,8 @@ dirY = [];
 dirP = [];
 nDirY = length(initialvalues);
 nDirP = length(parameters);
-t = linspace(tspan(1), tspan(2), 1000);
+%t = linspace(tspan(1), tspan(2), 1000);
+t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);
 sens = IFDIFFSensitivity(datahandle, sol, dirY, dirP);
 sens = sens.eval(t);
 
@@ -34,16 +35,23 @@ for i=1:length(sw)+1
     else
         ti = t(tidx:end);
     end
-    yi = reshape(deval(sens.GySol{i}, ti), length(initialvalues), nDirY + nDirP, []);
+    yi = reshape(deval(sens(i), ti), length(initialvalues), nDirY + nDirP, []);
     y = cat(3, y, yi);
     tidx = tidxnew;
 end
 
-figure;
-tiledlayout(size(y, 1), size(y, 2));
-for i=1:size(y, 1)
-    for j=1:size(y, 2)
-        nexttile
-        plot(t, squeeze(y(i, j, :)));
+nPrev = 0;
+for nDir=[nDirY, nDirP]
+    figure;
+    axs = [];
+    tiledlayout(size(y, 1), nDir);
+    for i=1:size(y, 1)
+        for j=1:nDir
+            axs(i,j) = nexttile; %#ok<SAGROW>
+            plot(t, squeeze(y(i, nPrev + j, :)));
+        end
     end
+    ylim tight
+    linkaxes(axs)
+    nPrev = nDir;
 end
