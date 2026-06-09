@@ -1,17 +1,16 @@
 integrator = @ode45;
 t0 = 0;
-tf = 1;
-% tf = 0.5+30*eps;
+tf = 1; % tf = 0.5+30*eps;
 timeinterval = [t0,tf];
 initstates   = [1, 1];
 p            = 0;
 
 fprintf('Preprocessing...\n  ');
 odeoptions = odeset( 'AbsTol', 1e-14, 'MaxStep', 2);
-filename = 'sign_inconsistent_rhs_2d';
+filename = 'rhsSignInconsistent2d';
 tic
 datahandle = prepareDatahandleForIntegration(filename, ...
-    'solver', func2str(integrator), 'options', odeoptions);
+    'solver', integrator, 'options', odeoptions);
 toc
 
 fprintf('Integration with ifdiff/%s...\n  ', func2str(integrator));
@@ -19,8 +18,6 @@ tic
 sol_rhs_test = solveODE(datahandle, timeinterval, initstates, p);
 % sol_ode45 = ode45(@(t,x) sign_inconsistent_rhs_2d(t,x,p), timeinterval, initstates);
 toc
-
-
 
 % Read out number of switches during integration
 n_switches = max(size(datahandle.getData().SWP_detection.switchingpoints));

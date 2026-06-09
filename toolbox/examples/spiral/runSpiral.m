@@ -6,10 +6,10 @@ initstates = [0, 1];
 p = [];
 
 fprintf('Preprocessing...\n  ');
-odeoptions = odeset( 'AbsTol', 1e-8, 'RelTol', 1e-6, 'MaxStep', 10000);
-filename = 'spiral_rhs';
+odeoptions = odeset( 'AbsTol', 1e-8, 'RelTol', 1e-6);
+filename = 'rhsSpiral';
 tic
-handlerhs_test = prepareDatahandleForIntegration(filename, 'integrator', func2str(integrator), 'options', odeoptions);
+handlerhs_test = prepareDatahandleForIntegration(filename, 'integrator', integrator, 'options', odeoptions);
 toc
 
 % solution

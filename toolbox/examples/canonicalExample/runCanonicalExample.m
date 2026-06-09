@@ -4,7 +4,7 @@ tf = 20;
 timeinterval = [t0,tf];
 initstates   = [1  0 ];
 p            = 5.437;
-odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12);
+odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-12, 'MaxStep', 1000);
 
 %%
 fprintf('Integration with %s...\n  ', func2str(integrator));
