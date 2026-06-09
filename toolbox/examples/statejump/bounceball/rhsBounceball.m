@@ -1,4 +1,4 @@
-function dx = bounceballRHS(~, x, p)
+function dx = rhsBounceball(~, x, p)
 % basic bouncing ball. It loses energy on each bounce, but not by air friction. There is no
 % solution to Zeno's phenomenon when the ball is very low, just don't integrate that far.
 % p = [g, gamma]

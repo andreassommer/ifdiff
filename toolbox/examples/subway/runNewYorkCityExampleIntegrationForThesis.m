@@ -1,15 +1,14 @@
 % new York city integration
 
 integrator = @ode45;
-
 timeinterval = [0.0, 65.0];
 initstates = [0.0, 0.0, 0.0].';
 odeoptionssubwaymodel = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-10);
 %%
 
 tic
-hdlnyc = prepareDatahandleForIntegration('newYorkCitySubwayModelRhs', ...
-    'integrator', func2str(integrator), 'options', odeoptionssubwaymodel);
+hdlnyc = prepareDatahandleForIntegration('rhsNewYorkCitySubwayModel', ...
+    'integrator', integrator, 'options', odeoptionssubwaymodel);
 toc
 
 %%
@@ -22,7 +21,7 @@ solnyc = solveODE(hdlnyc, ...
 
 toc
 
-sol = ode45(@(t,x) newYorkCitySubwayModelRhs(t,x, nysscc_getPhysicsParameters()),timeinterval, initstates,odeoptionssubwaymodel);
+sol = ode45(@(t,x) rhsNewYorkCitySubwayModel(t,x, nysscc_getPhysicsParameters()),timeinterval, initstates,odeoptionssubwaymodel);
 
 %% 
 hold on 

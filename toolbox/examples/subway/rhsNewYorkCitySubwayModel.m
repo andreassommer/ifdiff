@@ -1,7 +1,7 @@
 % newYorkCitySubwayRhs02.m -> version two
 % right-hand side function of the new york city subway model
 
-function dy = newYorkCitySubwayModelRhs(t, y, p)
+function dy = rhsNewYorkCitySubwayModel(t, y, p)
   % 't': time
   % 'y': states
   % 'p': parameters

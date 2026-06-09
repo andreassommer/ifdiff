@@ -1,4 +1,4 @@
-function dy = newYorkCitySubwayModelRhs_wrapped(t, y, p)
+function dy = rhsNewYorkCitySubwayModelWrapped(t, y, p)
 
 pp.Tmax  = p(1);
 pp.S     = p(2);
