@@ -3,9 +3,9 @@
 % variant and serves as a perfect example to test the accuracy of not only
 % the filippov integration but also the resulting sensitivities.
 %
-% Both formulations of the system describe dry friction of a spring 
-% suspended weight sitting on a constantly moving conveyor belt. The 
-% weight moves along with the belt until spring tension becomes too high 
+% Both formulations of the system describe dry friction of a spring
+% suspended weight sitting on a constantly moving conveyor belt. The
+% weight moves along with the belt until spring tension becomes too high
 % and the weight is pushed back. This creates a switched periodic motion.
 %
 % Source: Stick-Slip Vibrations Induced by Alternate Friction Models
@@ -18,19 +18,19 @@
 
 % Solver setup
 integrator = @ode15s;
-optionsOde = odeset('AbsTol', 1e-10, 'RelTol', 1e-6);
+optionsOde = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
 optionsSens = odeset('AbsTol', 1e-10, 'RelTol', 1e-10);
 % Model setup
 tspan = [0, 30];
-%y0 = [1.133944669704; 0]; % starts in maximal value of system
-y0 = [1, 0];
-k       = 1;
-m       = 1;
-mu_b    = 0.2;
-F_s     = 1;
-delta   = 3;
-epsilon = 1e-10;
-p = [k, m, mu_b, F_s, delta, epsilon];
+y0 = [1.133944669704; 0]; % starts in maximal value of system
+%y0 = [1, 0];
+k       = 1.0;      % spring constant
+m       = 1.0;      % mass
+v_b     = 0.2;    % velocity relative to the conveyerbelt
+F_s     = 1.0;      % max static friction force
+delta   = 3.0;      % Physics constant
+epsilon = 1e-10;  % numerical zero parameter
+p = [k, m, v_b, F_s, delta, epsilon];
 dimY = length(y0);
 dimP = length(p);
 % Plot setup
@@ -44,7 +44,14 @@ titleSol = 'ODE Solution to Friction Model';
 
 %% Solving the friction model variant without sliding mode
 noSlidingRhs = @friction_RHS_no_filippov;
-[noSlidingSol, noSlidingDatahandle] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
+warnChatteringState = warning('off', warnChatteringId);
+try
+    [noSlidingSol, noSlidingDatahandle, noSlidingData] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
+catch ME
+    warning(warnChatteringState);
+    rethrow(ME)
+end
+warning(warnChatteringState);
 
 %% Plot solution for model without sliding mode
 noSlidingYplot = deval(noSlidingSol, tplot);
@@ -81,7 +88,7 @@ for row=1:dimY
         noSlidingAxSens = nexttile(noSlidingTilesSens);
         scatter(noSlidingAxSens, tplot, squeeze(noSlidingGy(row, col, :)), ...
             'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
-        noSlidingSensTitle = sprintf('Gy%d%d', row, col);
+        noSlidingSensTitle = sprintf('Gy_{%d%d}', row, col);
         setupPlotDefaults(noSlidingAxSens, noSlidingSol, 0, {noSlidingSensTitle});
         ylabel(noSlidingAxSens, noSlidingSensTitle, 'FontSize', fontszLabel);
         title(noSlidingAxSens, noSlidingSensTitle, 'FontSize', fontszTitle);
@@ -89,8 +96,19 @@ for row=1:dimY
 end
 
 %% Solving the friction model variant with sliding mode
+configNew = makeConfig();
+configNew.storeSlidingInfo = true;
+configOld = makeConfig(configNew);
 slidingRhs = @friction_RHS_filippov;
-[slidingSol, slidingDatahandle] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+warnChatteringState = warning('off', warnChatteringId);
+try
+    [slidingSol, slidingDatahandle, slidingData] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+catch ME
+    warning(warnChatteringState);
+    rethrow(ME)
+end
+warning(warnChatteringState);
+makeConfig(configOld);
 
 %% Plot solution for model with sliding mode
 slidingYplot = deval(slidingSol, tplot);
@@ -127,7 +145,7 @@ for row=1:dimY
         slidingAxSens = nexttile(slidingTilesSens);
         scatter(slidingAxSens, tplot, squeeze(slidingGy(row, col, :)), ...
             'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
-        slidingSensTitle = sprintf('Gy%d%d filippov', row, col);
+        slidingSensTitle = sprintf('Gy_{%d%d} filippov', row, col);
         setupPlotDefaults(slidingAxSens, slidingSol, 0, {slidingSensTitle});
         ylabel(slidingAxSens, slidingSensTitle, 'FontSize', fontszLabel);
         title(slidingAxSens, slidingSensTitle, 'FontSize', fontszTitle);
@@ -153,23 +171,22 @@ for row=1:dimY
         scatter(slidingAxDiffSens, tplot, squeeze(absDiffGy(row, col, :)), ...
             'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
         set(slidingAxDiffSens, 'YScale', 'log');
-        slidingSensTitle = sprintf('Gy%d%d difference', row, col);
+        slidingSensTitle = sprintf('Gy_{%d%d} difference', row, col);
         setupPlotDefaults(slidingAxDiffSens, slidingSol, 0, {slidingSensTitle});
         ylabel(slidingAxDiffSens, slidingSensTitle, 'FontSize', fontszLabel);
         title(slidingAxDiffSens, slidingSensTitle, 'FontSize', fontszTitle);
     end
 end
 
-
 %% Plot switching function
 titleSwitchingFunction = 'Evolution of first switching condition';
-nu_rel = (noSlidingYplot(2,:) - mu_b);
+v_rel = (noSlidingYplot(2,:) - v_b);
 figSwitchingFunction = figure;
 tilesSwitchingFunction = tiledlayout(figSwitchingFunction, 2, 1);
 axSwitchingFunction = nexttile(tilesSwitchingFunction);
-scatter(axSwitchingFunction, tplot, nu_rel, 'LineWidth', 0.5, 'Marker', '.');
-setupPlotDefaults(axSwitchingFunction, slidingSol, 0, {'\nu_{rel}'});
-ylabel(axSwitchingFunction, '\nu_{rel} (switching function)', 'FontSize', fontszLabel);
+scatter(axSwitchingFunction, tplot, v_rel, 'LineWidth', 0.5, 'Marker', '.');
+setupPlotDefaults(axSwitchingFunction, slidingSol, 0, {'v_{rel}'});
+ylabel(axSwitchingFunction, 'v_{rel} (switching function)', 'FontSize', fontszLabel);
 title(axSwitchingFunction, titleSwitchingFunction, 'FontSize', fontszTitle);
 % Zoomed in version
 axSwitchingFunctionZoomed = copyobj([axSwitchingFunction, legend(axSwitchingFunction)], tilesSwitchingFunction);
@@ -180,9 +197,52 @@ axSwitchingFunctionZoomed(1).YLabel = copyobj(axSwitchingFunction.YLabel, axSwit
 ylim(axSwitchingFunctionZoomed(1), [-2*epsilon, 2*epsilon]);
 title(axSwitchingFunctionZoomed(1), [titleSwitchingFunction, ' (Zoomed)'], 'FontSize', fontszTitle);
 
+%% Plot alpha parameter and check against analytical parameter
+tAlpha = slidingData.sliding.convexification.t;
+alpha = slidingData.sliding.convexification.alpha;
+figAlpha = figure;
+axAlpha = axes(figAlpha);
+hold(axAlpha, 'on');
+% Compute analytical alphas
+yAlpha = deval(slidingSol, tAlpha);
+alphaAnalytical = (F_s - k * yAlpha(1,:)) / (2 * F_s);
+% Cut all values that are not in the regions where alpha parameter is meaningful
+alphaAnalyticalActive = alphaAnalytical;
+alphaAnalyticalActive(alphaAnalytical > 1 | alphaAnalytical < 0 | isnan(alpha)) = NaN;
+plot(axAlpha, tAlpha, alphaAnalytical, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], ...
+    'DisplayName', 'Analytical \alpha (undefined regions)', 'LineStyle', '--');
+plot(axAlpha, tAlpha, alphaAnalyticalActive, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], ...
+    'DisplayName', 'Analytical \alpha');
+plot(axAlpha, tAlpha, alpha,'LineWidth', lw, 'Color', [0.8500 0.9250 0.0980], ...
+    'DisplayName', 'Numerical \alpha (IFDIFF)');
+xlabel(axAlpha, 'Time (s)');
+ylabel(axAlpha, '\alpha');
+title(axAlpha, 'Comparison of Analytical and Numerical \alpha (analytical in terms of numerical sol obj)');
+legend(axAlpha, 'Location', 'best');
+grid(axAlpha, 'on');
+box(axAlpha, 'on');
+set(axAlpha, 'FontSize', 12, 'LineWidth', 1);
+
+%% Plot difference between analytical and numerical alpha
+alphaDiff = alpha - alphaAnalyticalActive;
+
+figDiff = figure;
+axDiff = axes(figDiff);
+hold(axDiff, 'on');
+semilogx(axDiff, tAlpha, alphaDiff, 'LineWidth', lw, 'Color', [0.6350 0.0780 0.1840], ...
+    'DisplayName', '\alpha_{num} - \alpha_{analytical}');
+xlabel(axDiff, 'Time (s)');
+ylabel(axDiff, '\Delta \alpha');
+title(axDiff, 'Difference between Numerical and Analytical \alpha');
+legend(axDiff, 'Location', 'best');
+grid(axDiff, 'on');
+xlim(axDiff, tAlpha([1, end]));
+box(axDiff, 'on');
+set(axDiff, 'FontSize', 12, 'LineWidth', 1);
+
 
 %% Helpers
-function [sol, datahandle] = solveWithIFDIFF(rhs, int, opts, tspan, x0, p)
+function [sol, datahandle, data] = solveWithIFDIFF(rhs, int, opts, tspan, x0, p)
 fprintf('Preprocessing %s ...\n', func2str(rhs));
 datahandle = prepareDatahandleForIntegration(rhs, 'integrator', int, 'options', opts);
 fprintf('Finished preprocessing, now integrating ...\n');
@@ -191,7 +251,7 @@ warnState = warning('off', warnChatteringId);
 tStart = tic;
 try
     sol = solveODE(datahandle, tspan, x0, p);
-catch
+catch ME
     warning(warnState);
     rethrow(ME);
 end
@@ -199,6 +259,7 @@ tEnd = toc(tStart);
 warning(warnState);
 
 fprintf('Finished integrating. Took %.4f seconds\n', tEnd);
+data = datahandle.getData();
 end
 
 function id = warnChatteringId
