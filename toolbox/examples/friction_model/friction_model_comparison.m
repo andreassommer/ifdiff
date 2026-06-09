@@ -3,9 +3,9 @@
 % variant and serves as a perfect example to test the accuracy of not only
 % the filippov integration but also the resulting sensitivities.
 %
-% Both formulations of the system describe dry friction of a spring 
-% suspended weight sitting on a constantly moving conveyor belt. The 
-% weight moves along with the belt until spring tension becomes too high 
+% Both formulations of the system describe dry friction of a spring
+% suspended weight sitting on a constantly moving conveyor belt. The
+% weight moves along with the belt until spring tension becomes too high
 % and the weight is pushed back. This creates a switched periodic motion.
 %
 % Source: Stick-Slip Vibrations Induced by Alternate Friction Models
@@ -46,7 +46,7 @@ titleSol = 'ODE Solution to Friction Model';
 noSlidingRhs = @friction_RHS_no_filippov;
 warnChatteringState = warning('off', warnChatteringId);
 try
-    [noSlidingSol, noSlidingDatahandle, dataNoFil] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
+    [noSlidingSol, noSlidingDatahandle, noSlidingData] = solveWithIFDIFF(noSlidingRhs, integrator, optionsOde, tspan, y0, p);
 catch ME
     warning(warnChatteringState);
     rethrow(ME)
@@ -88,7 +88,7 @@ for row=1:dimY
         noSlidingAxSens = nexttile(noSlidingTilesSens);
         scatter(noSlidingAxSens, tplot, squeeze(noSlidingGy(row, col, :)), ...
             'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
-        noSlidingSensTitle = sprintf('Gy%d%d', row, col);
+        noSlidingSensTitle = sprintf('Gy_{%d%d}', row, col);
         setupPlotDefaults(noSlidingAxSens, noSlidingSol, 0, {noSlidingSensTitle});
         ylabel(noSlidingAxSens, noSlidingSensTitle, 'FontSize', fontszLabel);
         title(noSlidingAxSens, noSlidingSensTitle, 'FontSize', fontszTitle);
@@ -102,7 +102,7 @@ configOld = makeConfig(configNew);
 slidingRhs = @friction_RHS_filippov;
 warnChatteringState = warning('off', warnChatteringId);
 try
-    [slidingSol, slidingDatahandle, dataFil] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
+    [slidingSol, slidingDatahandle, slidingData] = solveWithIFDIFF(slidingRhs, integrator, optionsOde, tspan, y0, p);
 catch ME
     warning(warnChatteringState);
     rethrow(ME)
@@ -145,7 +145,7 @@ for row=1:dimY
         slidingAxSens = nexttile(slidingTilesSens);
         scatter(slidingAxSens, tplot, squeeze(slidingGy(row, col, :)), ...
             'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
-        slidingSensTitle = sprintf('Gy%d%d filippov', row, col);
+        slidingSensTitle = sprintf('Gy_{%d%d} filippov', row, col);
         setupPlotDefaults(slidingAxSens, slidingSol, 0, {slidingSensTitle});
         ylabel(slidingAxSens, slidingSensTitle, 'FontSize', fontszLabel);
         title(slidingAxSens, slidingSensTitle, 'FontSize', fontszTitle);
@@ -171,13 +171,12 @@ for row=1:dimY
         scatter(slidingAxDiffSens, tplot, squeeze(absDiffGy(row, col, :)), ...
             'LineWidth', 0.5, 'Color', [0, 0.5, 0], 'Marker', '.');
         set(slidingAxDiffSens, 'YScale', 'log');
-        slidingSensTitle = sprintf('Gy%d%d difference', row, col);
+        slidingSensTitle = sprintf('Gy_{%d%d} difference', row, col);
         setupPlotDefaults(slidingAxDiffSens, slidingSol, 0, {slidingSensTitle});
         ylabel(slidingAxDiffSens, slidingSensTitle, 'FontSize', fontszLabel);
         title(slidingAxDiffSens, slidingSensTitle, 'FontSize', fontszTitle);
     end
 end
-
 
 %% Plot switching function
 titleSwitchingFunction = 'Evolution of first switching condition';
@@ -186,8 +185,8 @@ figSwitchingFunction = figure;
 tilesSwitchingFunction = tiledlayout(figSwitchingFunction, 2, 1);
 axSwitchingFunction = nexttile(tilesSwitchingFunction);
 scatter(axSwitchingFunction, tplot, v_rel, 'LineWidth', 0.5, 'Marker', '.');
-setupPlotDefaults(axSwitchingFunction, slidingSol, 0, {'\nu_{rel}'});
-ylabel(axSwitchingFunction, '\nu_{rel} (switching function)', 'FontSize', fontszLabel);
+setupPlotDefaults(axSwitchingFunction, slidingSol, 0, {'v_{rel}'});
+ylabel(axSwitchingFunction, 'v_{rel} (switching function)', 'FontSize', fontszLabel);
 title(axSwitchingFunction, titleSwitchingFunction, 'FontSize', fontszTitle);
 % Zoomed in version
 axSwitchingFunctionZoomed = copyobj([axSwitchingFunction, legend(axSwitchingFunction)], tilesSwitchingFunction);
@@ -198,43 +197,46 @@ axSwitchingFunctionZoomed(1).YLabel = copyobj(axSwitchingFunction.YLabel, axSwit
 ylim(axSwitchingFunctionZoomed(1), [-2*epsilon, 2*epsilon]);
 title(axSwitchingFunctionZoomed(1), [titleSwitchingFunction, ' (Zoomed)'], 'FontSize', fontszTitle);
 
-%% Plot alpha Parameter and check against analytical parameter
-t_alpha = dataFil.sliding.convexification.t;
-alpha = dataFil.sliding.convexification.alpha;
+%% Plot alpha parameter and check against analytical parameter
+tAlpha = slidingData.sliding.convexification.t;
+alpha = slidingData.sliding.convexification.alpha;
 figAlpha = figure;
 axAlpha = axes(figAlpha);
 hold(axAlpha, 'on');
-% compute analytical alphas
-slidingYForAlpha = deval(slidingSol, t_alpha);
-x1Sliding = slidingYForAlpha(1, :);
-alpha_anal = (F_s - k * x1Sliding) / (2 * F_s);
-alpha_anal_defined_areas = alpha_anal;
-% cut all values that are not in the regions where alpha parameter is meaningful
-alpha_anal_defined_areas(alpha_anal_defined_areas > 1 | alpha_anal_defined_areas < 0 | isnan(alpha)) = NaN;
-plot(axAlpha, t_alpha, alpha_anal, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], 'DisplayName', 'Analytical $\alpha$ (undefined regions)','LineStyle','--');
-plot(axAlpha, t_alpha, alpha_anal_defined_areas, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], 'DisplayName', 'Analytical $\alpha$');
-plot(axAlpha, t_alpha, alpha,'LineWidth', lw,'Color', [0.8500 0.9250 0.0980],'DisplayName', 'Numerical $\alpha$ (IFDIFF)');
-xlabel(axAlpha, 'Time t [s]', 'Interpreter', 'latex');
-ylabel(axAlpha, '$\alpha$', 'Interpreter', 'latex');
-title(axAlpha, 'Comparison of Analytical and Numerical $\alpha$ (analytical in terms of numerical sol obj)','Interpreter', 'latex');
-legend(axAlpha, 'Location', 'best', 'Interpreter', 'latex');
+% Compute analytical alphas
+yAlpha = deval(slidingSol, tAlpha);
+alphaAnalytical = (F_s - k * yAlpha(1,:)) / (2 * F_s);
+% Cut all values that are not in the regions where alpha parameter is meaningful
+alphaAnalyticalActive = alphaAnalytical;
+alphaAnalyticalActive(alphaAnalytical > 1 | alphaAnalytical < 0 | isnan(alpha)) = NaN;
+plot(axAlpha, tAlpha, alphaAnalytical, 'LineWidth', lw, 'Color', [0 0.8470 0.7410], ...
+    'DisplayName', 'Analytical \alpha (undefined regions)', 'LineStyle', '--');
+plot(axAlpha, tAlpha, alphaAnalyticalActive, 'LineWidth', lw+2, 'Color', [0 0.4470 0.7410], ...
+    'DisplayName', 'Analytical \alpha');
+plot(axAlpha, tAlpha, alpha,'LineWidth', lw, 'Color', [0.8500 0.9250 0.0980], ...
+    'DisplayName', 'Numerical \alpha (IFDIFF)');
+xlabel(axAlpha, 'Time (s)');
+ylabel(axAlpha, '\alpha');
+title(axAlpha, 'Comparison of Analytical and Numerical \alpha (analytical in terms of numerical sol obj)');
+legend(axAlpha, 'Location', 'best');
 grid(axAlpha, 'on');
 box(axAlpha, 'on');
 set(axAlpha, 'FontSize', 12, 'LineWidth', 1);
 
 %% Plot difference between analytical and numerical alpha
-alpha_diff = alpha - alpha_anal_defined_areas;
+alphaDiff = alpha - alphaAnalyticalActive;
 
 figDiff = figure;
 axDiff = axes(figDiff);
 hold(axDiff, 'on');
-semilogx(axDiff, t_alpha, alpha_diff, 'LineWidth', lw, 'Color', [0.6350 0.0780 0.1840],'DisplayName', '$\alpha_{\mathrm{num}} - \alpha_{\mathrm{anal}}$');
-xlabel(axDiff, 'Time t [s]', 'Interpreter', 'latex');
-ylabel(axDiff, '$\Delta \alpha$', 'Interpreter', 'latex');
-title(axDiff, 'Difference between Numerical and Analytical $\alpha$', 'Interpreter', 'latex');
-legend(axDiff, 'Location', 'best', 'Interpreter', 'latex');
+semilogx(axDiff, tAlpha, alphaDiff, 'LineWidth', lw, 'Color', [0.6350 0.0780 0.1840], ...
+    'DisplayName', '\alpha_{num} - \alpha_{analytical}');
+xlabel(axDiff, 'Time (s)');
+ylabel(axDiff, '\Delta \alpha');
+title(axDiff, 'Difference between Numerical and Analytical \alpha');
+legend(axDiff, 'Location', 'best');
 grid(axDiff, 'on');
-xlim(axDiff, t_alpha([1 end]));
+xlim(axDiff, tAlpha([1, end]));
 box(axDiff, 'on');
 set(axDiff, 'FontSize', 12, 'LineWidth', 1);
 
