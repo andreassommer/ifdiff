@@ -1,10 +1,11 @@
-function sens = computeSensitivitySwitchUpdate( ...
+function update = computeSensitivitySwitchUpdate( ...
     sens, dirP, ...
     tMinus, tPlus, yMinus, yPlus, p, ...
     fMinusFunc, fPlusFunc, ...
     sigmaDtPartialFunc, sigmaDyPartialFunc, sigmaDpPartialFunc, ...
     jumpDtPartialFunc, jumpDyPartialFunc, jumpDpPartialFunc)
 
+update = sens;
 % Determine which columns contain parameter sensitivities and which initial value sensitivities.
 % Assumption: Initial value sensitivities come first, then parameter sensitivities.
 [dim, nDir] = size(sens);
@@ -32,12 +33,12 @@ if ~isempty(jumpDyPartialFunc)
     % Evaluate jump_y in direction of sens and fMinus in one call for efficiency.
     % Last column belongs to fMinus.
     jumpDyPartial = jumpDyPartialFunc(tMinus, yMinus, p, [sens, fMinus]);
-    sens = sens + jumpDyPartial(:, 1:end-1);
+    update = update + jumpDyPartial(:, 1:end-1);
     derivativeSolutionWrtSwitchingTime = derivativeSolutionWrtSwitchingTime - jumpDyPartial(:, end);
 end
 if hasParameter && ~isempty(jumpDpPartialFunc)
     % Apply only to parameter sensitivities.
-    sens(:, nDirY+1:end) = sens(:, nDirY+1:end) + jumpDpPartialFunc(tMinus, yMinus, p, dirP);
+    update(:, nDirY+1:end) = update(:, nDirY+1:end) + jumpDpPartialFunc(tMinus, yMinus, p, dirP);
 end
 if all(derivativeSolutionWrtSwitchingTime == 0)
     % Remaining outer product term would be zero, so we are done here.
@@ -71,7 +72,7 @@ sigmaDtTotal = sigmaDtPartial + sigmaDyPartialFminus;
 
 % Check that sigma/dt is not too close to zero.
 sigmaDtThreshold = 10*eps(tMinus);
-if sigmaDtTotal < sigmaDtThreshold
+if abs(sigmaDtTotal) < sigmaDtThreshold
     throw(switchingFunctionDerivativeZeroException(sigmaDtTotal, sigmaDtThreshold));
 end
 
@@ -82,7 +83,7 @@ else
     derivativeSwitchingTimeWrtParams = derivativeSwitchingTimeWrtParams./sigmaDtTotal;
 end
 
-sens = sens + derivativeSolutionWrtSwitchingTime * derivativeSwitchingTimeWrtParams;
+update = update + derivativeSolutionWrtSwitchingTime * derivativeSwitchingTimeWrtParams;
 end
 
 

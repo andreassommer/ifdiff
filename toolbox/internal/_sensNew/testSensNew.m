@@ -17,13 +17,24 @@ sw = sol.switches;
 
 %% Sensitivity
 dirY = [];
+calcGy = true;
+%dirY = [1, 0; 0, 1; 1, 1]';
+calcGp = false;
 dirP = [];
-nDirY = length(initialvalues);
-nDirP = length(parameters);
+if calcGy && isempty(dirY)
+    nDirY = length(initialvalues);
+else
+    nDirY = size(dirY, 2);
+end
+if calcGp && isempty(dirP)
+    nDirP = length(parameters);
+else
+    nDirP = size(dirP, 2);
+end
 %t = linspace(tspan(1), tspan(2), 1000);
 %t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);
 t = jumpLinspace(tspan(1), tspan(end), sol.switches, 1e5);
-sensObj = IFDIFFSensitivity(datahandle, sol, dirY, dirP);
+sensObj = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP);
 [sensT, sensSol] = sensObj.eval(t);
 
 %% Plot directly
@@ -50,6 +61,9 @@ plotTiled(t, y, nDirY, nDirP)
 function plotTiled(t, y, nDirY, nDirP)
 nPrev = 0;
 for nDir=[nDirY, nDirP]
+    if nDir == 0
+        continue
+    end
     figure;
     axs = [];
     tiledlayout(size(y, 1), nDir);

@@ -22,7 +22,7 @@ classdef IFDIFFSensitivity
     end
 
     methods
-        function this = IFDIFFSensitivity(datahandle, sol, dirY, dirP)
+        function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP)
             this.datahandle = datahandle;
             this.solution = sol;
             data = datahandle.getData();
@@ -52,11 +52,18 @@ classdef IFDIFFSensitivity
 
             this.integrator = data.integratorSettings.numericIntegrator;
             this.integratorOptions = data.integratorSettings.options;
-
-            if isempty(dirY)
+            
+            if ~calcGy && ~calcGp
+                error('IFDIFF:Sensitivity:NothingToCompute', 'Neither initial value nor parameter sensitivity was requested.')
+            end
+            if ~calcGy
+                dirY = [];
+            elseif isempty(dirY)
                 dirY = eye(this.dimy);
             end
-            if isempty(dirP)
+            if ~calcGp
+                dirP = [];
+            elseif isempty(dirP)
                 dirP = eye(this.dimp);
             end
             this.dirY = dirY;
@@ -159,9 +166,9 @@ classdef IFDIFFSensitivity
 
             % Return sensitivity at requested timepoints
             piecewiseFunc = arrayfun(@(sol) @(t) deval(sol, t), sensSol, 'UniformOutput', false);
-            sensUnique = evalPiecewiseFunc(t, piecewiseFunc, numel(sensInitialValue), this.switches);
-            sensUnique = reshape(sensUnique, this.dimy, size(sensInitialValue, 2), []);
-            sens = sensUnique(:, :, idxTimepointsUndoSort);
+            sens = evalPiecewiseFunc(t, piecewiseFunc, numel(sensInitialValue), this.switches);
+            sens = reshape(sens, this.dimy, size(sensInitialValue, 2), []);
+            sens = sens(:, :, idxTimepointsUndoSort);
         end
     end
 end
