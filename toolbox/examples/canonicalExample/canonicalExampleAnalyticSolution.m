@@ -123,36 +123,5 @@ for idxModel=1:size(y, 2)
     yFull{idxModel} = @(t) [y{1, idxModel}(t); y{2, idxModel}(t)];
 end
 
-funcSolPiecewise = @(t) evalPiecewise(t, yFull, length(y0), tSwitch);
-end
-
-function y = evalPiecewise(t, solPiece, dimy, sw)
-% Make sure eval points and switching times are sorted in ascending order.
-[t, tSortIdx] = sort(t);
-sw = sort(sw);
-y = zeros(dimy, length(t));
-
-done = false;
-idxModelStart = 1;
-for idxSw=1:length(sw)
-    % Since eval points and switching times are sorted, we look for the first eval point that lies after the next switch.
-    idxModelEnd = (idxModelStart - 1) + find(t(idxModelStart:end) >= sw(idxSw), 1);
-    % If no such point exists, then we stay in the same model until the end.
-    if isempty(idxModelEnd)
-        y(:, idxModelStart:end) = solPiece{idxSw}(t(idxModelStart:end));
-        done = true;
-        break
-    end
-    % Otherwise, evaluate points before switch in the current model and update model for next iteration.
-    y(:, idxModelStart:idxModelEnd-1) = solPiece{idxSw}(t(idxModelStart:idxModelEnd-1));
-    idxModelStart = idxModelEnd;
-end
-
-% If we actually reach the last model or stay in first model, then we have to evaluate the remaining points in that model.
-if ~done
-    y(:, idxModelStart:end) = solPiece{end}(t(idxModelStart:end));
-end
-
-% Reverse the sorting
-y(:, tSortIdx) = y(:, 1:end);
+funcSolPiecewise = @(t) evalPiecewiseFunc(t, yFull, length(y0), tSwitch);
 end

@@ -21,11 +21,15 @@ dirP = [];
 nDirY = length(initialvalues);
 nDirP = length(parameters);
 %t = linspace(tspan(1), tspan(2), 1000);
-t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);
-sens = IFDIFFSensitivity(datahandle, sol, dirY, dirP);
-sens = sens.eval(t);
+%t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);
+t = jumpLinspace(tspan(1), tspan(end), sol.switches, 1e5);
+sensObj = IFDIFFSensitivity(datahandle, sol, dirY, dirP);
+[sensT, sensSol] = sensObj.eval(t);
 
-%% Plot
+%% Plot directly
+plotTiled(t, sensT, nDirY, nDirP)
+
+%% Plot via sol
 y = [];
 tidx = 1;
 for i=1:length(sw)+1
@@ -35,11 +39,15 @@ for i=1:length(sw)+1
     else
         ti = t(tidx:end);
     end
-    yi = reshape(deval(sens(i), ti), length(initialvalues), nDirY + nDirP, []);
+    yi = reshape(deval(sensSol(i), ti), length(initialvalues), nDirY + nDirP, []);
     y = cat(3, y, yi);
     tidx = tidxnew;
 end
+plotTiled(t, y, nDirY, nDirP)
 
+
+%% Helper
+function plotTiled(t, y, nDirY, nDirP)
 nPrev = 0;
 for nDir=[nDirY, nDirP]
     figure;
@@ -47,11 +55,13 @@ for nDir=[nDirY, nDirP]
     tiledlayout(size(y, 1), nDir);
     for i=1:size(y, 1)
         for j=1:nDir
-            axs(i,j) = nexttile; %#ok<SAGROW>
+            axs(i,j) = nexttile; %#ok<AGROW>
             plot(t, squeeze(y(i, nPrev + j, :)));
+            title(sprintf('G_{%d%d}', i, j))
         end
     end
     ylim tight
     linkaxes(axs)
     nPrev = nDir;
+end
 end

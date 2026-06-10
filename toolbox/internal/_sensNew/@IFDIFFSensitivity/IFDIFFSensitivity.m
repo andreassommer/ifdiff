@@ -121,7 +121,7 @@ classdef IFDIFFSensitivity
                 jumpt, jumpy, jumpp);
         end
 
-        function sensSol = eval(this, timepoints)
+        function [sens, sensSol] = eval(this, timepoints)
             % Ensure timepoints are strictly increasing.
             [t, ~, idxTimepointsUndoSort] = unique(timepoints);
 
@@ -140,7 +140,7 @@ classdef IFDIFFSensitivity
             tModelStart = this.tspan(1);
             sensInitialValue = [this.dirY, zeros(this.dimy, size(this.dirP, 2))];
             nDirY = size(this.dirY, 2);
-            
+
             % Integrate each submodel until switch and apply update at the end.
             for idxModel=idxModelStart:idxModelEnd-1
                 tModelEnd = this.switchesLeft(idxModel);
@@ -156,6 +156,12 @@ classdef IFDIFFSensitivity
             % No more switches left, so solve until the end.
             tModelEnd = t(end);
             sensSol(idxModelEnd) = this.solveVde(idxModelEnd, [tModelStart, tModelEnd], sensInitialValue, nDirY);
+
+            % Return sensitivity at requested timepoints
+            piecewiseFunc = arrayfun(@(sol) @(t) deval(sol, t), sensSol, 'UniformOutput', false);
+            sensUnique = evalPiecewiseFunc(t, piecewiseFunc, numel(sensInitialValue), this.switches);
+            sensUnique = reshape(sensUnique, this.dimy, size(sensInitialValue, 2), []);
+            sens = sensUnique(:, :, idxTimepointsUndoSort);
         end
     end
 end
