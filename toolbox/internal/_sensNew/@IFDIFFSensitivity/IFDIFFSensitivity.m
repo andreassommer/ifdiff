@@ -19,10 +19,11 @@ classdef IFDIFFSensitivity
         dirP
         switchingFunctions
         jumpFunctions
+        fdStep
     end
 
     methods
-        function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP)
+        function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP, fdStep)
             this.datahandle = datahandle;
             this.solution = sol;
             data = datahandle.getData();
@@ -52,7 +53,7 @@ classdef IFDIFFSensitivity
 
             this.integrator = data.integratorSettings.numericIntegrator;
             this.integratorOptions = data.integratorSettings.options;
-            
+
             if ~calcGy && ~calcGp
                 error('IFDIFF:Sensitivity:NothingToCompute', 'Neither initial value nor parameter sensitivity was requested.')
             end
@@ -68,22 +69,15 @@ classdef IFDIFFSensitivity
             end
             this.dirY = dirY;
             this.dirP = dirP;
+
+            this.fdStep = fdStep;
         end
 
         function sol = solveVde(this, idxModel, tspan, initialValues, nDirY)
             rhs = getRhsFromModelNum(this.datahandle, idxModel);
-            rhs = @(t, y, p) rhs(this.datahandle, t, y, p);
+            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, rhs, this.fdStep);
 
-            h = 1e-6; % TODO: temporarily hard-coded
-            fDyPartial = @(t, y, p, v) finiteDifference(@(x) rhs(t, x, p), y, h, v);
-            nDirP = size(initialValues, 2) - nDirY;
-            if nDirP > 0
-                fDpPartial = @(t, y, p) finiteDifference(@(x) rhs(t, y, x), p, h, this.dirP);
-            else
-                fDpPartial = [];
-            end
-
-            rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, fDyPartial, fDpPartial);
+            rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, df, this.dirP);
             initialValues = initialValues(:);
             sol = this.integrator(rhsVde, tspan, initialValues, this.integratorOptions);
         end
@@ -106,26 +100,19 @@ classdef IFDIFFSensitivity
             % Setup derivatives.
             sigma = this.switchingFunctions{idxModel};
             jump = this.jumpFunctions{idxModel};
-            h = 1e-6; % TODO: temporarily hard-coded
-            sigmat = @(t, y, p, v) finiteDifference(@(x) sigma([], x, y, p), t, h, v);
-            sigmay = @(t, y, p, v) finiteDifference(@(x) sigma([], t, x, p), y, h, v);
-            sigmap = @(t, y, p, v) finiteDifference(@(x) sigma([], t, y, x), p, h, v);
-            if isempty(jump)
-                jumpt = [];
-                jumpy = [];
-                jumpp = [];
+
+            dsigma = IFDIFFDerivativeFiniteDifferences([], sigma, this.fdStep);
+            if ~isempty(jump)
+                djump = IFDIFFDerivativeFiniteDifferences([], jump, this.fdStep);
             else
-                jumpt = @(t, y, p, v) finiteDifference(@(x) jump([], x, y, p), t, h, v);
-                jumpy = @(t, y, p, v) finiteDifference(@(x) jump([], t, x, p), y, h, v);
-                jumpp = @(t, y, p, v) finiteDifference(@(x) jump([], t, y, x), p, h, v);
+                djump = [];
             end
 
             sens = computeSensitivitySwitchUpdate( ...
                 sens, this.dirP, ...
                 tMinus, tPlus, yMinus, yPlus, this.parameters, ...
                 @(t, y, p) fMinus(this.datahandle, t, y, p), @(t, y, p) fPlus(this.datahandle, t, y, p), ...
-                sigmat, sigmay, sigmap, ...
-                jumpt, jumpy, jumpp);
+                dsigma, djump);
         end
 
         function [sens, sensSol] = eval(this, timepoints)

@@ -85,7 +85,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
       % OUTPUT: sensitivities - struct that contains the given timepoints, the calculated sensitivities and the intermediate G-matrices
 
       if method == methodCoded.VDE
-          sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, [], []);
+          sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, [], [], FDstep);
           sensT = sensObj.eval(t_all);
           for i=1:size(sensT, 3)
               if Gy_flag
