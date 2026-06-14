@@ -91,7 +91,7 @@ classdef IFDIFFSensitivity
             % TODO: Fix ugly workaround after datahandle refactor.
             % If the submodel is not exported as a separate function and instead relies on the datahandle,
             % then we have to evaluate fMinus here, so that the signature is set correctly for fPlus.
-            if makeConfig().removeCtrlifForSensComputation
+            if ~makeConfig().removeCtrlifForSensComputation
                 fMinusEval = fMinus(this.datahandle, tMinus, yMinus, this.parameters);
                 fMinus = @(~, ~, ~, ~) fMinusEval;
             end
