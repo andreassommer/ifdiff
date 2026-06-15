@@ -3,8 +3,8 @@
 
 %% Setup and integration
 integrator = @ode15s;
-p          = -0.4; % -1 < p < 0 
-x0         = [1; -1+p]; % 1+p to guarantee consistent initial cond.
+p          = -0.2; % -1 < p < 0 
+x0         = [1; -1+p]; % 1+p to guarantee consistent initial condition
 t0         = 0;
 tf         = 5;
 tspan      = [t0 tf];

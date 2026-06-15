@@ -7,10 +7,10 @@ function f = daeExampleRHS_reworked(~, x, p)
     f(2) = z;
 
     % differential equation
-    if x(2) < p
-        f(1) = x(2);
+    if x(2) < p 
+       f(1) = x(2);
     else
-        f(1) = 0;
+       f(1) = -10;
     end
 
 end
