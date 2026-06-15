@@ -4,9 +4,11 @@ rhs = @canonicalExampleRHS;
 tspan         = [0 20];
 initialvalues = [1; 0];
 parameters    = 5.437;
+dimy = length(initialvalues);
+dimp = length(parameters);
 
 integrator = @ode45;
-opts = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+opts = odeset('AbsTol', 1e-12, 'RelTol', 1e-10);
 
 %% Preprocess
 datahandle = prepareDatahandleForIntegration(rhs, 'integrator', integrator, 'options', opts);
@@ -34,8 +36,27 @@ end
 %t = linspace(tspan(1), tspan(2), 1000);
 %t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);
 t = jumpLinspace(tspan(1), tspan(end), sol.switches, 1e5);
-sensObj = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP);
-[sensT, sensSol] = sensObj.eval(t);
+nt = length(t);
+fdStep = generateFDstep(dimy, dimp);
+
+%sensObj = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP);
+%[sensT, sensSol] = sensObj.eval(t);
+sensFunOld = generateSensitivityFunction(datahandle, sol, fdStep, 'calcGy', calcGy, 'calcGp', calcGp, ...
+'directions_y', dirY, 'directions_p', dirP, 'legacy', true, 'Gmatrices_intermediate', true);
+sensFunNew = generateSensitivityFunction(datahandle, sol, fdStep, 'calcGy', calcGy, 'calcGp', calcGp, ...
+    'directions_y', dirY, 'directions_p', dirP);
+sensOld = sensFunOld(t);
+sensNew = sensFunNew(t);
+
+%% Compare
+sdOld = zeros(dimy, nDirY);
+sdNew = zeros(dimy, nDirY);
+
+for i=1:nt
+    sdOld(:, :, i) = sensOld(i).Gy;
+    sdNew(:, :, i) = sensNew(i).Gy;
+end
+plotTiled(t, abs(sdOld - sdNew), nDirY, nDirP);
 
 %% Plot directly
 plotTiled(t, sensT, nDirY, nDirP)

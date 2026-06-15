@@ -21,8 +21,8 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
    %                                                or VDE should be included in the output struct
    %                     'method'                 - method that should be used to calculate the sensitivities (you can choose from END_full, 
    %                                                END_piecewise and VDE)
-   %                     'directions_y'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. y0 if you use END_full
-   %                     'directions_p'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. p if you use END_full
+   %                     'directions_y'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. y0 if you use END_full or VDE
+   %                     'directions_p'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. p if you use END_full or VDE
    %
    % OUTPUT: sensitivities_function - function that that can take a vector of timepoints and the struct FDstep with the stepsizes for END 
    %                                  as inputs and calculates the sensitivities at the given timepoints.
@@ -41,10 +41,11 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
    method                      = olGetOption(varargin, 'method',                 'VDE');
    Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate', false);
    Gy_flag                     = olGetOption(varargin, 'calcGy',                 true);
-   directions_y                = olGetOption(varargin, 'directions_y',           0);
+   directions_y                = olGetOption(varargin, 'directions_y',           []);
    Gp_flag                     = olGetOption(varargin, 'calcGp',                 true);
-   directions_p                = olGetOption(varargin, 'directions_p',           0);
+   directions_p                = olGetOption(varargin, 'directions_p',           []);
    save_intermediates          = olGetOption(varargin, 'save_intermediates',     true);
+   legacy                      = olGetOption(varargin, 'legacy',                 false);
 
    methodCoded.END_piecewise = 1;
    methodCoded.VDE           = 2;
@@ -84,15 +85,24 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
       %
       % OUTPUT: sensitivities - struct that contains the given timepoints, the calculated sensitivities and the intermediate G-matrices
 
-      if method == methodCoded.VDE
-          sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, [], [], FDstep);
-          sensT = sensObj.eval(t_all);
-          for i=1:size(sensT, 3)
+      if ~legacy && method == methodCoded.VDE
+          sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, directions_y, directions_p, FDstep);
+          sens = sensObj.eval(t_all);
+          if Gy_flag
+              ndirY = size(directions_y, 2);
+              if ndirY == 0; ndirY = dim_y; end
+          end
+          if Gp_flag
+              ndirP = size(directions_p, 2);
+              if ndirP == 0; ndirP = dim_p; end
+          end
+          for i=1:size(sens, 3)
               if Gy_flag
-                  sensitivities(i).Gy = sensT(:, 1:dim_y, i);
+                  sensitivities(i).Gy = sens(:, 1:ndirY, i);
               end
               if Gp_flag
-                  sensitivities(i).Gp = sensT(:, 1+dim_y*Gy_flag:end, i);
+                  % Parameter sensitivities are stored after initial value sensitivities (if there are any).
+                  sensitivities(i).Gp = sens(:, (1+ndirY*Gy_flag):end, i);
               end
           end
           return
