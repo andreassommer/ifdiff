@@ -10,15 +10,15 @@ tf         = 5;
 tspan      = [t0 tf];
 M          = [1 0; 0 0];
 
-opts_ifdiff = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-8,'RelTol', 1e-6);
-opts_plain  = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-6, 'RelTol', 1e-3);
+opts_ifdiff = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-8,'RelTol', 1e-4);
+opts_plain  = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-8, 'RelTol', 1e-4);
 
 sol_plain  = integrator(@(t, x) daeExampleRHS_reworked(t, x, p), tspan, x0, opts_plain);
 
 datahandle = prepareDatahandleForIntegration('daeExampleRHS_reworked', 'integrator', integrator, 'options', opts_ifdiff);
 sol_ifdiff = solveODE(datahandle, tspan, x0, p);
 
-%% Expl. Euler comparision
+%% Expl. Euler comparison
 h = 1e-4;
 sol_euler = explicitEulerDAE(@(t,x,p) daeExampleRHS_reworked(t,x,p), 1, tspan, x0, p, h);
 

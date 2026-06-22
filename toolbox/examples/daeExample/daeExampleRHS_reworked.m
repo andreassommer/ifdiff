@@ -1,5 +1,5 @@
 function f = daeExampleRHS_reworked(~, x, p)
-    %
+
     f = zeros(2,1);
 
     % algebraic constraint
@@ -10,7 +10,7 @@ function f = daeExampleRHS_reworked(~, x, p)
     if x(2) < p 
        f(1) = x(2);
     else
-       f(1) = -10;
+       f(1) = 0;
     end
 
 end
