@@ -1,74 +1,100 @@
-function sol = explicitEulerDAE(rhs, DifferentialVars, tspan, x0, p, h, newtonOpts)
-% explicitEulerDAE - Explicit Euler solver for semi-explicit, index 1 DAEs
-%
-% Solves: M * x' = f(t,x) by explicit Euler method
-% INPUT:
-%   rhs                 - function handle: f(t, x, p)
-%   tspan               - [t0 tf]
-%   x0                  - initial state
-%   p                   - parameters
-%   h                   - step size
-%   newtonOpts          - struct with field
-%   DifferentialVars    - number of differential variables
-% OPTIONS:
-%   maxIter (default 10)
-%   tol (default 1e-10)
-% OUTPUT:
-%   sol.x               - time vector
-%   sol.y               - solution matrix
+function sol = explicitEulerDAE(rhs, M, tspan, x0, p, h, m, newtonOpts)
 
-    % default options
-    if nargin < 7
+    if nargin < 8 || isempty(newtonOpts)
         newtonOpts.maxIter = 10;
         newtonOpts.tol     = 1e-10;
     end
-
-    t = tspan(1):h:tspan(2);
-    N = length(t);
-
+    
+    t0 = tspan(1);
+    tf = tspan(2);
+    
+    % Use loop-based time stepping to avoid giant time vector preallocation
+    % Total expected steps (excluding t0)
+    total_steps = round((tf - t0) / h);
+    
+    % Preallocate only the stored steps to save massive memory
+    % We store step 0 (initial condition), plus every m-th step
+    num_stored = 1 + floor(total_steps / m);
+    
     nx = length(x0);
-    x  = zeros(nx, N);
-    x(:,1) = x0;
-
-    % calculate dimensions
-    nd = DifferentialVars; % number of differential variables
-    na = nx - nd;          % number of algebraic variables
-
-    for n = 1:N-1
-        f_val = rhs(t(n), x(:,n), p);
-        x(1:nd, n+1) = x(1:nd, n) + h * f_val(1:nd);
-        z_guess = x(nd+1:end, n);
+    sol_y = zeros(nx, num_stored);
+    sol_x = zeros(1, num_stored);
+    
+    % Initialize first column
+    sol_y(:,1) = x0;
+    sol_x(1)   = t0;
+    
+    % Extract options to avoid structure lookups inside the hot loop
+    maxIter = newtonOpts.maxIter;
+    tol     = newtonOpts.tol;
+    
+    diff_idx = diag(M) ~= 0;
+    alg_idx  = ~diff_idx;
+    
+    nd = sum(diff_idx);
+    na = sum(alg_idx);
+    
+    % Current state vectors to avoid frequent indexing into large arrays
+    x_curr = x0;
+    x_next = zeros(nx, 1); 
+    
+    % Localize indices for speed
+    diff_idx = 1:nd;
+    alg_idx  = (nd+1):nx;
+    
+    stored_count = 1;
+    t = t0;
+    
+    % Main integration loop
+    for step = 1:total_steps
+        % 1. Explicit Euler step for differential variables
+        f_val = rhs(t, x_curr, p);
+        x_next(diff_idx) = x_curr(diff_idx) + h * f_val(diff_idx);
         
-        for k = 1:newtonOpts.maxIter
-            x_trial = [x(1:nd, n+1); z_guess];
-            F = rhs(t(n+1), x_trial, p);
-            g = F(nd+1:end); 
-            J = zeros(na, na);
-            eps_fd = 1e-8;
+        % Advance time
+        t = t0 + step * h; 
+        
+        % 2. Newton-Raphson for algebraic variables
+        z_guess = x_curr(alg_idx); 
+        x_trial = x_next; % Base template for Newton iterations
+        
+        for k = 1:maxIter
+            x_trial(alg_idx) = z_guess;
+            F = rhs(t, x_trial, p);
+            g = F(alg_idx); 
             
-            for i = 1:na
-                dz = zeros(na,1);
-                dz(i) = eps_fd;
-                
-                x_eps = [x(1:nd, n+1); z_guess + dz];
-                F_eps = rhs(t(n+1), x_eps, p);
-                J(:,i) = (F_eps(nd+1:end) - g) / eps_fd;
-            end
-            
-            % Newton step (differential variables)
-            update = -J \ g;
-            z_new = z_guess + update;
-            
-            if norm(update) < newtonOpts.tol
+            % Check convergence early before building Jacobian
+            if k > 1 && norm(update, Inf) < tol
                 break;
             end
             
-            z_guess = z_new;
+            % Finite difference Jacobian estimation
+            J = zeros(na, na);
+            eps_fd = 1e-6;
+            for i = 1:na
+                x_eps = x_trial;
+                x_eps(nd + i) = x_eps(nd + i) + eps_fd;
+                F_eps = rhs(t, x_eps, p);
+                J(:,i) = (F_eps(alg_idx) - g) / eps_fd;
+            end
+            
+            update = -J \ g;
+            z_guess = z_guess + update;
         end
         
-        x(nd+1:end, n+1) = z_guess;
+        % Finalize state for this step
+        x_next(alg_idx) = z_guess;
+        x_curr = x_next;
+        
+        % 3. Check if this step should be stored (every m-th step)
+        if mod(step, m) == 0
+            stored_count = stored_count + 1;
+            sol_y(:, stored_count) = x_curr;
+            sol_x(stored_count)   = t;
+        end
     end
-
-    sol.x = t;
-    sol.y = x;
+    
+    % Handle truncation if total_steps wasn't perfectly divisible by m
+    sol.x = sol_x(1:stored_count);
+    sol.y = sol_y(:, 1:stored_count);
 end
