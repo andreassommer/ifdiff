@@ -1,7 +1,7 @@
 %% Setup
 % Canonical Example
 rhs = @canonicalExampleRHS;
-tspan         = [0 20];
+tspan         = [0, 100];
 initialvalues = [1; 0];
 parameters    = 5.437;
 dimy = length(initialvalues);
@@ -37,7 +37,8 @@ end
 %t = (sol.switches(1)-0.5):0.001:(sol.switches(2)+0.5);
 t = jumpLinspace(tspan(1), tspan(end), sol.switches, 1e5);
 nt = length(t);
-fdStep = generateFDstep(dimy, dimp);
+h = sqrt(eps);
+fdStep = generateFDstep(dimy, dimp, 'ht', h, 'hy', h, 'hp', h);
 
 %sensObj = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP);
 %[sensT, sensSol] = sensObj.eval(t);
