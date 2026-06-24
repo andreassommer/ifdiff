@@ -56,9 +56,9 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
         function df = dy(this, t, y, p, v)
             f0 = this.f(this.datahandle, t, y, p);
 
-            dimf = length(f0);
+            [dimf, nt] = size(f0);
             nd = size(v, 2);
-            df = zeros(dimf, nd);
+            df = zeros(dimf, nd, nt);
 
             h = this.hy(y);
             [v, h, normv, idxNonzero] = this.scaleDirections(y, v, h);
@@ -68,16 +68,16 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
 
             for i=1:length(idxNonzero)
                 fh = this.f(this.datahandle, t, v(:, i), p);
-                df(:, idxNonzero(i)) = (fh - f0) ./ h(i);
+                df(:, idxNonzero(i), :) = (fh - f0) ./ h(i);
             end
-            df(:, idxNonzero) = df(:, idxNonzero) .* normv(idxNonzero);
+            df(:, idxNonzero, :) = df(:, idxNonzero, :) .* normv(idxNonzero);
         end
         function df = dp(this, t, y, p, v)
             f0 = this.f(this.datahandle, t, y, p);
 
-            dimf = length(f0);
+            [dimf, nt] = size(f0);
             nd = size(v, 2);
-            df = zeros(dimf, nd);
+            df = zeros(dimf, nd, nt);
 
             h = this.hp(p);
             [v, h, normv, idxNonzero] = this.scaleDirections(p, v, h);
@@ -87,9 +87,9 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
 
             for i=1:length(idxNonzero)
                 fh = this.f(this.datahandle, t, y, v(:, i));
-                df(:, idxNonzero(i)) = (fh - f0) ./ h(i);
+                df(:, idxNonzero(i), :) = (fh - f0) ./ h(i);
             end
-            df(:, idxNonzero) = df(:, idxNonzero) .* normv(idxNonzero);
+            df(:, idxNonzero, :) = df(:, idxNonzero, :) .* normv(idxNonzero);
         end
     end
 
