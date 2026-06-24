@@ -41,15 +41,13 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
             nd = size(v, 2);
             df = zeros(dimf, nd);
 
-            normv = vecnorm(v, 2, 1);
-            idxNonzero = find(normv);
-            v = v(:, idxNonzero) ./ normv(idxNonzero);
+            h = this.ht(t);
+            [v, h, normv, idxNonzero] = this.scaleDirections(t, v, h);
+            if isempty(idxNonzero)
+                return
+            end
 
-            % Assume that h is a column vector which contains a step size for each component.
-            % To determine the step size for an arbitrary direction v compute the scalar product of h and v.
-            h = this.ht(t)' * v;
-            v = t + v.*h;
-            for i=1:size(v, 2)
+            for i=1:length(idxNonzero)
                 fh = this.f(this.datahandle, v(:, i), y, p);
                 df(:, idxNonzero(i)) = (fh - f0) ./ h(i);
             end
@@ -62,15 +60,13 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
             nd = size(v, 2);
             df = zeros(dimf, nd);
 
-            normv = vecnorm(v, 2, 1);
-            idxNonzero = find(normv);
-            v = v(:, idxNonzero) ./ normv(idxNonzero);
+            h = this.hy(y);
+            [v, h, normv, idxNonzero] = this.scaleDirections(y, v, h);
+            if isempty(idxNonzero)
+                return
+            end
 
-            % Assume that h is a column vector which contains a step size for each component.
-            % To determine the step size for an arbitrary direction v compute the scalar product of h and v.
-            h = this.hy(y)' * v;
-            v = y + v.*h;
-            for i=1:size(v, 2)
+            for i=1:length(idxNonzero)
                 fh = this.f(this.datahandle, t, v(:, i), p);
                 df(:, idxNonzero(i)) = (fh - f0) ./ h(i);
             end
@@ -83,19 +79,35 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
             nd = size(v, 2);
             df = zeros(dimf, nd);
 
-            normv = vecnorm(v, 2, 1);
-            idxNonzero = find(normv);
-            v = v(:, idxNonzero) ./ normv(idxNonzero);
+            h = this.hp(p);
+            [v, h, normv, idxNonzero] = this.scaleDirections(p, v, h);
+            if isempty(idxNonzero)
+                return
+            end
 
-            % Assume that h is a column vector which contains a step size for each component.
-            % To determine the step size for an arbitrary direction v compute the scalar product of h and v.
-            h = this.hp(p)' * v;
-            v = p + v.*h;
-            for i=1:size(v, 2)
+            for i=1:length(idxNonzero)
                 fh = this.f(this.datahandle, t, y, v(:, i));
                 df(:, idxNonzero(i)) = (fh - f0) ./ h(i);
             end
             df(:, idxNonzero) = df(:, idxNonzero) .* normv(idxNonzero);
+        end
+    end
+
+    %% Helper functions
+    methods (Static, Access=private)
+        function [v, h, normv, idxNonzero] = scaleDirections(x, v, h)
+            % Filter zero directions.
+            normv = vecnorm(v, 2, 1);
+            idxNonzero = find(normv);
+            if isempty(idxNonzero)
+                return
+            end
+            % Scale each non-zero direction to unit length.
+            v = v(:, idxNonzero) ./ normv(idxNonzero);
+            % Assume that h is a column vector which contains a step size for each component.
+            % To determine the step size for an arbitrary direction v compute the scalar product of h and v.
+            h = h' * v;
+            v = x + v.*h;
         end
     end
 
