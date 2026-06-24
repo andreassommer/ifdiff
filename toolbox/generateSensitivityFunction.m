@@ -1,155 +1,171 @@
 function sensitivities_function = generateSensitivityFunction(datahandle, sol, varargin)
-   % sensitivities_function = generateSensitivityFunction(datahandle, sol, varargin)
-   %
-   % Generates a function that can take a vector of timepoints and calculates the sensitivities at the given timepoints.
-   % Here the user can specify his requirements to the generated function.
-   % The methods possible for the calculation of sensitivities are END_full, END_piecewise or VDE.
-   % The calculation of the sensitivities at the time point of a switch is only possible using the methods END_piecewise or VDE.
-   % Therefore we look at the function y(t) as cadlag ("right continuous with left limits") and the calculation is possible using the updates.
-   %
-   % INPUT: datahandle - datahandle you get from the integration process with solveODE
-   %        sol        - solution object from the integration with solveODE
-   %        varargin   - optional specification of certain parameters:
-   %                     'FDstep'                 - struct that contains the step sizes for calculation of derivatives using finite differences
-   %                     'integrator'             - integrator for computing the END and solve the VDE
-   %                     'integrator_options'     - integrator options for computing the END and solve the VDE
-   %                     'calcGy'                 - flag that is true if the sensitivities w.r.t. the initial values should be calculated
-   %                     'calcGp'                 - flag that is true if the sensitivities w.r.t. the parameters should be calculated
-   %                     'save_intermediates'     - flag that is true if the intermediate G-matrices and updates that have been calculated for END_piecewise 
-   %                                                or VDE should be saved for the next function call for computing sensitivities
-   %                     'Gmatrices_intermediate' - flag that is true if the intermediate G-matrices that have been calculated for END_piecewise 
-   %                                                or VDE should be included in the output struct
-   %                     'method'                 - method that should be used to calculate the sensitivities (you can choose from END_full, 
-   %                                                END_piecewise and VDE)
-   %                     'directions_y'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. y0 if you use END_full or VDE
-   %                     'directions_p'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. p if you use END_full or VDE
-   %
-   % OUTPUT: sensitivities_function - function that that can take a vector of timepoints and the struct FDstep with the stepsizes for END 
-   %                                  as inputs and calculates the sensitivities at the given timepoints.
+% sensitivities_function = generateSensitivityFunction(datahandle, sol, varargin)
+%
+% Generates a function that can take a vector of timepoints and calculates the sensitivities at the given timepoints.
+% Here the user can specify his requirements to the generated function.
+% The methods possible for the calculation of sensitivities are END_full, END_piecewise or VDE.
+% The calculation of the sensitivities at the time point of a switch is only possible using the methods END_piecewise or VDE.
+% Therefore we look at the function y(t) as cadlag ("right continuous with left limits") and the calculation is possible using the updates.
+%
+% INPUT: datahandle - datahandle you get from the integration process with solveODE
+%        sol        - solution object from the integration with solveODE
+%        varargin   - optional specification of certain parameters:
+%                     'FDstep'                 - struct that contains the step sizes for calculation of derivatives using finite differences
+%                     'integrator'             - integrator for computing the END and solve the VDE
+%                     'integrator_options'     - integrator options for computing the END and solve the VDE
+%                     'calcGy'                 - flag that is true if the sensitivities w.r.t. the initial values should be calculated
+%                     'calcGp'                 - flag that is true if the sensitivities w.r.t. the parameters should be calculated
+%                     'save_intermediates'     - flag that is true if the intermediate G-matrices and updates that have been calculated for END_piecewise
+%                                                or VDE should be saved for the next function call for computing sensitivities
+%                     'Gmatrices_intermediate' - flag that is true if the intermediate G-matrices that have been calculated for END_piecewise
+%                                                or VDE should be included in the output struct
+%                     'method'                 - method that should be used to calculate the sensitivities (you can choose from END_full,
+%                                                END_piecewise and VDE)
+%                     'directions_y'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. y0 if you use END_full or VDE
+%                     'directions_p'           - matrix that contains the directions in which you want to calculate the sensitivities w.r.t. p if you use END_full or VDE
+%
+% OUTPUT: sensitivities_function - function that that can take a vector of timepoints and the struct FDstep with the stepsizes for END
+%                                  as inputs and calculates the sensitivities at the given timepoints.
 
-   sensitivities_function = @computeSensitivities;
-   
-   generateData(datahandle, sol);
-   data = datahandle.getData();
-   dim_y = data.computeSensitivity.dim_y;
-   dim_p = data.computeSensitivity.dim_p;
+sensitivities_function = @computeSensitivities;
 
-   % default settings
-   FDstep                      = olGetOption(varargin, 'FDstep',                 generateFDstep(dim_y, dim_p));
-   integrator                  = olGetOption(varargin, 'integrator',             data.integratorSettings.numericIntegrator);
-   integrator_options          = olGetOption(varargin, 'integrator_options',     data.integratorSettings.options);
-   method                      = olGetOption(varargin, 'method',                 'VDE');
-   Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate', false);
-   Gy_flag                     = olGetOption(varargin, 'calcGy',                 true);
-   directions_y                = olGetOption(varargin, 'directions_y',           []);
-   Gp_flag                     = olGetOption(varargin, 'calcGp',                 true);
-   directions_p                = olGetOption(varargin, 'directions_p',           []);
-   save_intermediates          = olGetOption(varargin, 'save_intermediates',     true);
-   legacy                      = olGetOption(varargin, 'legacy',                 false);
+generateData(datahandle, sol);
+data = datahandle.getData();
+dim_y = data.computeSensitivity.dim_y;
+dim_p = data.computeSensitivity.dim_p;
 
-   methodCoded.END_piecewise = 1;
-   methodCoded.VDE           = 2;
-   methodCoded.END_full      = 3;
-   
-   if strcmpi(method, 'END_piecewise'),method = methodCoded.END_piecewise; end
-   if strcmpi(method, 'VDE'),          method = methodCoded.VDE; end
-   if strcmpi(method, 'END_full'),     method = methodCoded.END_full; end
-   
-   % switches includes tspan(1) and tspan(end)
-   switches      = data.computeSensitivity.switches_extended;
-   switches_left = data.computeSensitivity.switches_extended_left;
-   
-   tspan = data.SWP_detection.tspan;
+% default settings
+FDstep                      = olGetOption(varargin, 'FDstep',                 generateFDstep(dim_y, dim_p));
+integrator                  = olGetOption(varargin, 'integrator',             data.integratorSettings.numericIntegrator);
+integrator_options          = olGetOption(varargin, 'integrator_options',     data.integratorSettings.options);
+method                      = olGetOption(varargin, 'method',                 'VDE');
+Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate', false);
+Gy_flag                     = olGetOption(varargin, 'calcGy',                 true);
+directions_y                = olGetOption(varargin, 'directions_y',           []);
+Gp_flag                     = olGetOption(varargin, 'calcGp',                 true);
+directions_p                = olGetOption(varargin, 'directions_p',           []);
+save_intermediates          = olGetOption(varargin, 'save_intermediates',     true);
+legacy                      = olGetOption(varargin, 'legacy',                 false);
 
-   options.FDstep = FDstep;
-   options.integrator = integrator;
-   options.integrator_options = integrator_options;
-   options.method = method;
-   options.methodCoded = methodCoded;
- 
-   Gmatrices_intermediate_template.Gy = {eye(dim_y)};
-   Gmatrices_intermediate_template.Uy = {eye(dim_y)};
-   Gmatrices_intermediate_template.Gp = {zeros(dim_y, dim_p)};
-   Gmatrices_intermediate_template.Up = {zeros(dim_y, dim_p)};
-   return
-   
-   function sensitivities = computeSensitivities(t_all)
-       if ~Gy_flag && ~Gp_flag
-           return;
-       end
-      % sensitivities = computeSensitivities(t_all)
-      % 
-      % Calculates the sensitivities w.r.t. y0 and p at the given timepoints.
-      %
-      % INPUT: t_all  - vector of timepoints at which you want to calculate the sensitivities
-      %
-      % OUTPUT: sensitivities - struct that contains the given timepoints, the calculated sensitivities and the intermediate G-matrices
-      
+methodCoded.END_piecewise = 1;
+methodCoded.VDE           = 2;
+methodCoded.END_full      = 3;
 
-      % TODO: Combine legacy and new computation methods.
-      if ~legacy && method == methodCoded.VDE
-          if Gmatrices_intermediate_flag
-              msg = [
-                  'Intermediate matrices can not be computed for directional sensitivities.\n', ...
-                  'Call this function with the parameter (''legacy'', true) instead.'];
-              error('IFDIFF:Sensitivity:DirectionalIntermediateMatrices', msg);
-          end
+if strcmpi(method, 'END_piecewise'),method = methodCoded.END_piecewise; end
+if strcmpi(method, 'VDE'),          method = methodCoded.VDE; end
+if strcmpi(method, 'END_full'),     method = methodCoded.END_full; end
 
-          sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, directions_y, directions_p, FDstep);
-          sens = sensObj.eval(t_all);
-          nPoints = size(sens, 3);
-          % TODO: For now keep compatibility with inefficient legacy format output.
-          fieldnames = {'t', 'Gy', 'Gy_intermediate', 'Uy', 'Gp', 'Gp_intermediate', 'Up'};
-          sensitivities = generateStructArray(fieldnames, nPoints);
-          if Gy_flag
-              ndirY = size(directions_y, 2);
-              if ndirY == 0; ndirY = dim_y; end
-          else
-              ndirY = 0;
-          end
+% switches includes tspan(1) and tspan(end)
+switches      = data.computeSensitivity.switches_extended;
+switches_left = data.computeSensitivity.switches_extended_left;
 
-          for i=1:nPoints
-              if Gy_flag
-                  sensitivities(i).t = t_all(i);
-                  sensitivities(i).Gy = sens(:, 1:ndirY, i);
-              end
-              if Gp_flag
-                  % Parameter sensitivities are stored after initial value sensitivities (if there are any).
-                  sensitivities(i).Gp = sens(:, 1+ndirY:end, i);
-              end
-          end
-          return
-      end
-   
-      [t_sort_unique, ~, unique_indices] = unique(t_all);
-      
-      if t_sort_unique(1) < tspan(1) || t_sort_unique(end) > tspan(end)
-         error('Time point is outside of the time interval of the IVP solution.')
-      end
+tspan = data.SWP_detection.tspan;
 
-      config = makeConfig();
-      data = datahandle.getData();
-      data.caseCtrlif = config.caseCtrlif.computeSensitivities;
-      datahandle.setData(data);
+methodCoded.END_piecewise = 1;
+methodCoded.VDE           = 2;
+methodCoded.END_full      = 3;
 
-      Gmatrices_intermediate = Gmatrices_intermediate_template;
+if strcmpi(method, 'END_piecewise'),method = methodCoded.END_piecewise; end
+if strcmpi(method, 'VDE'),          method = methodCoded.VDE; end
+if strcmpi(method, 'END_full'),     method = methodCoded.END_full; end
 
-      if method == methodCoded.END_full
-          sensitivities = compute_sensitivity_ENDfull(datahandle, t_sort_unique, sol, FDstep, Gy_flag, Gp_flag, directions_y, directions_p);
-          sensitivities = sensitivities(unique_indices);
-          return;
-      end
+% switches includes tspan(1) and tspan(end)
+switches      = data.computeSensitivity.switches_extended;
+switches_left = data.computeSensitivity.switches_extended_left;
+
+tspan = data.SWP_detection.tspan;
+dim_y = data.computeSensitivity.dim_y;
+dim_p = data.computeSensitivity.dim_p;
+
+options.FDstep = FDstep;
+options.integrator = integrator;
+options.integrator_options = integrator_options;
+options.method = method;
+options.methodCoded = methodCoded;
+
+Gmatrices_intermediate_template.Gy = {eye(dim_y)};
+Gmatrices_intermediate_template.Uy = {eye(dim_y)};
+Gmatrices_intermediate_template.Gp = {zeros(dim_y, dim_p)};
+Gmatrices_intermediate_template.Up = {zeros(dim_y, dim_p)};
+return
+
+    function sensitivities = computeSensitivities(t_all)
+        if ~Gy_flag && ~Gp_flag
+            return;
+        end
+        % sensitivities = computeSensitivities(t_all)
+        %
+        % Calculates the sensitivities w.r.t. y0 and p at the given timepoints.
+        %
+        % INPUT: t_all  - vector of timepoints at which you want to calculate the sensitivities
+        %
+        % OUTPUT: sensitivities - struct that contains the given timepoints, the calculated sensitivities and the intermediate G-matrices
+
+
+        % TODO: Combine legacy and new computation methods.
+        if ~legacy && method == methodCoded.VDE
+            if Gmatrices_intermediate_flag
+                msg = [
+                    'Intermediate matrices can not be computed for directional sensitivities.\n', ...
+                    'Call this function with the parameter (''legacy'', true) instead.'];
+                error('IFDIFF:Sensitivity:DirectionalIntermediateMatrices', msg);
+            end
+
+            sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, directions_y, directions_p, FDstep);
+            sens = sensObj.eval(t_all);
+            nPoints = size(sens, 3);
+            % TODO: For now keep compatibility with inefficient legacy format output.
+            fieldnames = {'t', 'Gy', 'Gy_intermediate', 'Uy', 'Gp', 'Gp_intermediate', 'Up'};
+            sensitivities = generateStructArray(fieldnames, nPoints);
+            if Gy_flag
+                ndirY = size(directions_y, 2);
+                if ndirY == 0; ndirY = dim_y; end
+            else
+                ndirY = 0;
+            end
+
+            for i=1:nPoints
+                if Gy_flag
+                    sensitivities(i).t = t_all(i);
+                    sensitivities(i).Gy = sens(:, 1:ndirY, i);
+                end
+                if Gp_flag
+                    % Parameter sensitivities are stored after initial value sensitivities (if there are any).
+                    sensitivities(i).Gp = sens(:, 1+ndirY:end, i);
+                end
+            end
+            return
+        end
+
+        [t_sort_unique, ~, unique_indices] = unique(t_all);
+
+        if t_sort_unique(1) < tspan(1) || t_sort_unique(end) > tspan(end)
+            error('Time point is outside of the time interval of the IVP solution.')
+        end
+
+        config = makeConfig();
+        data = datahandle.getData();
+        data.caseCtrlif = config.caseCtrlif.computeSensitivities;
+        datahandle.setData(data);
+
+        Gmatrices_intermediate = Gmatrices_intermediate_template;
+
+        if method == methodCoded.END_full
+            sensitivities = compute_sensitivity_ENDfull(datahandle, t_sort_unique, sol, FDstep, Gy_flag, Gp_flag, directions_y, directions_p);
+            sensitivities = sensitivities(unique_indices);
+            return;
+        end
         % VDE and END_piecewise share most of their code for obvious reasons. Only the construction of the intermediate
         % matrices G(t_s, t) varies.
         % The unique timepoints are separated into groups according to their model number, that means all time
         % points that are between the same two switching points are in one group. If one group is empty (so
-        % no timepoint is given between two switching points), 
-        % the group is left empty and will be skipped in the calculations later. 
+        % no timepoint is given between two switching points),
+        % the group is left empty and will be skipped in the calculations later.
         switches_temp = switches;
         switches_temp(end) = switches_temp(end) + eps(switches_temp(end));
         numTimeGroups = length(switches) - 1;
         timeGroups = cell(1, numTimeGroups);
-  
+
         for i = 1:length(switches)-1
             indices = (t_sort_unique >= switches_temp(i)) & (t_sort_unique < switches_temp(i+1));
             timeGroups{i} = t_sort_unique(indices);
@@ -162,7 +178,7 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
         % because they are only needed until the last switch before the latest timepoint.
         t_max = t_sort_unique(end);
         numModels = find(t_max < switches_temp, 1) - 1;
-        
+
         % if the method END_full has been chosen before, the data for the sensitivity generation needs to be generated again here.
         generateData(datahandle, sol);
 
@@ -269,5 +285,5 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
             sensitivitiesOutput = assembleSensitivityOutput(sensData, t_sort_unique, Gy_flag, Gp_flag, []);
         end
         sensitivities(:) = sensitivitiesOutput(unique_indices);
-   end
+    end
 end
