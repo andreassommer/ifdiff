@@ -6,6 +6,7 @@ classdef IFDIFFSensitivity
         datahandle
         solution
         parameters
+        initialValues
         tspan
         switches
         switchesY
@@ -20,18 +21,31 @@ classdef IFDIFFSensitivity
         switchingFunctions
         jumpFunctions
         fdStep
+        method
+    end
+
+    properties (Constant)
+        METHOD = struct( ...
+            'VDE', 1, ...
+            'END_piecewise', 2, ...
+            'END_full', 3)
     end
 
     methods
-        function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP, fdStep)
+        function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP, fdStep, method)
+            if nargin < 8
+                method = 'VDE';
+            end
+
             this.datahandle = datahandle;
             this.solution = sol;
             data = datahandle.getData();
             this.switchingFunctions = data.SWP_detection.switchingFunction;
             this.jumpFunctions = data.SWP_detection.jumpFunction;
 
+            this.initialValues = data.SWP_detection.initialvalues;
             this.parameters = data.SWP_detection.parameters;
-            this.dimy = length(data.SWP_detection.initialvalues);
+            this.dimy = length(this.initialValues);
             this.dimp = length(this.parameters);
 
             this.tspan = data.SWP_detection.tspan;
@@ -71,6 +85,8 @@ classdef IFDIFFSensitivity
             this.dirP = dirP;
 
             this.fdStep = fdStep;
+
+            this.method = this.METHOD.(method);
         end
 
         function sol = solveVde(this, idxModel, tspan, initialValues, nDirY)
@@ -80,6 +96,27 @@ classdef IFDIFFSensitivity
             rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, df, this.dirP);
             initialValues = initialValues(:);
             sol = this.integrator(rhsVde, tspan, initialValues, this.integratorOptions);
+        end
+
+        function sensitivity = solveEnd(this, idxModel, tspan, sensitivity, nDirY)
+            rhs = getRhsFromModelNum(this.datahandle, idxModel);
+
+            if idxModel == 1
+                y0 = this.initialValues;
+            else
+                y0 = this.switchesY(:, idxModel - 1);
+            end
+
+            solve = @(datahandle, t, y0, p) this.integrator( ...
+                @(t, y) rhs(datahandle, t, y, p), ...
+                tspan, y0, this.integratorOptions);
+            evalSol = @(datahandle, t, y0, p) deval(solve(datahandle, t, y0, p), t);
+            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, evalSol, this.fdStep);
+
+            sensitivity = df.dy(tspan, y0, this.parameters, sensitivity);
+            if nDirY < size(sensitivity, 2)
+                sensitivity(:, 1+nDirY:end) = sensitivity(:, 1+nDirY:end) + df.dp(tspan, y0, this.parameters, this.dirP);
+            end
         end
 
         function [sens, fPlus] = applySensitivitySwitchUpdate(this, sens, idxModel, fMinus)
