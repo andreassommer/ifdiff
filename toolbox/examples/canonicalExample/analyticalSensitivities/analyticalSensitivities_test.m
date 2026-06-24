@@ -7,7 +7,7 @@ datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrat
 tspan         = [0 20];
 initialvalues = [1;0];
 parameters    = 5.437;
-sol           = solveODE(datahandle, tspan, initialvalues, parameters); 
+sol           = solveODE(datahandle, tspan, initialvalues, parameters);
 
 %% Precalculations for sensitivities
 dim_y = size(sol.y, 1);
@@ -16,8 +16,10 @@ FDstep = generateFDstep(dim_y, dim_p, 'hy_rel_flag', true,'hp_rel_flag', true, '
 
 %% Sensitivities VDE
 integrator_options = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'integrator_options', integrator_options, 'method', 'VDE', 'Gmatrices_intermediate', true);
+sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, ...
+    'integrator_options', integrator_options, 'method', 'VDE', 'Gmatrices_intermediate', true, 'legacy', true);
 sensitivities_VDE = sensitivities_function_VDE(20);
+
 %% Analytical solution
 yA_1 = @(t) (1/300)*t.^3 + 1;
 yA_2 = 0;
@@ -89,4 +91,3 @@ sensitivities_VDE.Gp_intermediate{2} - Gp_ts2_t0;
 sensitivities_VDE.Up{1} - U1_p;
 sensitivities_VDE.Up{2} - U2_p;
 sensitivities_VDE.Gp - Gp_tf_t0;
-

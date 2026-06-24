@@ -17,9 +17,9 @@ FDstep = generateFDstep(dim_y, dim_p, 'hy_rel_flag', true,'hp_rel_flag', true, '
 %% Generation of sensitivity functions
 tic;
 integrator_options = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-sensitivities_function_ENDfull = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_full', 'calcGy', true,'calcGp',true, 'Gmatrices_intermediate', true, 'save_intermediates', true);
-sensitivities_function_ENDpiece = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'calcGy', true,'calcGp',true, 'Gmatrices_intermediate', true, 'save_intermediates', false);
-sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'integrator_options', integrator_options, 'method', 'VDE', 'calcGy', true,'calcGp',false, 'Gmatrices_intermediate', true, 'save_intermediates', false);
+sensitivities_function_ENDfull = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_full', 'calcGy', true,'calcGp',true, 'Gmatrices_intermediate', false, 'save_intermediates', true);
+sensitivities_function_ENDpiece = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'calcGy', true,'calcGp',true, 'Gmatrices_intermediate', false, 'save_intermediates', false);
+sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'integrator_options', integrator_options, 'method', 'VDE', 'calcGy', true,'calcGp',false, 'Gmatrices_intermediate', false, 'save_intermediates', false);
 toc;
 
 %% Sensitivty calculations
@@ -35,8 +35,8 @@ sensitivities_VDE = sensitivities_function_VDE(t);
 toc;
 
 %% Plot sensitivities initial values
-sensitivities_function_ENDpiecewise = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'Gy', true,'Gp',false, 'Gmatrices_intermediate', true, 'save_intermediates', true);
-sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'VDE', 'calcGy', true,'calcGp',false, 'Gmatrices_intermediate', true, 'save_intermediates', true);
+sensitivities_function_ENDpiecewise = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'Gy', true,'Gp',false, 'Gmatrices_intermediate', false, 'save_intermediates', true);
+sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'VDE', 'calcGy', true,'calcGp',false, 'Gmatrices_intermediate', false, 'save_intermediates', true);
 
 t_plot = 0:0.01:20;
 %sensitivities_END_plot = sensitivities_function_ENDpiecewise(t_plot);
@@ -97,8 +97,8 @@ set(gca, 'Box', 'off');
 
 %% Plot sensitivities parameters
 
-%sensitivities_function_ENDpiecewise = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'Gy', false,'Gp',true, 'Gmatrices_intermediate', true, 'save_intermediates', true);
-sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'VDE', 'calcGy', false,'calcGp',true, 'Gmatrices_intermediate', true, 'save_intermediates', true);
+%sensitivities_function_ENDpiecewise = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'Gy', false,'Gp',true, 'Gmatrices_intermediate', false, 'save_intermediates', true);
+sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'VDE', 'calcGy', false,'calcGp',true, 'Gmatrices_intermediate', false, 'save_intermediates', true);
 
 t_plot = 0:0.01:20;
 %sensitivities_END_plot = sensitivities_function_ENDpiecewise(t_plot);

@@ -84,25 +84,38 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, v
       % INPUT: t_all  - vector of timepoints at which you want to calculate the sensitivities
       %
       % OUTPUT: sensitivities - struct that contains the given timepoints, the calculated sensitivities and the intermediate G-matrices
+      
 
+      % TODO: Combine legacy and new computation methods.
       if ~legacy && method == methodCoded.VDE
+          if Gmatrices_intermediate_flag
+              msg = [
+                  'Intermediate matrices can not be computed for directional sensitivities.\n', ...
+                  'Call this function with the parameter (''legacy'', true) instead.'];
+              error('IFDIFF:Sensitivity:DirectionalIntermediateMatrices', msg);
+          end
+
           sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, directions_y, directions_p, FDstep);
           sens = sensObj.eval(t_all);
+          nPoints = size(sens, 3);
+          % TODO: For now keep compatibility with inefficient legacy format output.
+          fieldnames = {'t', 'Gy', 'Gy_intermediate', 'Uy', 'Gp', 'Gp_intermediate', 'Up'};
+          sensitivities = generateStructArray(fieldnames, nPoints);
           if Gy_flag
               ndirY = size(directions_y, 2);
               if ndirY == 0; ndirY = dim_y; end
+          else
+              ndirY = 0;
           end
-          if Gp_flag
-              ndirP = size(directions_p, 2);
-              if ndirP == 0; ndirP = dim_p; end
-          end
-          for i=1:size(sens, 3)
+
+          for i=1:nPoints
               if Gy_flag
+                  sensitivities(i).t = t_all(i);
                   sensitivities(i).Gy = sens(:, 1:ndirY, i);
               end
               if Gp_flag
                   % Parameter sensitivities are stored after initial value sensitivities (if there are any).
-                  sensitivities(i).Gp = sens(:, (1+ndirY*Gy_flag):end, i);
+                  sensitivities(i).Gp = sens(:, 1+ndirY:end, i);
               end
           end
           return
