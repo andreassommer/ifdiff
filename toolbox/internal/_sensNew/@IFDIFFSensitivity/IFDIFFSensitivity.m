@@ -31,6 +31,35 @@ classdef IFDIFFSensitivity
             'END_full', 3)
     end
 
+    methods (Static)
+        function f = getFiniteDifferenceSolFun(sol, solDisturbY, solDisturbP, hy, hp, dim)
+            f = @computeSens;
+            nDir = length(solDisturbY);
+
+            function sens = computeSens(t)
+                nt = length(t);
+                sens = zeros(dim, nDir, nt);
+
+                solT = [];
+                for i=1:nDir
+                    solY = solDisturbY{i};
+                    solP = solDisturbP{i};
+                    % Make sure we evaluate the solution only once if needed.
+                    if isempty(solT) && (~isempty(solY) | ~isempty(solT))
+                        solT = deval(sol, t);
+                    end
+
+                    if ~isempty(solY)
+                        sens(:, i, :) = (deval(solY) - solT) ./ hy;
+                    end
+                    if ~isempty(solP)
+                        sens(:, i, :) = sens(:, i, :) + (deval(solP) - solT) ./ hp;
+                    end
+                end
+            end
+        end
+    end
+
     methods
         function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP, fdStep, method)
             if nargin < 8
@@ -98,7 +127,7 @@ classdef IFDIFFSensitivity
             sol = this.integrator(rhsVde, tspan, initialValues, this.integratorOptions);
         end
 
-        function sensitivity = solveEnd(this, idxModel, tspan, sensitivity, nDirY)
+        function sensFun = solveEnd(this, idxModel, tspan, sensitivity, nDirY)
             rhs = getRhsFromModelNum(this.datahandle, idxModel);
 
             if idxModel == 1
@@ -107,16 +136,29 @@ classdef IFDIFFSensitivity
                 y0 = this.switchesY(:, idxModel - 1);
             end
 
-            solve = @(datahandle, t, y0, p) this.integrator( ...
-                @(t, y) rhs(datahandle, t, y, p), ...
-                tspan, y0, this.integratorOptions);
-            evalSol = @(datahandle, t, y0, p) deval(solve(datahandle, t, y0, p), t);
-            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, evalSol, this.dimy, this.fdStep);
 
-            sensitivity = df.dy(tspan, y0, this.parameters, sensitivity);
-            if nDirY < size(sensitivity, 2)
-                sensitivity(:, 1+nDirY:end) = sensitivity(:, 1+nDirY:end) + df.dp(tspan, y0, this.parameters, this.dirP);
+            nDir = size(sensitivity, 2);
+            solDisturbY = cell(1, nDir);
+            solDisturbP = cell(1, nDir);
+            % Solve with disturbed initial values.
+            fd = IFDIFFDerivativeFiniteDifferences([], [], [], this.fdStep);
+            hy = fd.hy(y0);
+            [yh, hy, idxNonzeroY] = fd.scaleDirections(y0, sensitivity, hy);
+            for i=idxNonzeroY
+                solDisturbY{i} = this.integrator( ...
+                    @(t, y) rhs(this.datahandle, t, y, this.parameters), tspan, yh(:, i), this.integratorOptions);
             end
+            % Solve with disturbed parameters.
+            if nDirY < nDir
+                hp = fd.hp(this.parameters);
+                [ph, hp, idxNonzeroP] = fd.scaleDirections(this.parameters, this.dirP, hp);
+            end
+            for i=1:idxNonzeroP
+                solDisturbP{i} = this.integrator( ...
+                    @(t, y) rhs(this.datahandle, t, y, ph(:, i)), tspan, y0, this.integratorOptions);
+            end
+
+            sensFun = this.getFiniteDifferenceSolFun(this.solution, solDisturbY, solDisturbP, hy, hp, this.dimy);
         end
 
         function [sens, fPlus] = applySensitivitySwitchUpdate(this, sens, idxModel, fMinus)
