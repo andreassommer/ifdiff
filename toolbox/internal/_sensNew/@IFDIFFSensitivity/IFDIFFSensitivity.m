@@ -91,7 +91,7 @@ classdef IFDIFFSensitivity
 
         function sol = solveVde(this, idxModel, tspan, initialValues, nDirY)
             rhs = getRhsFromModelNum(this.datahandle, idxModel);
-            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, rhs, this.fdStep);
+            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, rhs, this.dimy, this.fdStep);
 
             rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, df, this.dirP);
             initialValues = initialValues(:);
@@ -111,7 +111,7 @@ classdef IFDIFFSensitivity
                 @(t, y) rhs(datahandle, t, y, p), ...
                 tspan, y0, this.integratorOptions);
             evalSol = @(datahandle, t, y0, p) deval(solve(datahandle, t, y0, p), t);
-            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, evalSol, this.fdStep);
+            df = IFDIFFDerivativeFiniteDifferences(this.datahandle, evalSol, this.dimy, this.fdStep);
 
             sensitivity = df.dy(tspan, y0, this.parameters, sensitivity);
             if nDirY < size(sensitivity, 2)
@@ -138,9 +138,9 @@ classdef IFDIFFSensitivity
             sigma = this.switchingFunctions{idxModel};
             jump = this.jumpFunctions{idxModel};
 
-            dsigma = IFDIFFDerivativeFiniteDifferences([], sigma, this.fdStep);
+            dsigma = IFDIFFDerivativeFiniteDifferences([], sigma, 1, this.fdStep);
             if ~isempty(jump)
-                djump = IFDIFFDerivativeFiniteDifferences([], jump, this.fdStep);
+                djump = IFDIFFDerivativeFiniteDifferences([], jump, this.dimy, this.fdStep);
             else
                 djump = [];
             end

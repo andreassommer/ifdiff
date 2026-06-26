@@ -17,16 +17,19 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
     properties (Access=public)
         datahandle
         f % out = f(datahandle, t, y, p)
+        dimOut
         step % from generateFDstep
     end
+
     methods (Access=public)
-        function this = IFDIFFDerivativeFiniteDifferences(datahandle, f, step)
+        function this = IFDIFFDerivativeFiniteDifferences(datahandle, f, dimOut, step)
             if nargin == 0
                 return
             end
 
             this.datahandle = datahandle;
             this.f = f;
+            this.dimOut = dimOut;
             this.step = step;
         end
 
@@ -35,67 +38,72 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
         % because these functions will be called many times by the integrator when solving the VDE and we want to avoid
         % performance loss due to overhead from anonymous functions.
         function df = dt(this, t, y, p, v)
-            f0 = this.f(this.datahandle, t, y, p);
-
-            dimf = length(f0);
-            nd = size(v, 2);
-            df = zeros(dimf, nd);
-
-            h = this.ht(t);
-            [v, h, normv, idxNonzero] = this.scaleDirections(t, v, h);
+            x = t;
+            h = this.ht(x);
+            [df, v, h, idxNonzero, f0] = this.init(x, t, y, p, v, h);
             if isempty(idxNonzero)
                 return
             end
-
-            for i=1:length(idxNonzero)
+            % Evaluate function at forward points.
+            for i=idxNonzero
                 fh = this.f(this.datahandle, v(:, i), y, p);
-                df(:, idxNonzero(i)) = (fh - f0) ./ h(i);
+                df(:, i, :) = fh;
             end
-            df(:, idxNonzero) = df(:, idxNonzero) .* normv(idxNonzero);
+            % Compute finite differences.
+            df(:, idxNonzero, :) = (df(:, idxNonzero, :) - f0) ./ h;
         end
         function df = dy(this, t, y, p, v)
-            f0 = this.f(this.datahandle, t, y, p);
-
-            [dimf, nt] = size(f0);
-            nd = size(v, 2);
-            df = zeros(dimf, nd, nt);
-
-            h = this.hy(y);
-            [v, h, normv, idxNonzero] = this.scaleDirections(y, v, h);
+            x = y;
+            h = this.hy(x);
+            [df, v, h, idxNonzero, f0] = this.init(x, t, y, p, v, h);
             if isempty(idxNonzero)
                 return
             end
-
-            for i=1:length(idxNonzero)
+            % Evaluate function at forward points.
+            for i=idxNonzero
                 fh = this.f(this.datahandle, t, v(:, i), p);
-                df(:, idxNonzero(i), :) = (fh - f0) ./ h(i);
+                df(:, i, :) = fh;
             end
-            df(:, idxNonzero, :) = df(:, idxNonzero, :) .* normv(idxNonzero);
+            % Compute finite differences.
+            df(:, idxNonzero, :) = (df(:, idxNonzero, :) - f0) ./ h;
         end
         function df = dp(this, t, y, p, v)
-            f0 = this.f(this.datahandle, t, y, p);
-
-            [dimf, nt] = size(f0);
-            nd = size(v, 2);
-            df = zeros(dimf, nd, nt);
-
-            h = this.hp(p);
-            [v, h, normv, idxNonzero] = this.scaleDirections(p, v, h);
+            x = p;
+            h = this.hp(x);
+            [df, v, h, idxNonzero, f0] = this.init(x, t, y, p, v, h);
             if isempty(idxNonzero)
                 return
             end
-
-            for i=1:length(idxNonzero)
+            % Evaluate function at forward points.
+            for i=idxNonzero
                 fh = this.f(this.datahandle, t, y, v(:, i));
-                df(:, idxNonzero(i), :) = (fh - f0) ./ h(i);
+                df(:, i, :) = fh;
             end
-            df(:, idxNonzero, :) = df(:, idxNonzero, :) .* normv(idxNonzero);
+            % Compute finite differences.
+            df(:, idxNonzero, :) = (df(:, idxNonzero, :) - f0) ./ h;
         end
     end
 
     %% Helper functions
-    methods (Static, Access=private)
-        function [v, h, normv, idxNonzero] = scaleDirections(x, v, h)
+    methods (Access=private)
+        function [df, v, h, idxNonzero, f0] = init(this, x, t, y, p, v, h)
+            % Init output: Derivatives are stored column-wise for each direction giving a matrix for each time point.
+            nv = size(v, 2);
+            nt = length(t);
+            df = zeros(this.dimOut, nv, nt);
+            % Compute forward evaluation points.
+            [v, h, idxNonzero] = this.scaleDirections(x, v, h);
+            % Compute function value at target point if needed.
+            if ~isempty(idxNonzero)
+                f0 = this.f(this.datahandle, t, y, p);
+            else
+                f0 = [];
+            end
+        end
+    end
+
+    methods (Static, Access=public)
+        function [v, h, idxNonzero] = scaleDirections(x, v, h)
             % Filter zero directions.
             normv = vecnorm(v, 2, 1);
             idxNonzero = find(normv);
@@ -103,16 +111,18 @@ classdef IFDIFFDerivativeFiniteDifferences < IFDIFFDerivative
                 return
             end
             % Scale each non-zero direction to unit length.
-            v = v(:, idxNonzero) ./ normv(idxNonzero);
+            v(:, idxNonzero) = v(:, idxNonzero) ./ normv(idxNonzero);
             % Assume that h is a column vector which contains a step size for each component.
             % To determine the step size for an arbitrary direction v compute the scalar product of h and v.
-            h = h' * v;
-            v = x + v.*h;
+            h = h' * v(:, idxNonzero);
+            v(:, idxNonzero) = x + v(:, idxNonzero) .* h;
+            % Restore scaling for finite differences.
+            h = h ./ normv(idxNonzero);
         end
     end
 
     %% Step size
-    methods (Access=private)
+    methods (Access=public)
         function h = ht(this, t)
             if this.step.t_rel
                 h = max(this.step.t_min, abs(t) .* this.step.t);
