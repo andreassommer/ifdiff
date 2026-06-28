@@ -293,7 +293,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             rtol2 = 1e-5;
 
             sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'END_piecewise', ...
-                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', false);
 
             t1 = sol.switches(1);
             t1Minus = leftLimit(t1);

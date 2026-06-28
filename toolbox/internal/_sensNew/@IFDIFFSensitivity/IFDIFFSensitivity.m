@@ -24,6 +24,10 @@ classdef IFDIFFSensitivity
         method
     end
 
+    properties (Access=private)
+        solver
+    end
+
     properties (Constant)
         METHOD = struct( ...
             'VDE', 1, ...
@@ -32,7 +36,7 @@ classdef IFDIFFSensitivity
     end
 
     methods (Static)
-        function f = getFiniteDifferenceSolFun(sol, solDisturbY, solDisturbP, hy, hp, dim)
+        function f = getFiniteDifferenceSolFun(sol, dim, solDisturbY, solDisturbP, hy, hp)
             f = @computeSens;
             nDir = length(solDisturbY);
 
@@ -50,20 +54,21 @@ classdef IFDIFFSensitivity
                     end
 
                     if ~isempty(solY)
-                        sens(:, i, :) = (deval(solY) - solT) ./ hy;
+                        sens(:, i, :) = (deval(solY, t) - solT) ./ hy(i);
                     end
                     if ~isempty(solP)
-                        sens(:, i, :) = sens(:, i, :) + (deval(solP) - solT) ./ hp;
+                        sens(:, i, :) = sens(:, i, :) + reshape((deval(solP, t) - solT) ./ hp(i), dim, 1, nt);
                     end
                 end
+                sens = reshape(sens, [], nt);
             end
         end
     end
 
     methods
         function this = IFDIFFSensitivity(datahandle, sol, calcGy, calcGp, dirY, dirP, fdStep, method)
-            if nargin < 8
-                method = 'VDE';
+            if nargin == 0
+                return;
             end
 
             this.datahandle = datahandle;
@@ -115,19 +120,32 @@ classdef IFDIFFSensitivity
 
             this.fdStep = fdStep;
 
-            this.method = this.METHOD.(method);
+            methodNum = this.METHOD.(method);
+            switch methodNum
+                case this.METHOD.VDE
+                    this.solver = @this.solveVde;
+                case this.METHOD.END_piecewise
+                    this.solver = @this.solveEnd;
+                otherwise
+                    id = 'IFDIFF:Sensitivity:UnrecognizedSolver';
+                    msg = 'The solver with number %d derived from string ''%s'' does not exist.';
+                    error(id, msg, methodNum, method);
+            end
         end
 
-        function sol = solveVde(this, idxModel, tspan, initialValues, nDirY)
+        function [sensEnd, sensFun] = solveVde(this, idxModel, tspan, sensStart, nDirY)
             rhs = getRhsFromModelNum(this.datahandle, idxModel);
             df = IFDIFFDerivativeFiniteDifferences(this.datahandle, rhs, this.dimy, this.fdStep);
 
             rhsVde = @(t, G) vdeRhs(t, G, this.parameters, this.solution, nDirY, df, this.dirP);
-            initialValues = initialValues(:);
-            sol = this.integrator(rhsVde, tspan, initialValues, this.integratorOptions);
+            sensStart = sensStart(:);
+            sol = this.integrator(rhsVde, tspan, sensStart, this.integratorOptions);
+
+            sensEnd = sol.y(:, end);
+            sensFun = @(t) deval(sol, t);
         end
 
-        function sensFun = solveEnd(this, idxModel, tspan, sensitivity, nDirY)
+        function [sensEnd, sensFun] = solveEnd(this, idxModel, tspan, sensStart, nDirY)
             rhs = getRhsFromModelNum(this.datahandle, idxModel);
 
             if idxModel == 1
@@ -136,29 +154,49 @@ classdef IFDIFFSensitivity
                 y0 = this.switchesY(:, idxModel - 1);
             end
 
-
-            nDir = size(sensitivity, 2);
+            nDir = size(sensStart, 2);
             solDisturbY = cell(1, nDir);
             solDisturbP = cell(1, nDir);
             % Solve with disturbed initial values.
             fd = IFDIFFDerivativeFiniteDifferences([], [], [], this.fdStep);
             hy = fd.hy(y0);
-            [yh, hy, idxNonzeroY] = fd.scaleDirections(y0, sensitivity, hy);
+            [yh, hy, idxNonzeroY] = fd.scaleDirections(y0, sensStart, hy);
+            % Pad to full length to avoid indexing issues.
+            hyFull = zeros(1, nDir);
+            hyFull(idxNonzeroY) = hy;
             for i=idxNonzeroY
                 solDisturbY{i} = this.integrator( ...
                     @(t, y) rhs(this.datahandle, t, y, this.parameters), tspan, yh(:, i), this.integratorOptions);
             end
             % Solve with disturbed parameters.
+            hpFull = [];
             if nDirY < nDir
                 hp = fd.hp(this.parameters);
                 [ph, hp, idxNonzeroP] = fd.scaleDirections(this.parameters, this.dirP, hp);
-            end
-            for i=1:idxNonzeroP
-                solDisturbP{i} = this.integrator( ...
-                    @(t, y) rhs(this.datahandle, t, y, ph(:, i)), tspan, y0, this.integratorOptions);
+                % Pad to full length to avoid indexing issues.
+                hpFull = zeros(1, nDir);
+                hpFull(nDirY + idxNonzeroP) = hp;
+                for i=idxNonzeroP
+                    solDisturbP{nDirY + i} = this.integrator( ...
+                        @(t, y) rhs(this.datahandle, t, y, ph(:, i)), tspan, y0, this.integratorOptions);
+                end
             end
 
-            sensFun = this.getFiniteDifferenceSolFun(this.solution, solDisturbY, solDisturbP, hy, hp, this.dimy);
+            sensEnd = zeros(this.dimy, nDir);
+            % Re-solve the undisturbed RHS here to be more consistent with the disturbed solution.
+            sol = this.integrator(@(t, y) rhs(this.datahandle, t, y, this.parameters), tspan, y0, this.integratorOptions);
+            yEnd = deval(sol, tspan(end));
+            for i=1:nDir
+                solY = solDisturbY{i};
+                solP = solDisturbP{i};
+                if ~isempty(solY)
+                    sensEnd(:, i) = (solY.y(:, end) - yEnd) ./ hyFull(i);
+                end
+                if ~isempty(solP)
+                    sensEnd(:, i) = sensEnd(:, i) + (solP.y(:, end) - yEnd) ./ hpFull(i);
+                end
+            end
+            sensFun = this.getFiniteDifferenceSolFun(sol, this.dimy, solDisturbY, solDisturbP, hyFull, hpFull);
         end
 
         function [sens, fPlus] = applySensitivitySwitchUpdate(this, sens, idxModel, fMinus)
@@ -194,7 +232,7 @@ classdef IFDIFFSensitivity
                 dsigma, djump);
         end
 
-        function [sens, sensSol] = eval(this, timepoints)
+        function [sens, sensFun] = eval(this, timepoints)
             % Ensure timepoints are strictly increasing.
             [t, ~, idxTimepointsUndoSort] = unique(timepoints);
 
@@ -215,12 +253,18 @@ classdef IFDIFFSensitivity
             nDirY = size(this.dirY, 2);
 
             % Integrate each submodel until switch and apply update at the end.
+            nModels = idxModelEnd - idxModelStart + 1; % Guaranteed to be greater than zero.
+            sensFun = cell(1, nModels);
             for idxModel=idxModelStart:idxModelEnd-1
                 tModelEnd = this.switchesLeft(idxModel);
-                sensSol(idxModel) = this.solveVde(idxModel, [tModelStart, tModelEnd], sensInitialValue, nDirY); %#ok<AGROW>
+                [sensEnd, sensFun{idxModel - idxModelStart + 1}] = this.solver( ...
+                    idxModel, [tModelStart, tModelEnd], sensInitialValue, nDirY);
+
+                % Prepare next model.
                 tModelStart = this.switches(idxModel);
-                % Update initial value for next VDE at switch.
-                sensInitialValue = reshape(sensSol(idxModel).y(:, end), this.dimy, []);
+                % Update initial value for next VDE at switch using update formula.
+                sensInitialValue = reshape(sensEnd, this.dimy, []);
+                % Setup fMinus beforehand for the first update. Next updates can just use fPlus from the preceding update.
                 if idxModel == idxModelStart
                     fMinus = getRhsFromModelNum(this.datahandle, idxModelStart);
                 end
@@ -228,11 +272,11 @@ classdef IFDIFFSensitivity
             end
             % No more switches left, so solve until the end.
             tModelEnd = t(end);
-            sensSol(idxModelEnd) = this.solveVde(idxModelEnd, [tModelStart, tModelEnd], sensInitialValue, nDirY);
+            [~, sensFun{idxModelEnd - idxModelStart + 1}] = this.solver( ...
+                idxModelEnd, [tModelStart, tModelEnd], sensInitialValue, nDirY);
 
             % Return sensitivity at requested timepoints
-            piecewiseFunc = arrayfun(@(sol) @(t) deval(sol, t), sensSol, 'UniformOutput', false);
-            sens = evalPiecewiseFunc(t, piecewiseFunc, numel(sensInitialValue), this.switches);
+            sens = evalPiecewiseFunc(t, sensFun, numel(sensInitialValue), this.switches);
             sens = reshape(sens, this.dimy, size(sensInitialValue, 2), []);
             sens = sens(:, :, idxTimepointsUndoSort);
         end

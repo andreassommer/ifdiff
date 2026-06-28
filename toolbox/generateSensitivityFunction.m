@@ -38,7 +38,7 @@ dim_p = data.computeSensitivity.dim_p;
 FDstep                      = olGetOption(varargin, 'FDstep',                 generateFDstep(dim_y, dim_p));
 integrator                  = olGetOption(varargin, 'integrator',             data.integratorSettings.numericIntegrator);
 integrator_options          = olGetOption(varargin, 'integrator_options',     data.integratorSettings.options);
-method                      = olGetOption(varargin, 'method',                 'VDE');
+methodStr                   = olGetOption(varargin, 'method',                 'VDE');
 Gmatrices_intermediate_flag = olGetOption(varargin, 'Gmatrices_intermediate', false);
 Gy_flag                     = olGetOption(varargin, 'calcGy',                 true);
 directions_y                = olGetOption(varargin, 'directions_y',           []);
@@ -51,9 +51,9 @@ methodCoded.END_piecewise = 1;
 methodCoded.VDE           = 2;
 methodCoded.END_full      = 3;
 
-if strcmpi(method, 'END_piecewise'),method = methodCoded.END_piecewise; end
-if strcmpi(method, 'VDE'),          method = methodCoded.VDE; end
-if strcmpi(method, 'END_full'),     method = methodCoded.END_full; end
+if strcmpi(methodStr, 'END_piecewise'),method = methodCoded.END_piecewise; end
+if strcmpi(methodStr, 'VDE'),          method = methodCoded.VDE; end
+if strcmpi(methodStr, 'END_full'),     method = methodCoded.END_full; end
 
 % switches includes tspan(1) and tspan(end)
 switches      = data.computeSensitivity.switches_extended;
@@ -103,7 +103,7 @@ return
 
 
         % TODO: Combine legacy and new computation methods.
-        if ~legacy && method == methodCoded.VDE
+        if ~legacy && method ~= methodCoded.END_full
             if Gmatrices_intermediate_flag
                 msg = [
                     'Intermediate matrices can not be computed for directional sensitivities.\n', ...
@@ -111,7 +111,7 @@ return
                 error('IFDIFF:Sensitivity:DirectionalIntermediateMatrices', msg);
             end
 
-            sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, directions_y, directions_p, FDstep);
+            sensObj = IFDIFFSensitivity(datahandle, sol, Gy_flag, Gp_flag, directions_y, directions_p, FDstep, methodStr);
             sens = sensObj.eval(t_all);
             nPoints = size(sens, 3);
             % TODO: For now keep compatibility with inefficient legacy format output.
