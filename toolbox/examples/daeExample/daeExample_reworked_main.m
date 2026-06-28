@@ -2,16 +2,16 @@
 
 %% Setup and integration
 integrator = @ode15s;
-p          = -0.2;
+p          = -0.3;
 x2_init    = p - 1;
 x1_init    = p + x2_init^2 - x2_init;
 x_init     = [x1_init; x2_init];
 t0         = 0;
-tf         = 5;
+tf         = 10;
 tspan      = [t0 tf];
 M          = [1 0; 0 0];
 
-opts = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-10 ,'RelTol', 1e-6);
+opts = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-12 ,'RelTol', 1e-6);
 
 datahandle = prepareDatahandleForIntegration('daeExampleRHS_reworked', 'integrator', integrator, 'options', opts);
 sol_ifdiff = solveODE(datahandle, tspan, x_init, p);
@@ -45,12 +45,16 @@ c_switch = [0.49, 0.18, 0.56];
 hold on;
 
 % Plain ode15s
-plot_plain = plot(sol_plain.x, sol_plain.y(1,:), '-', ...
+plot_plain = plot(sol_plain.x, sol_plain.y(1,:), '*-', ...
     'Color', c_plain, ...
     'DisplayName', 'Plain ode15s');
 
 % IFDIFF
-plot_ifdiff = plot(sol_ifdiff.x, sol_ifdiff.y(1,:), '-', ...
+plot_ifdiff_1 = plot(sol_ifdiff.x, sol_ifdiff.y(1,:), '-', ...
+    'Color', c_ifdiff, ...
+    'DisplayName', 'IFDIFF'); 
+
+plot_ifdiff_2 = plot(sol_ifdiff.x, sol_ifdiff.y(2,:), '-', ...
     'Color', c_ifdiff, ...
     'DisplayName', 'IFDIFF'); 
 
@@ -73,7 +77,7 @@ xlabel('Time (t)', 'FontSize', 12);
 ylabel('State x_1(t)', 'FontSize', 12);
 title('DAE Example comparison', 'FontSize', 13);
 
-legend([plot_plain, plot_ifdiff, Switch_plot_ifdiff], ...
+legend([plot_plain, plot_ifdiff_1, plot_ifdiff_2, Switch_plot_ifdiff], ...
     'Location', 'best', 'FontSize', 10); % Euler_plot
 
 % Zoom
