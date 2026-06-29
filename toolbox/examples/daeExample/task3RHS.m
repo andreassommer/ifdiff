@@ -1,4 +1,4 @@
-function f = daeExampleRHS_reworked(~,x,p)
+function f = task3RHS(~,x,p)
 
 f = zeros(2,1);
 a = 0.7;

@@ -1,15 +1,14 @@
 function sol = explicitEulerDAE(rhs, M, tspan, x0, p, h, m, newtonOpts)
 
     if nargin < 8 || isempty(newtonOpts)
-        newtonOpts.maxIter = 15;
-        newtonOpts.tol     = 1e-12;
+        newtonOpts.maxIter = 10;
+        newtonOpts.tol     = 1e-10;
     end
     
     t0 = tspan(1);
     tf = tspan(2);
     
     total_steps = round((tf - t0) / h);
-    
     num_stored = 1 + floor(total_steps / m);
     
     nx = length(x0);
@@ -37,7 +36,7 @@ function sol = explicitEulerDAE(rhs, M, tspan, x0, p, h, m, newtonOpts)
     stored_count = 1;
     t = t0;
     
-    % Main integration loop
+    % Euler integration loop
     for step = 1:total_steps
         f_val = rhs(t, x_curr, p);
         x_next(diff_idx) = x_curr(diff_idx) + h * f_val(diff_idx);
@@ -47,6 +46,7 @@ function sol = explicitEulerDAE(rhs, M, tspan, x0, p, h, m, newtonOpts)
         z_guess = x_curr(alg_idx); 
         x_trial = x_next;
         
+        % Newton method
         for k = 1:maxIter
             x_trial(alg_idx) = z_guess;
             F = rhs(t, x_trial, p);

@@ -13,23 +13,17 @@ M          = [1 0; 0 0];
 
 opts = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-12 ,'RelTol', 1e-6);
 
-datahandle = prepareDatahandleForIntegration('daeExampleRHS_reworked', 'integrator', integrator, 'options', opts);
+datahandle = prepareDatahandleForIntegration('task3RHS', 'integrator', integrator, 'options', opts);
 sol_ifdiff = solveODE(datahandle, tspan, x_init, p);
 
-sol_plain  = integrator(@(t, x) daeExampleRHS_reworked(t, x, p), tspan, x_init, opts);
+sol_plain  = integrator(@(t, x) task3RHS(t, x, p), tspan, x_init, opts);
 
 
-%% Explicit Euler comparison
-% h = 1e-6;
-% tic;
-% fprintf("Euler comparision: ")
-% sol_euler = explicitEulerDAE(@(t,x,p) daeExampleRHS_reworked(t,x,p), M, tspan, x_init, p, h, 50);
-% toc;
-
-%% Switching time
+%% Switching time computed by IFDIFF
 format long
 numerical_switching_time = sol_ifdiff.switches
 format short
+
 
 %% Plots
 
@@ -37,7 +31,6 @@ fig2 = figure(1);
 clf(fig2, "reset");
 
 % color scheme
-c_euler  = [0.5, 0.5, 0.5];
 c_ifdiff = [0.0, 0.45, 0.74];
 c_plain  = [0.85, 0.33, 0.1];
 c_switch = [0.49, 0.18, 0.56];
@@ -64,16 +57,7 @@ plot_ifdiff_2 = plot(sol_ifdiff.x, sol_ifdiff.y(2,:), '-', ...
     'Color', c_ifdiff, ...
     'DisplayName', 'IFDIFF'); 
 
-% Euler comparison
-% Euler_plot_1 = plot(sol_euler.x, sol_euler.y(1,:), ...
-%     'Color', c_euler, ...
-%     'DisplayName', 'Euler');
-% 
-% Euler_plot_2 = plot(sol_euler.x, sol_euler.y(2,:), ...
-%     'Color', c_euler, ...
-%     'DisplayName', 'Euler');
-
-% Analytical switch
+% Switch 
 Switch_plot_ifdiff = xline(sol_ifdiff.switches, ...
     'Color', 'b', ...
     'LineWidth', 1.2, ...
@@ -84,12 +68,7 @@ grid on;
 box on;
 set(gca, 'GridAlpha', 0.15, 'FontSize', 11);
 xlabel('Time (t)', 'FontSize', 12);
-ylabel('State x_1(t)', 'FontSize', 12);
+ylabel('State x(t)', 'FontSize', 12);
 title('DAE Example comparison', 'FontSize', 13);
-
 legend([plot_plain_2, plot_ifdiff_2, Switch_plot_ifdiff(1)], ...
-       'Location', 'best', 'FontSize', 10); % Euler_plot_1, Euler_plot_2
-
-% Zoom
-
-hold off;
+       'Location', 'best', 'FontSize', 10); 
