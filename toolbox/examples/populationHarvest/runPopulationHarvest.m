@@ -6,11 +6,6 @@ C = 10;
 T = 5;
 alpha = 0.5;
 p = [r, C, T, alpha];
-TMin = 0;
-TMax = C;
-alphaMin = 0;
-alphaMax = 1;
-
 
 rhs = @rhsPopulationHarvest;
 integrator = @ode45;
@@ -40,6 +35,10 @@ end
 
 %% Solve for multiple parameters
 solver = @(p) solveODE(datahandle, tspan, y0, p);
+TMin = 0;
+TMax = C;
+alphaMin = 0;
+alphaMax = 1;
 nT = 5;
 nAlpha = 5;
 TPlot = linspace(TMin, TMax, nT);
@@ -74,7 +73,7 @@ objectiveGrid = arrayfun(objective, solutionGrid);
 
 %% Plot objective
 function plotObjective(ax, objective, T, alpha)
-surf(T, alpha, objective);
+surf(ax, T, alpha, objective', 'FaceAlpha', 0.75);
 title(ax, 'Total harvest for various threshold harvesting parameters');
 xlabel(ax, 'Harvest threshold');
 ylabel(ax, 'Harvest ratio');
@@ -104,10 +103,27 @@ for idxT=1:nT
     end
 end
 
-%% Plot gradient
-function plotGradient(ax, gradient, T, alpha)
-surf(T, alpha, gradient);
-title(ax, 'Total harvest gradient for various threshold harvesting parameters');
+%% Plot gradient surface
+function plotGradientSurface(ax, objective, gradient, T, alpha)
+plotObjective(ax, objective, T, alpha);
+
+plotScale = [diff(xlim(ax)); diff(ylim(ax))];
+gradientNorm = vecnorm(gradient ./ plotScale, 2, 1);
+gradient = gradient ./ (gradientNorm + eps);
+arrowLength = 0.02 * max(T(end) - T(1), alpha(end) - alpha(1));
+
+% Get interior points
+T = T(2:end-1);
+alpha = alpha(2:end-1);
+dT = squeeze(gradient(1, 2:end-1, 2:end-1));
+dAlpha = squeeze(gradient(2, 2:end-1, 2:end-1));
+objective = objective(2:end-1, 2:end-1);
+Z = zeros(size(objective));
+hold(ax, 'on');
+quiver3(ax, T, alpha, objective', arrowLength * dT', arrowLength * dAlpha', Z, 0, ...
+'Color', 'black', 'LineWidth', 2, 'MaxHeadSize', 0.1);
+hold(ax, 'off');
+title(ax, 'Total harvest and gradient for various threshold harvesting parameters');
 xlabel(ax, 'Harvest threshold');
 ylabel(ax, 'Harvest ratio');
 zlabel(ax, 'Total harvest gradient');
@@ -115,7 +131,7 @@ end
 
 figGrad = figure;
 axGrad = axes(figGrad);
-plotGradient(axGrad, squeeze(gradientGrid(1, :, :)), TPlot, alphaPlot)
+plotGradientSurface(axGrad, objectiveGrid, gradientGrid, TPlot, alphaPlot)
 
 %% Optimize
 function [f, g] = objWithGrad(x, p, idxP, solver, objective, gradient)
