@@ -1,4 +1,4 @@
-function dx = task1RHS(t, x, p)
+function dx = rhsTask1(t, x, p)
     dx = zeros(2, 1);
     q1 = 50/27*t.^2 - 100/3*t + 400/3;
 
