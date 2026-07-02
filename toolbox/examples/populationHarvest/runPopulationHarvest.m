@@ -126,7 +126,7 @@ p(idxP) = x;
 solution = solver(p);
 f = -objective(solution);
 if nargout > 1
-    g = gradient(solution);
+    g = -gradient(solution);
 end
 end
 
@@ -146,7 +146,18 @@ optsOptimizer = optimoptions(optimizer, ...
     'SpecifyObjectiveGradient', true, ...
     'Display', 'iter');
 
+[~, err] = checkGradients(fun, x0);
 [x, fval, exitflag, output] = optimizer(fun, x0, A, b, Aeq, beq, lb, ub, nonlcon, optsOptimizer);
 
 %% Plot optimal solution
-[~, err] = checkGradients(fun, x0)
+fprintf('Optimal Parameters: T=%g, alpha=%g\n', x(1), x(2));
+fprintf('Optimal Harvest: %g\n', fval);
+
+pOpt = p;
+pOpt(idxP) = x;
+optSolution = solver(pOpt);
+
+figPopOpt = figure;
+axPopOpt = axes(figPopOpt);
+plotPopulation(axPopOpt, optSolution)
+title(axPopOpt, 'Population over time with optimal threshold harvesting parameters')
