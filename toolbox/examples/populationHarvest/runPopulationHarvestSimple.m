@@ -49,8 +49,7 @@ f = harvest(x(1), x(2));
 
 if nargout > 1
     dimY = numel(solution.y(:, 1));
-    fdStep = generateFDstep(dimY, dimP);
-    sensFun = generateSensitivityFunction(datahandle, solution, fdStep);
+    sensFun = generateSensitivityFunction(datahandle, solution);
     
 end
 end

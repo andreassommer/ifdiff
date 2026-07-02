@@ -86,8 +86,8 @@ axObj = axes(figObj);
 plotObjective(axObj, objectiveGrid, TPlot, alphaPlot)
 
 %% Compute gradient
-function g = computeGradient(datahandle, solution, fdStep, idxP)
-sensitivity = generateSensitivityFunction(datahandle, solution, fdStep, 'calcGy', false);
+function g = computeGradient(datahandle, solution, idxP)
+sensitivity = generateSensitivityFunction(datahandle, solution, 'calcGy', false);
 Gp = sensitivity(solution.x(end)).Gp;
 dP = Gp(1, idxP);
 dH = Gp(2, idxP);
@@ -95,10 +95,7 @@ g = dP + dH;
 end
 
 idxP = [3, 4];
-dimY = numel(y0);
-dimP = numel(p);
-fdStep = generateFDstep(dimY, dimP);
-gradient = @(solution) computeGradient(datahandle, solution, fdStep, idxP);
+gradient = @(solution) computeGradient(datahandle, solution, idxP);
 
 gradientGrid = zeros([numel(idxP), size(solutionGrid)]);
 for idxT=1:nT

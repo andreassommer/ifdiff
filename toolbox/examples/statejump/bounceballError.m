@@ -104,7 +104,7 @@ switchesLeft         = leftLimit(switchesToReport);
 switchesLeftAndRight = reshape([switchesLeft; switchesToReport], 1, []);
 
 sensPoints       = [t0 switchesLeftAndRight tEnd];
-sensFunStandard  = generateSensitivityFunction(datahandle, solStandard, FDstepStandard, 'method', 'VDE', ...
+sensFunStandard  = generateSensitivityFunction(datahandle, solStandard, 'FDstep', FDstepStandard, 'method', 'VDE', ...
     'CalcGy', true, 'CalcGp', true);
 sensStandard     = sensFunStandard(sensPoints);
 GyStandard       = {sensStandard.Gy};
@@ -140,7 +140,7 @@ switchesLeft         = leftLimit(switchesToReport);
 switchesLeftAndRight = reshape([switchesLeft; switchesToReport], 1, []);
 
 sensPoints       = [t0 switchesLeftAndRight tEnd];
-sensFunStrict  = generateSensitivityFunction(datahandle, solStrict, FDstepStrict, 'method', 'VDE', ...
+sensFunStrict  = generateSensitivityFunction(datahandle, solStrict, 'FDstep', FDstepStrict, 'method', 'VDE', ...
     'CalcGy', true, 'CalcGp', true);
 sensStrict     = sensFunStrict(sensPoints);
 GyStrict       = {sensStrict.Gy};

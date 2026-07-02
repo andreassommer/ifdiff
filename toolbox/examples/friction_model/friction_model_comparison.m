@@ -63,12 +63,11 @@ title(noSlidingAxSol, titleSol, 'FontSize', fontszTitle);
 
 %% Compute sensitivities for model without sliding mode
 fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(noSlidingRhs));
-FDstep = generateFDstep(dimY, dimP);
 warnChatteringState = warning('off', warnChatteringId);
 tStart = tic;
 try
     noSlidingSensFun = generateSensitivityFunction( ...
-        noSlidingDatahandle, noSlidingSol, FDstep, 'integrator_options', optionsSens);
+        noSlidingDatahandle, noSlidingSol, 'integrator_options', optionsSens);
     noSlidingSens = noSlidingSensFun(tplot);
 catch ME
     warning(warnChatteringState);
@@ -120,12 +119,11 @@ title(slidingAxSol, [titleSol, ' (Sliding Mode)'], 'FontSize', fontszTitle);
 
 %% Compute sensitivities for model with sliding mode
 fprintf('Computing sensitivity w.r.t. initial values for %s ...\n', func2str(slidingRhs));
-slidingFDstep = generateFDstep(dimY, dimP);
 warnChatteringState = warning('off', warnChatteringId);
 tStart = tic;
 try
     slidingSensFun = generateSensitivityFunction( ...
-        slidingDatahandle, slidingSol, slidingFDstep, 'integrator_options', optionsSens);
+        slidingDatahandle, slidingSol, 'integrator_options', optionsSens);
     slidingSens = slidingSensFun(tplot);
 catch ME
     warning(warnChatteringState);

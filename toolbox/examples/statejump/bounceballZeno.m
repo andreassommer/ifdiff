@@ -20,8 +20,7 @@ datahandle = prepareDatahandleForIntegration('bounceballZenoRHS', ...
 sol = solveODE(datahandle, [t0 tEnd], x0, p);
 
 
-FDstep  = generateFDstep(size(x0,1), length(p));
-sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', ...
+sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', ...
     'CalcGy', true, 'CalcGp', true);
 
 

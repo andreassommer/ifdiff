@@ -1,16 +1,16 @@
-function sensitivities_function = generateSensitivityFunction(datahandle, sol, FDstep, varargin)
-   % sensitivities_function = generateSensitivityFunction(datahandle, sol, FDstep, varargin)
+function sensitivities_function = generateSensitivityFunction(datahandle, sol, varargin)
+   % sensitivities_function = generateSensitivityFunction(datahandle, sol, varargin)
    %
-   % Generates a function that can take a vector of timepoints and the struct FDstep with the stepsizes for END as inputs 
-   % and calculates the sensitivities at the given timepoints. Here the user can specify his requirements to the generated function.
+   % Generates a function that can take a vector of timepoints and calculates the sensitivities at the given timepoints.
+   % Here the user can specify his requirements to the generated function.
    % The methods possible for the calculation of sensitivities are END_full, END_piecewise or VDE.
-   % The calculation of the sensitivities at the timepoint of a switch is onyl possible using the methods END_piecewise or VDE.
+   % The calculation of the sensitivities at the time point of a switch is only possible using the methods END_piecewise or VDE.
    % Therefore we look at the function y(t) as cadlag ("right continuous with left limits") and the calculation is possible using the updates.
    %
    % INPUT: datahandle - datahandle you get from the integration process with solveODE
    %        sol        - solution object from the integration with solveODE
-   %        FDstep     - struct that contains the stepsizes for calcualtion of derivatives with END (External numerical differentiation)
    %        varargin   - optional specification of certain parameters:
+   %                     'FDstep'                 - struct that contains the step sizes for calculation of derivatives using finite differences
    %                     'integrator'             - integrator for computing the END and solve the VDE
    %                     'integrator_options'     - integrator options for computing the END and solve the VDE
    %                     'calcGy'                 - flag that is true if the sensitivities w.r.t. the initial values should be calculated
@@ -31,8 +31,11 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    
    generateData(datahandle, sol);
    data = datahandle.getData();
+   dim_y = data.computeSensitivity.dim_y;
+   dim_p = data.computeSensitivity.dim_p;
 
    % default settings
+   FDstep                      = olGetOption(varargin, 'FDstep',                 generateFDstep(dim_y, dim_p));
    integrator                  = olGetOption(varargin, 'integrator',             data.integratorSettings.numericIntegrator);
    integrator_options          = olGetOption(varargin, 'integrator_options',     data.integratorSettings.options);
    method                      = olGetOption(varargin, 'method',                 'VDE');
@@ -56,8 +59,6 @@ function sensitivities_function = generateSensitivityFunction(datahandle, sol, F
    switches_left = data.computeSensitivity.switches_extended_left;
    
    tspan = data.SWP_detection.tspan;
-   dim_y = data.computeSensitivity.dim_y;
-   dim_p = data.computeSensitivity.dim_p;
 
    options.FDstep = FDstep;
    options.integrator = integrator;

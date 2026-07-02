@@ -2,8 +2,7 @@ function simulateBouncingBall(t0, tEnd, x0, p, solver, options)
     datahandle = prepareDatahandleForIntegration('bounceballRHS', 'solver', func2str(solver), 'options', options);
     sol = solveODE(datahandle, [t0 tEnd], x0, p);
 
-    FDstep = generateFDstep(size(x0, 1), length(p));
-    sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', 'CalcGy', true, 'CalcGp', true);
+    sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', 'CalcGy', true, 'CalcGp', true);
 
     
     T = t0:0.01:tEnd;

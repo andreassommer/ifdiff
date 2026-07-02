@@ -161,24 +161,12 @@ This method is generally not accurate and we do not recommend it, but may be fas
  
 ## Example sensitivity generation for the Canonical Example
 
-1. Choose step sizes for finite differencing (also used in method `VDE` for generating state derivatives of the rhs). 
+1. Build the sensitivity function. In this example, the `END_piecewise` method is chosen.
 
     ```matlab
-    dim_y  = size(sol.y,1);                
-     dim_p  = length(parameters);
-     FDstep = generateFDstep(dim_y,dim_p);
+    sensitivity_function = generateSensitivityFunction(datahandle, sol, 'method', 'END_piecewise');
     ```
-
-   The `generateDFstep` function accepts several options influencing e.g. step length. 
-   See the documentation below for more information.
-
-
-2. Build the sensitivity function. In this example, the `END_piecewise` method is chosen.
-
-    ```matlab
-    sensitivity_function = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise'); 
-    ```
-3. Evaluate the sensitivity function at specific times. 
+2. Evaluate the sensitivity function at specific times.
 
     ```matlab
     t = 0:0.1:20;
@@ -194,7 +182,7 @@ $G_{y,ij}$ denotes the sensitivity of the $i$-th solution component w.r.t. the $
 | __Naive approach__: Sensitivities are useless                         | __IFDIFF__: Correct and accurate sensitivities                   |
 
 While IFDIFF produces correct and accurate sensitivities, the sensitivities using the naive approach, again without any warning or hint,
-are not only inaccurate (notice the scales!), but plain wrong. 
+are not only inaccurate (notice the scales!), but plain wrong.
 
 The following table lists several name-value pairs that can be used to configure `generateSensitivityFunction`
 
@@ -204,7 +192,8 @@ The following table lists several name-value pairs that can be used to configure
    | calcGp                  | true/false - flag indicating to calculate parameter sensitivities                   | true                                  |
    | Gmatrices_intermediate  | true/false - flag indicating to store update matrics                                | false                                 |
    | save_intermediates      | true/false - flag indicating to store intermediate calculations                     | true                                  |
-   | integrator              | Function handle for ODE solver in MATLAB (e.g. ode45)                               | Integrator used by ifdiff             | 
+   | FDstep                  | Struct containing finite difference step sizes obtained from generateFDstep         | FD with relative step size 1e-6       |
+   | integrator              | Function handle for ODE solver in MATLAB (e.g. ode45)                               | Integrator used by ifdiff             |
    | integrator_options      | Options struct generated for ODE solver                                             | Integrator options used by ifdiff     |
    | method                  | String with VDE/END_piecewise/END_full                                              | VDE                                   |
    | directions_y            | Matrix containing directions for directional derivatives w.r.t initial values.      | Identity matrix with dimension n_y    |

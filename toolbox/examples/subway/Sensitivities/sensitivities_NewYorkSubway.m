@@ -17,8 +17,8 @@ FDstep = generateFDstep(dim_y, dim_p, 'hy_rel_flag', false, 'hp_rel_flag', false
 
 % Generation of sensitivity functions
 tic;
-sensitivities_function_END = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', 'calcGy', true, 'calcGp', false, 'Gmatrices_intermediate', false, 'save_intermediates', false);
-sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', 'calcGy', true, 'calcGp', false, 'Gmatrices_intermediate', false, 'save_intermediates', true, 'directions_p', eye(46,5));
+sensitivities_function_END = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'END_piecewise', 'calcGy', true, 'calcGp', false, 'Gmatrices_intermediate', false, 'save_intermediates', false);
+sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'method', 'VDE', 'calcGy', true, 'calcGp', false, 'Gmatrices_intermediate', false, 'save_intermediates', true, 'directions_p', eye(46,5));
 toc;
 %% Sensitivity calculations
 t = [0; 15; 17; 20; sol.switches(1)];
