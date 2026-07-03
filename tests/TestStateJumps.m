@@ -193,7 +193,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
             switchesLeft = leftLimit(sol.switches);
             sensTimes = reshape([switchesLeft; sol.switches], 1, []);
             sensTimes = [t0 sensTimes tEnd];
-            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', ...
+            fdStep = generateFDstep(numel(x0), numel(p), 'hy', 1e-6, 'hp', 1e-6);
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', 'FDstep', fdStep, ...
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
             sens = sensFun(sensTimes);
             Gy = {sens.Gy};
