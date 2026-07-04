@@ -1,0 +1,158 @@
+\section*{Appendix B: IFDIFF Cheat Sheet}
+\subsection*{RHS Function Requirements}
+\begin{itemize}
+	\item Signature: \lstinline!function dx = myRHS(t, x, p)!. Keep in mind that the function file also needs to be named \lstinline!myRHS.m!
+	\item Helper functions work when defined either as:
+	\begin{itemize}
+		\item in separate function files 
+		\item as local variables
+		\item nested functions
+	\end{itemize} 
+	but \textbf{DO NOT} work as local functions of \lstinline!myRHS.m! !
+	\item \textbf{Warning}: Do not use \lstinline!elseif! statements, instead use nested \lstinline!if ... else ... end! statements to code the switching behavior. 
+\end{itemize}
+
+
+\subsection*{IFDIFF Solution Setup: A Canonical Example}
+We consider the following ODE:
+
+\begin{align*}
+	\dot{x} = f(t,x,p) = 
+	\begin{pmatrix} 
+		f_1(t,x,p) \\
+		f_2(t,x,p)
+	\end{pmatrix}
+\end{align*}
+\begin{align*}
+	f_1(t,x,p) = 0.01 \cdot t^2 + x_2^3 \hspace{20pt} f_2(t,x,p) = \begin{cases} 
+		0 \text{  if} & x_1 < p \\ 5 \text{  if} & p \leq x_1 < p +0.5 \\ 0 \text{  if} & x_1 \geq p + 0.5 \end{cases}
+\end{align*}
+with the initial value ${ x(0) = (0,1)^T}$ and parameter ${p = 5.437}$
+\begin{enumerate}
+	\item Setup the the RHS and name the file \lstinline!canonicalExampleRHS.m!
+	\begin{lstlisting}
+		function dx = canonicalExampleRHS(t,x,p)
+		
+		dx = zeros(2,1);
+		dx(1) = 0.01 * t.^2  +  x(2).^3;
+		if x(1) < p(1)
+		dx(2) = 0;
+		else
+		if x(1) < p(1) + 0.5
+		dx(2) = 5;
+		else
+		dx(2) = 0;
+		end
+		end
+		
+		end
+	\end{lstlisting}
+	
+	\item \textbf{Main Script:}
+	Setup the initial values, the time interval as well as parameter(s):
+	\begin{lstlisting}
+		t0 = 0;
+		tf = 20;
+		timeinterval = [t0,tf];
+		initstates   = [1  0 ];
+		p            = 5.437;
+	\end{lstlisting}
+	\item Define options in the main script and call \verb|prepareDatahandleForIntegration| to prepare the right-hand side with the options for IFDIFF:
+	\begin{lstlisting}
+		integrator = @ode45;
+		odeoptions = odeset( 'AbsTol', 1e-10, 'RelTol', 1e-5);
+		filename = 'canonicalExampleRHS';
+		datahandle = prepareDatahandleForIntegration(filename, 'integrator', integrator, 'options', odeoptions);
+	\end{lstlisting}
+	\item Create a solution structure using \verb|solveODE| and evaluate
+	\begin{lstlisting}
+		T = t0:0.1:tf;
+		sol_ifdiff = solveODE(datahandle, timeinterval, initstates, p);
+		Y_ifdiff  = deval(sol_ifdiff, T);
+	\end{lstlisting}
+	\item Plot the solution
+	\begin{lstlisting}
+		plot(T, Y_ifdiff); 
+		xlabel('Time (s)');
+		ylabel('State Variables');
+		title('IFDIFF Solution');
+		grid on;
+	\end{lstlisting}
+	\item Compute and plot the sensitivities. There are two methods to do so. For the first one, you need to use \lstinline!generateFDstep! so get finite differences and then use \lstinline!generateSensitivityFunction! (which uses the VDE method in this example) to compute the sensitivities. Afterward, you can access and plot the sensitivities by appropriately reshaping the matrices in the \lstinline!sensitivities! struct array, which are stored in the fields \lstinline!Gy! for sensitivites w.r.t.~initial values and \lstinline!Gp! for sensitivities w.r.t.~parameters respectively. 
+	\begin{lstlisting}
+		%% Step 5: Compute sensitivities manually
+		
+		dim_y = size(Y_ifdiff, 1);
+		dim_p = length(p); % dim_p = 1
+		
+		FDstep = generateFDstep(dim_y, dim_p, 'hy_rel_flag', true,'hp_rel_flag', true, 'hy_min', 1e-6, 'hp_min', 1e-6);
+		sensFun = generateSensitivityFunction(datahandle, sol_ifdiff, FDstep,'method', 'VDE', 'integrator_options', options);
+		
+		sensitivities = sensFun(T); % Compute sensitivites at time points in T
+	\end{lstlisting}
+	Alternatively, you may use the provided \lstinline!plotSensitivities_ifdiff! function which already computes the sensitivities internally and just outputs a plot:
+	\begin{lstlisting}
+		plotSensitivities_ifdiff(datahandle, sol_ifdiff, p);
+	\end{lstlisting}
+	Your plots should look like the following:
+\end{enumerate}
+
+
+\clearpage
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.75\linewidth]{Plots/canonicalExample_solution.png}
+	\caption{Canonical Example solution with IFDIFF}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.75\linewidth]{Plots/canonicalExample_sensitivities.png}
+	\caption{Sensitivities for the Canonical Example with IFDIFF}
+\end{figure}
+
+\newpage
+%Lev: State jump tutorial
+\subsection*{Specifying state jumps in a RHS}
+
+A state jump may be specified at any point in the RHS via a special if-block:
+\begin{lstlisting}
+	function dx = myRHS(t, x, p)
+	...
+	if ifdiff_jumpif(jumpCondition, jumpDirection)
+	... <statements computing the jumpIncrement> ...
+	ifdiff_update(jumpIncrement)
+	end
+	...
+	end
+\end{lstlisting}
+
+\noindent When the first argument of the \verb|ifdiff_jumpif| function (\verb|jumpCondition|) crosses zero in the direction specified by the second argument (\verb|jumpDirection|), i.e. negative to positive (1), positive to negative (-1) or both (0), IFDIFF will increment the state vector in the solution by the first argument of the \verb|ifdiff_update| function (\verb|jumpIncrement|).\newline
+\textbf{Warning:} The state vector and \verb|jumpIncrement| must have matching dimensions. In particular, the \verb|jumpIncrement| must be a column-vector with the same number of elements as the state vector.\\\\
+\textbf{Warning:} IFDIFF will never execute the body of the if-block directly in the RHS, so make sure that the statements in the if-block are only used to compute the \verb|jumpIncrement|. In particular, any variables exclusively defined in the if-block must not be used outside of the if-block.
+%Lev: State jump tutorial end
+
+\subsection*{Plotting state jump sensitivites}
+Solve the system, compute the sensitivites and then call the \lstinline!plotSensitivitiesSwitched! function. \\
+Here is an example:
+\begin{lstlisting}
+	% RHS params
+	tspan = [0, 10];
+	h0 = 0;
+	v0 = 10;
+	x0 = [h0; v0];
+	p = 9.8;
+	% Solver params
+	solver = @ode45;
+	options = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+	% Call IFDIFF
+	dh = prepareDatahandleForIntegration(@bounceRHS, 'integrator', solver, 'options', options);
+	sol = solveODE(dh, tspan, x0, p);
+	
+	dim_y  = size(sol.y, 1);
+	dim_p  = length(p);
+	FDstep = generateFDstep(dim_y ,dim_p);
+	sensFun = generateSensitivityFunction(dh, sol, FDstep, 'method', 'VDE');
+	
+	plotSensitivitiesSwitched(sol, sensFun, tspan);
+\end{lstlisting}

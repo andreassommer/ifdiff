@@ -1,0 +1,63 @@
+% !TeX root = exercises_main.tex
+\section*{Task 1: Introductory Example}
+
+Consider this switched system on time horizon $ T = [0, 30] $ with initial values $ x_1(0)=0, x_2(0)=1000 $ and parameter $p = ( \frac{3}{4}, \frac{1}{4} )$ :
+
+\[
+\frac{d}{dt}x_1(t) = 
+\begin{cases}
+	q_1(t),      & \text{if } x_1 \leq 750 \\
+	q_1(t) - q_2(t),  & \text{if } x_1(t) > 750 \\
+\end{cases}
+\]
+
+\[
+\frac{d}{dt}x_2(t) = 
+\begin{cases}
+	0,      & \text{if } x_1 \leq 750 \\
+	-300,    & \text{if } x_1(t) \in (750, 800) \\
+	0  & \text{if } x_1(t) > 750 \\
+\end{cases}
+\] 
+
+where 
+
+\[
+q_1(t) = \frac{50}{27}t^2 -  \frac{100}{3}t +  \frac{400}{3}
+\]
+\[
+q_2(t) = (1000 - x_2)(p_1(t-19) + p_2)
+\]
+
+\begin{enumerate}[label=\alph*)]
+	
+	\item First, solve this system using ode45 and look at the solution. To do so, define the right-hand side with the following function header: \verb|function dx = rhsTask1(t, x, p)|. Implement the helper functions \verb|q1| and \verb|q2| as local variables. Does the solution look correct? Can you think of the reason why ode45 produces the results it produces?
+	
+	\item Let's see how the solution responds to changes in the initial values: Plot the sensitivities of the solution using \verb|plotSensitivities_odexx(sol, @rhsTask1, p, @ode45, options)|. Do they look correct?
+	
+	\item Now, solve this system using IFDIFF. What changed in comparison to a)? Use the same function header and implementation of the helper functions as mentioned in a)
+	
+	\item Plot the sensitivities of the solution with IFDIFF using \verb|plotSensitivities_ifdiff()|. How do the sensitivities differ from the sensitivities you previously computed in Task 1?
+	
+	\item Let's take a look at a different method: Use the \verb|MaxStep| parameter to \verb|odeset| to produce a forward solution with small step sizes: \verb|options = odeset(..., 'MaxStep', 0.1);|. Does it look correct?
+	
+	\item Now, compute and plot the sensitivities of this solution. What do you notice?
+	
+\end{enumerate}
+
+For reference, your solution and sensitivity plots with IFDIFF should look like the following:
+\newpage
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.75\linewidth]{Plots/task1solution_ifdiff.png}
+	\caption{Solution plot for c)}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.75\linewidth]{Plots/task1sensitivities_ifdiff.png}
+	\caption{Sensitvities for d)}
+\end{figure}
+
+\newpage
+
