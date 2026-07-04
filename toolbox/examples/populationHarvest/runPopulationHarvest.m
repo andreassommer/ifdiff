@@ -1,11 +1,10 @@
-%% Setup
+%% Setup problem
 tspan = [0, 5];
-y0 = [1; 0];
-r = 1;
-C = 10;
-T = 5;
+y0 = [0.1; 0];
+
+T = 0.5;
 alpha = 0.5;
-p = [r, C, T, alpha];
+p = [T, alpha];
 
 rhs = @rhsPopulationHarvest;
 integrator = @ode45;
@@ -16,161 +15,177 @@ datahandle = prepareDatahandleForIntegration(rhs, 'integrator', integrator, 'opt
 solution = solveODE(datahandle, tspan, y0, p);
 
 %% Plot solution
-figPop = figure;
-axPop = axes(figPop);
-plotPopulation(axPop, solution);
-
-function plotPopulation(ax, solution)
-nPoints = 1000;
-t = linspace(solution.x(1), solution.x(end), nPoints);
-P = deval(solution, t, 1);
-hold(ax, 'on');
-plot(ax, t, P);
-hold(ax, 'off');
-
-title(ax, 'Population over time with threshold harvesting');
-xlabel(ax, 'Time');
-ylabel(ax, 'Population');
-end
+plotPopulation(solution);
 
 %% Solve for multiple parameters
-solver = @(p) solveODE(datahandle, tspan, y0, p);
+solutionFunc = @(p) solveODE(datahandle, tspan, y0, p);
+
+solutionGrid = solveOnGrid(solutionFunc);
+
+%% Plot solution for multiple parameters
+plotPopulationGrid(solutionGrid);
+
+%% Compute objective
+objectiveFunc = @(solution) sum(solution.y(:, end));
+
+objectiveGrid = arrayfun(objectiveFunc, solutionGrid);
+
+%% Plot objective
+plotObjective(solutionGrid, objectiveGrid);
+
+%% Compute gradient
+function g = computeGradient(datahandle, solutionGrid)
+sensitivity = generateSensitivityFunction(datahandle, solutionGrid, 'calcGy', false, 'method', 'VDE');
+Gp = sensitivity(solutionGrid.x(end)).Gp;
+dP = Gp(1, :);
+dH = Gp(2, :);
+g = dP + dH;
+end
+gradientFunc = @(solution) computeGradient(datahandle, solution);
+
+gradientGrid = arrayfun(gradientFunc, solutionGrid, 'UniformOutput', false);
+
+%% Plot gradient
+plotGradient(solutionGrid, objectiveGrid, gradientGrid)
+
+%% Optimize
+function [f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)
+solution = solutionFunc(p);
+f = -objectiveFunc(solution);
+if nargout > 1
+    g = -gradientFunc(solution);
+end
+end
+optimizationFunc = @(p) objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc);
+
+[pOpt, objOpt] = optimizeParameters(optimizationFunc);
+solutionOpt = solutionFunc(pOpt);
+
+%% Plot optimal solution
+fprintf('Optimal Parameters: T=%g, alpha=%g\n', pOpt);
+fprintf('Optimal Total Harvest: %g\n', -objOpt);
+
+plotPopulation(solutionOpt);
+
+
+%% Helper functions
+function [pOpt, objOpt] = optimizeParameters(optimizationFunc)
+optimizer = @fmincon;
+optimizationProblem.objective = optimizationFunc;
+optimizationProblem.x0 = [0.5, 0.25];
+optimizationProblem.lb = [0, 0.2];
+optimizationProblem.ub = [1, 1];
+optimizationProblem.solver = func2str(optimizer);
+optimizationProblem.options = optimoptions(optimizationProblem.solver, ...
+    'Algorithm', 'interior-point', ...
+    'SpecifyObjectiveGradient', true, ...
+    'Display', 'iter');
+
+checkGradients(optimizationProblem.objective, optimizationProblem.x0, 'Display', 'on');
+[pOpt, objOpt] = optimizer(optimizationProblem);
+end
+
+function gridSolution = solveOnGrid(solutionFunc)
 TMin = 0;
-TMax = C;
+TMax = 1;
 alphaMin = 0;
 alphaMax = 1;
 nT = 5;
 nAlpha = 5;
-TPlot = linspace(TMin, TMax, nT);
-alphaPlot = linspace(alphaMin, alphaMax, nAlpha);
-solutionGrid = repmat(solution, nT, nAlpha);
+
+T = linspace(TMin, TMax, nT);
+alpha = linspace(alphaMin, alphaMax, nAlpha);
+
 for idxT=1:nT
     for idxAlpha=1:nAlpha
-        solutionGrid(idxT, idxAlpha) = solver([r, C, TPlot(idxT), alphaPlot(idxAlpha)]);
+        gridSolution(idxT, idxAlpha) = solutionFunc([T(idxT), alpha(idxAlpha)]); %#ok<AGROW>
     end
 end
+end
 
-%% Plot solution for multiple parameters
-function plotPopulationGrid(fig, solution, T, alpha)
+function plotPopulation(solution, ax)
+if nargin < 2
+    fig = figure;
+    ax = axes(fig);
+end
+
+nPoints = 1000;
+t = jumpLinspace(solution.x(1), solution.x(end), solution.switches, nPoints);
+P = deval(solution, t, 1);
+plot(ax, t, P);
+
+xlim(ax, 'tight');
+ylim(ax, 'tight');
+
+grid(ax, 'on');
+
+title(ax, sprintf('Population over time with threshold harvesting (T=%g, \\alpha=%g)', solution.parameters));
+xlabel(ax, 'Time');
+ylabel(ax, 'Population');
+end
+
+function plotPopulationGrid(solution)
 [nT, nAlpha] = size(solution);
+p = {solution.parameters};
+T = cellfun(@(p) p(1), p(1:nT));
+
+fig = figure;
 tiles = tiledlayout(fig, nT, nAlpha);
-for idxT=1:nT
-    for idxAlpha=1:nAlpha
-        ax = nexttile(tiles);
-        plotPopulation(ax, solution(idxT, idxAlpha));
-        title(ax, sprintf('T=%g, \\alpha=%g', T(idxT), alpha(idxAlpha)));
-    end
+for idx=1:numel(solution)
+    ax = nexttile(tiles);
+    plotPopulation(solution(idx), ax);
+
+    yticks(ax, T);
+    yl = ylim(ax);
+    ylim(ax, [yl(1), T(find(yl(2) < T, 1))]);
+
+    title(ax, sprintf('T=%g, \\alpha=%g', p{idx}));
 end
-title(tiles, 'Population over time with various threshold harvesting parameters')
+title(tiles, 'Population over time for various threshold harvesting parameters')
 end
 
-figPopGrid = figure;
-plotPopulationGrid(figPopGrid, solutionGrid, TPlot, alphaPlot);
+function plotObjective(solutionGrid, objectiveGrid, ax)
+if nargin < 3
+    fig = figure;
+    ax = axes(fig);
+end
 
-%% Compute objective
-objective = @(solution) sum(solution.y(:, end));
-objectiveGrid = arrayfun(objective, solutionGrid);
+p = reshape({solutionGrid.parameters}, size(solutionGrid));
+T = cellfun(@(p) p(1), p);
+alpha = cellfun(@(p) p(2), p);
 
-%% Plot objective
-function plotObjective(ax, objective, T, alpha)
-surf(ax, T, alpha, objective', 'FaceAlpha', 0.75);
+surfc(ax, T, alpha, objectiveGrid, 'FaceAlpha', 0.5);
 title(ax, 'Total harvest for various threshold harvesting parameters');
 xlabel(ax, 'Harvest threshold');
 ylabel(ax, 'Harvest ratio');
 zlabel(ax, 'Total harvest');
 end
 
-figObj = figure;
-axObj = axes(figObj);
-plotObjective(axObj, objectiveGrid, TPlot, alphaPlot)
+function plotGradient(solutionGrid, objectiveGrid, gradientGrid)
+fig = figure;
+ax = axes(fig);
 
-%% Compute gradient
-function g = computeGradient(datahandle, solution, idxP)
-sensitivity = generateSensitivityFunction(datahandle, solution, 'calcGy', false);
-Gp = sensitivity(solution.x(end)).Gp;
-dP = Gp(1, idxP);
-dH = Gp(2, idxP);
-g = dP + dH;
-end
+plotObjective(solutionGrid, objectiveGrid, ax);
 
-idxP = [3, 4];
-gradient = @(solution) computeGradient(datahandle, solution, idxP);
+p = reshape({solutionGrid.parameters}, size(solutionGrid));
+T = cellfun(@(p) p(1), p);
+alpha = cellfun(@(p) p(2), p);
 
-gradientGrid = zeros([numel(idxP), size(solutionGrid)]);
-for idxT=1:nT
-    for idxAlpha=1:nAlpha
-        gradientGrid(:, idxT, idxAlpha) = gradient(solutionGrid(idxT, idxAlpha));
-    end
-end
+gradientGrid = reshape(cell2mat(gradientGrid), size(solutionGrid, 1), numel(p{1}), size(solutionGrid, 2));
+gradientGrid = permute(gradientGrid, [2, 1, 3]);
 
-%% Plot gradient surface
-function plotGradientSurface(ax, objective, gradient, T, alpha)
-plotObjective(ax, objective, T, alpha);
+gradientNorm = vecnorm(gradientGrid, 2, 1);
+gradientGrid = gradientGrid ./ (gradientNorm + eps);
+arrowLength = 0.075 * max(T(end) - T(1), alpha(end) - alpha(1));
 
-plotScale = [diff(xlim(ax)); diff(ylim(ax))];
-gradientNorm = vecnorm(gradient ./ plotScale, 2, 1);
-gradient = gradient ./ (gradientNorm + eps);
-arrowLength = 0.02 * max(T(end) - T(1), alpha(end) - alpha(1));
+dT = squeeze(gradientGrid(1, :, :));
+dAlpha = squeeze(gradientGrid(2, :, :));
+Z = zeros(size(objectiveGrid));
 
-% Get interior points
-T = T(2:end-1);
-alpha = alpha(2:end-1);
-dT = squeeze(gradient(1, 2:end-1, 2:end-1));
-dAlpha = squeeze(gradient(2, 2:end-1, 2:end-1));
-objective = objective(2:end-1, 2:end-1);
-Z = zeros(size(objective));
 hold(ax, 'on');
-quiver3(ax, T, alpha, objective', arrowLength * dT', arrowLength * dAlpha', Z, 0, ...
-'Color', 'black', 'LineWidth', 2, 'MaxHeadSize', 0.1);
+quiver3(ax, T, alpha, objectiveGrid, arrowLength * dT, arrowLength * dAlpha, Z, 0, ...
+    'Color', 'black', 'LineWidth', 2, 'MaxHeadSize', 0.1);
 hold(ax, 'off');
+
 title(ax, 'Total harvest and gradient for various threshold harvesting parameters');
-xlabel(ax, 'Harvest threshold');
-ylabel(ax, 'Harvest ratio');
-zlabel(ax, 'Total harvest gradient');
 end
-
-figGrad = figure;
-axGrad = axes(figGrad);
-plotGradientSurface(axGrad, objectiveGrid, gradientGrid, TPlot, alphaPlot)
-
-%% Optimize
-function [f, g] = objWithGrad(x, p, idxP, solver, objective, gradient)
-p(idxP) = x;
-solution = solver(p);
-f = -objective(solution);
-if nargout > 1
-    g = -gradient(solution);
-end
-end
-
-fun = @(x) objWithGrad(x, p, idxP, solver, objective, gradient);
-x0 = [4, 0.3];
-A = [];
-b = [];
-Aeq = [];
-beq = [];
-lb = [C/10, alphaMax/10];
-ub = [C - C/10, alphaMax - alphaMax/10];
-nonlcon = [];
-
-optimizer = @fmincon;
-optsOptimizer = optimoptions(optimizer, ...
-    'Algorithm', 'trust-region-reflective', ...
-    'SpecifyObjectiveGradient', true, ...
-    'Display', 'iter');
-
-[~, err] = checkGradients(fun, x0);
-[x, fval, exitflag, output] = optimizer(fun, x0, A, b, Aeq, beq, lb, ub, nonlcon, optsOptimizer);
-
-%% Plot optimal solution
-fprintf('Optimal Parameters: T=%g, alpha=%g\n', x(1), x(2));
-fprintf('Optimal Harvest: %g\n', fval);
-
-pOpt = p;
-pOpt(idxP) = x;
-optSolution = solver(pOpt);
-
-figPopOpt = figure;
-axPopOpt = axes(figPopOpt);
-plotPopulation(axPopOpt, optSolution)
-title(axPopOpt, 'Population over time with optimal threshold harvesting parameters')
