@@ -57,3 +57,5 @@ Thumbs.db
 *.xml
 *.gz
 *.toc
+*.fdb_latexmk
+*.fls
