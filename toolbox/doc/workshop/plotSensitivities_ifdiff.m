@@ -5,10 +5,8 @@ function fignum = plotSensitivities_ifdiff(datahandle, sol, parameters)
 % only works for sol objects generated with IFDIFF
 
 yDim = size(sol.y, 1);
-pDim = length(parameters);
-FDstep = generateFDstep(yDim, pDim, 'y_typ', max(sol.y, [], 2));
 
-sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE');
+sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE');
 tGrid = linspace(sol.x(1), sol.x(end), 1000);
 sensitivities = sensFun(tGrid);
 

@@ -28,7 +28,7 @@ function [residual_function] = generateResidualFunction(t, datahandle, sol, meas
       
       % Sensitivities
       if nargout > 1
-         sensitivities_function = generateSensitivityFunction(datahandle, sol_p, FDstep, 'method', method, 'p_typ', parameters_ODE);
+         sensitivities_function = generateSensitivityFunction(datahandle, sol_p, 'FDstep', FDstep, 'method', method, 'p_typ', parameters_ODE);
          sensitivites = sensitivities_function(t);
          jacobian = zeros(dim_y*length(t), dim_p + dim_y);
          count = 1;

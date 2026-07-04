@@ -16,7 +16,7 @@ FDstep = generateFDstep(dim_y, dim_p, 'hy_rel_flag', true,'hp_rel_flag', true, '
 
 %% Sensitivities VDE
 integrator_options = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, FDstep, 'integrator_options', integrator_options, 'method', 'VDE', 'Gmatrices_intermediate', true);
+sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'integrator_options', integrator_options, 'method', 'VDE', 'Gmatrices_intermediate', true);
 sensitivities_VDE = sensitivities_function_VDE(20);
 %% Analytical solution
 yA_1 = @(t) (1/300)*t.^3 + 1;

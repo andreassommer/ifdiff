@@ -19,8 +19,7 @@ classdef TestSensitivities < matlab.unittest.TestCase
             atol2 = 1e-5;
             atol3 = 1e-3;
 
-            FDstep = generateFDstep(size(sol.y,1), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE');
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE');
 
             t1 = sol.switches(1);
             t1Minus = leftLimit(t1);
@@ -67,8 +66,7 @@ classdef TestSensitivities < matlab.unittest.TestCase
             atol2 = 1e-4;
             atol3 = 1e-2;
 
-            FDstep = generateFDstep(size(sol.y,1), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise');
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'END_piecewise');
 
             t1 = sol.switches(1);
             t1Minus = leftLimit(t1);
@@ -117,8 +115,7 @@ classdef TestSensitivities < matlab.unittest.TestCase
             atol2 = 1e-4;
             atol3 = 1e-2;
 
-            FDstep = generateFDstep(size(sol.y,1), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, ...
+            sensFun = generateSensitivityFunction(datahandle, sol, ...
                 'method', 'END_full', 'CalcGy', true, 'CalcGp', true);
 
             t1 = sol.switches(1);

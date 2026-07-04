@@ -56,12 +56,8 @@ set(gca, 'Box', 'off');
 
 
 %% Precalculations for Sensitivities 
-dim_y = size(sol.y, 1);
-dim_p = length(parameters);
-FDstep = generateFDstep(dim_y, dim_p);
-
-sensitivities_function_END = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', 'calcGy', true, 'calcGp', false, 'Gmatrices_intermediate', false, 'save_intermediates', true);
-%sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', 'Gy', true, 'Gp', false, 'Gmatrices_intermediate', false, 'save_intermediates', true, 'directions_p', eye(46,5));
+sensitivities_function_END = generateSensitivityFunction(datahandle, sol, 'method', 'END_piecewise', 'calcGy', true, 'calcGp', false, 'Gmatrices_intermediate', false, 'save_intermediates', true);
+%sensitivities_function_VDE = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', 'Gy', true, 'Gp', false, 'Gmatrices_intermediate', false, 'save_intermediates', true, 'directions_p', eye(46,5));
 
 
 %% Plot sensitivities initial values

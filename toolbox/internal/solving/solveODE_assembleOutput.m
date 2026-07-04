@@ -33,7 +33,9 @@ ode_output.idata = data.SWP_detection.solution_until_t3.idata;
 ode_output.switches = switches;
 ode_output.jumps = jumps;
 ode_output.switchingFunction = data.SWP_detection.switchingFunction;
+ode_output.jumpFunction = data.SWP_detection.jumpFunction;
 ode_output.signature = data.SWP_detection.signature;
+ode_output.parameters = data.SWP_detection.parameters;
 
 out{1} = ode_output;
 

@@ -49,8 +49,7 @@ classdef TestSolveODE < matlab.unittest.TestCase
             % Check sensitivity w.r.t. y0.
             yDim = size(sol.y, 1);
             pDim = length(p);
-            FDstep = generateFDstep(yDim, pDim);
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'calcGp', false);
+            sensFun = generateSensitivityFunction(datahandle, sol, 'calcGp', false);
             sens = sensFun(tEval);
             Gy = arrayfun(@(x) x.Gy, sens);
             % Gy(t) = 1

@@ -10,7 +10,13 @@ function generateData(datahandle, sol)
 % OUTPUT: None (The data is written into the datahandle)
 
     data = datahandle.getData();
-    data.SWP_detection.parameters = reshape(data.SWP_detection.parameters, [], 1);
+    % Make sure that values stored in data match solution, since they may be overwritten by a solveODE call.
+    data.SWP_detection.parameters = reshape(sol.parameters, [], 1);
+    data.SWP_detection.signature = sol.signature;
+    data.SWP_detection.tspan = [sol.x(1), sol.x(end)];
+    data.SWP_detection.initialvalues = sol.y(:, 1);
+    data.SWP_detection.switchingFunction = sol.switchingFunction;
+    data.SWP_detection.jumpFunction = sol.jumpFunction;
 
     data.computeSensitivity.switches_extended = [data.SWP_detection.tspan(1), sol.switches, data.SWP_detection.tspan(end)];
     data.computeSensitivity.y_to_switches = deval(sol, data.computeSensitivity.switches_extended);

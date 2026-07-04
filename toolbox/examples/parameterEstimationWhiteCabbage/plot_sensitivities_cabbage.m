@@ -18,7 +18,7 @@ FDstep = generateFDstep(dim_y, dim_p);
 method = 'VDE';
 
 %% Plot sensitivities initial values 
-sensitivities_function = generateSensitivityFunction(datahandle, sol, FDstep, 'calcGp', false, 'method', method, 'p_typ', parameters_ODE);
+sensitivities_function = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'calcGp', false, 'method', method, 'p_typ', parameters_ODE);
 t_sens = 0:0.1:118;
 sensitivites = sensitivities_function(t_sens);
 
@@ -142,7 +142,7 @@ set(gca, 'FontSize', 22);
 set(gca, 'Box', 'off');
 
 %% Plot sensitivities parameters
-sensitivities_function_p = generateSensitivityFunction(datahandle, sol, FDstep, 'calcGy', false, 'method', method, 'p_typ', parameters_ODE);
+sensitivities_function_p = generateSensitivityFunction(datahandle, sol, 'FDstep', FDstep, 'calcGy', false, 'method', method, 'p_typ', parameters_ODE);
 t_sens = 0:0.1:118;
 sensitivites = sensitivities_function_p(t_sens);
 

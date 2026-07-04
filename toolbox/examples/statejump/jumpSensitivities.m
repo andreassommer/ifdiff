@@ -52,7 +52,7 @@ tsMinusStandard = leftLimit(tsStandard);
 xsMinusStandard = deval(solStandard, tsMinusStandard);
 xsPlusStandard  = deval(solStandard, tsStandard);
 xEndStandard    = deval(solStandard, tEnd);
-sensFunStandard = generateSensitivityFunction(datahandle, solStandard, FDstepStandard, 'method', 'VDE', ...
+sensFunStandard = generateSensitivityFunction(datahandle, solStandard, 'FDstep', FDstepStandard, 'method', 'VDE', ...
     'CalcGy', true, 'CalcGp', true);
 sensStandard = sensFunStandard([t0, tsMinusStandard, tsStandard, tEnd]);
 Gy = {sensStandard.Gy};
@@ -78,7 +78,7 @@ tsMinusStrict = leftLimit(tsStrict);
 xsMinusStrict = deval(solStrict, tsMinusStrict);
 xsPlusStrict  = deval(solStrict, tsStrict);
 xEndStrict    = deval(solStrict, tEnd);
-sensFunStrict = generateSensitivityFunction(datahandle, solStrict, FDstepStrict, 'method', 'VDE', ...
+sensFunStrict = generateSensitivityFunction(datahandle, solStrict, 'FDstep', FDstepStrict, 'method', 'VDE', ...
     'CalcGy', true, 'CalcGp', true);
 sensStrict = sensFunStrict([t0, tsMinusStrict, tsStrict, tEnd]);
 Gy = {sensStrict.Gy};

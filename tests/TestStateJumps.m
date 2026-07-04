@@ -42,8 +42,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(deval(sol, 3), [exp(1.2); 4], 'RelTol', 1e-5);
             testCase.verifyEqual(sol.switches, 1, 'AbsTol', 1e-5);
             % Sensitivities. See identicalIfRHS for the derivation of the expected value
-            FDstep = generateFDstep(2, 2);
-            sensFunction = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE');
+            sensFunction = generateSensitivityFunction(datahandle, sol, 'method', 'VDE');
             T = t0:0.01:tEnd;
             sens = sensFunction(T);
             Gp = {sens.Gp};
@@ -194,8 +193,8 @@ classdef TestStateJumps < matlab.unittest.TestCase
             switchesLeft = leftLimit(sol.switches);
             sensTimes = reshape([switchesLeft; sol.switches], 1, []);
             sensTimes = [t0 sensTimes tEnd];
-            fdStep = generateFDstep(length(x0), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, fdStep, 'method', 'VDE', ...
+            fdStep = generateFDstep(numel(x0), numel(p), 'hy', 1e-6, 'hp', 1e-6);
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', 'FDstep', fdStep, ...
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
             sens = sensFun(sensTimes);
             Gy = {sens.Gy};
@@ -257,8 +256,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             rtol1 = 1e-6;
             rtol2 = 1e-5;
 
-            FDstep = generateFDstep(size(sol.y,1), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'VDE', ...
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', ...
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
 
             t1 = sol.switches(1);
@@ -294,8 +292,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             rtol1 = 1e-6;
             rtol2 = 1e-5;
 
-            FDstep = generateFDstep(size(sol.y,1), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_piecewise', ...
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'END_piecewise', ...
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
 
             t1 = sol.switches(1);
@@ -332,8 +329,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             rtol1 = 1e-5;
             rtol2 = 1e-4;
 
-            FDstep = generateFDstep(size(sol.y,1), length(p));
-            sensFun = generateSensitivityFunction(datahandle, sol, FDstep, 'method', 'END_full', ...
+            sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'END_full', ...
                 'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
 
             t1 = sol.switches(1);
