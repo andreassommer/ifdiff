@@ -42,11 +42,18 @@
     \begin{enumerate}[label=\arabic*.]
         \item Extend your RHS from subtask \ref{item:task4a} in the file \texttt{rhsTask4.m}. Split the state vector into two components and compute the derivatives as described in \cref{eq:fish_harvest}. \\
         Use the functions \lstinline|ifdiff_jumpif(condition, direction)| and \lstinline|ifdiff_update(jump)| to implement the state jump as described in \cref{eq:fish_jump}. \\
-        Make sure that the components of your state and parameter vectors are defined in the same way as in the exercise sheet, i.e. $y = (P, H)^T$ and $p = (T, \alpha)$.
+        Make sure that the components of your state and parameter vectors are defined in the same way as in the exercise sheet, i.e.~$y = (P, H)^T$ and $p = (T, \alpha)$.
         \item Use your code from subtask \ref{item:task4a} to solve the new system and plot the solution. Try out different values for $T$ and $\alpha$.
     \end{enumerate}
     \textbf{Hints:}
     \begin{itemize}
         \item Check the appendix for a reminder on how to formulate state jumps in a RHS using IFDIFF.
+        \item Verify that your states and parameters are defined correctly: $y = (P, H)^T$ and $p = (T, \alpha)$.
     \end{itemize}
+
+     \item We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
+     \textbf{Subtask:} \\
+     Discretize the parameter space $p = (T, \alpha) \in [0, C] \times [0, 1]$ as a 2D-grid. \\
+     Use IFDIFF to compute a solution for each parameter in the grid and plot the results. \\
+     Examine the behavior at the grid boundaries, i.e.~for $T = 0,\: T = C$ and $\alpha = 0, \:\alpha = 1$.
 \end{enumerate}
