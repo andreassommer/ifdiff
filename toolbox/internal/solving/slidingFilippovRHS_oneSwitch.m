@@ -42,7 +42,7 @@ f_minus = evaluateRHSForSignature(datahandle, t, y, p, signatures(2));
 
 % n (= d/dy switchingFunction) is an outer normal of switching manifold that we want to slide on
 % TODO: use relative finite differences (consider typical values of y and p)
-FDstep = generateFDstep(length(y), length(p));
+FDstep = generateFDstep(length(y), length(p), 'hy', 1e-6);
 n = del_f_del_y(datahandle, switchingFunction, t, y, p, FDstep.y);
 n_dot_fplus  = dot(n, f_plus);
 n_dot_fminus = dot(n, f_minus);
