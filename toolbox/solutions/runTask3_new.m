@@ -13,8 +13,6 @@ M = [1 0 0;
 alg_eq = @(y) y.^3 + x2_0*y - p(1)*x1_0 + p(2);
 y_0 = fsolve(alg_eq, 1);  % Start with initial guess y=1
 fprintf('Initial conditions: x1=%.2f, x2=%.2f, y=%.6f\n', x1_0, x2_0, y_0);
-
-%y_0 = -0.000250;
 x_init = [x1_0; x2_0; y_0];
 
 % Integration
@@ -29,7 +27,7 @@ sol_ifdiff = solveODE(dhandle, tspan, x_init, p);
 
 
 %% Plot
-t_eval = tspan(1):0.0001:tspan(end);
+t_eval = tspan(1):1e-5:tspan(end);
 x_naive = deval(sol_naive, t_eval);
 x_ifdiff = deval(sol_ifdiff, t_eval);
 
