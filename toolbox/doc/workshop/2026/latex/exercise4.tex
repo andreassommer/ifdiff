@@ -7,7 +7,7 @@
     \end{equation}
     The constants $r$ and $C$ specify the growth rate and maximum capacity of the pond. \\\\
     \textbf{Subtask:} \\
-    Use IFDIFF to solve the ODE on the time interval $T = [0, 5]$ with initial conditions $P(0) = 0.1$. \\
+    Use IFDIFF to solve the ODE on the time interval $I = [0, 5]$ with initial conditions $P(0) = 0.1$. \\
     Set the constants as $r = 2$ and $C = 1$ directly in the RHS (do not pass them as parameters). \\
     Plot the solution. What is the maximum size of the population? When does the population grow fastest? \\ \\
     \textbf{Steps:}
@@ -51,9 +51,77 @@
         \item Verify that your states and parameters are defined correctly: $y = (P, H)^T$ and $p = (T, \alpha)$.
     \end{itemize}
 
-     \item We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
+     \item \label{item:task4c} We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
      \textbf{Subtask:} \\
-     Discretize the parameter space $p = (T, \alpha) \in [0, C] \times [0, 1]$ as a 2D-grid. \\
+     Discretize the parameter space $p = (T, \alpha) \in [0, C] \times [0, 1]$ as a 2D grid. \\
      Use IFDIFF to compute a solution for each parameter in the grid and plot the results. \\
-     Examine the behavior at the grid boundaries, i.e.~for $T = 0,\: T = C$ and $\alpha = 0, \:\alpha = 1$.
+     Explain the behavior at the grid boundaries, i.e.~for $T = 0,\: T = C$ and $\alpha = 0, \:\alpha = 1$. \\ \\
+     \textbf{Steps:}
+     \begin{enumerate}[label=\arabic*.]
+        \item Implement the anonymous function \lstinline|solutionFunc = @(p) ...| in the file \texttt{runTask4.m}, which should take a parameter vector and use IFDIFF to compute a solution for the given parameter.
+        \item You can use the provided function \lstinline|solutionGrid = solveOnGrid(solutionFunc)| to generate a solution for each parameter in the discretization grid.
+        \item You can use the provided function \lstinline|plotPopulationGrid(solutionGrid)| to plot your solutions on a grid.
+     \end{enumerate}
+     \textbf{Hints:}
+     \begin{itemize}
+        \item You can define an anonymous function in MATLAB using the \lstinline|@| operator followed by parantheses \lstinline|()| containing the arguments of the function and finally an expression which defines the return value. Note that anonymous functions can also store copies of variables defined outside of the function and use them to compute their return value.
+        \begin{lstlisting}
+c = 5;
+func = @(a, b) a + b + c;
+func(2, 3) == 10 % true
+        \end{lstlisting}
+        The anonymous function \lstinline|func| defined above takes two numbers \lstinline|a| and \lstinline|b| and returns \lstinline|a + b + 5|.
+    \end{itemize}
+
+    \item The total amount of fish produced over the time interval $I = [0, 5]$ is given by the objective function
+    \begin{equation}\label{eq:fish_objective}
+       F(T, \alpha) = P(5; T, \alpha) + H(5; T, \alpha)
+    \end{equation}
+    where $P(t; T, \alpha)$ and $H(t; T, \alpha)$ denote the solution of the system given by \cref{eq:fish_harvest} and \cref{eq:fish_jump} with parameters $T$ and $\alpha$ at time point $t$. \\ \\
+    \textbf{Subtask:} \\
+    Compute the objective function $F$ on a parameter grid using the solutions obtained from subtask \ref{item:task4c}.\\
+    Plot the result. Explain the behavior at the grid boundaries. Which combination of parameters on the grid maximizes $F$? \\ \\
+    \textbf{Steps:}
+    \begin{enumerate}[label=\arabic*.]
+       \item Implement the anonymous function \lstinline|objectiveFunc = @(solution) ...| in the file \texttt{runTask4.m}, which should take a solution and return the value of the objective function $F$ for the given solution as described in \cref{eq:fish_objective}.
+       \item You can use the provided code \lstinline|objectiveGrid = arrayfun(objectiveFunc, solutionGrid)| to apply your objective function to each solution in the grid.
+       \item You can use the provided function \lstinline|plotObjective(solutionGrid, objectiveGrid)| to plot your objective function as a 3D surface plot.
+    \end{enumerate}
+    \textbf{Hints:}
+    \begin{itemize}
+       \item A solution struct (as returned by MATLAB integrators and IFDIFF) stores the timepoints at which the solution was computed in ascending order as a vector in the field \lstinline|solution.x|. The field \lstinline|solution.y(i, j)| stores the i-th component of the solution state vector at the timepoint \lstinline|solution.x(j)|. You can access the state vector of the solution at the final timepoint in the integration time interval using \lstinline|solution.y(:, end)|.
+    \end{itemize}
+
+    \item The gradient of the objective function $F$ is given by
+    \begin{equation}\label{eq:fish_gradient}
+       \nabla F(T, \alpha) = \nabla P(5; T, \alpha) + \nabla H(5; T, \alpha) = (G_p)_{1,:}(5; T, \alpha) + (G_p)_{2,:}(5; T, \alpha)
+    \end{equation}
+    where $(G_p)_{i, :}(t; T, \alpha)$ denotes the i-th row of the parameter sensitivity matrix of the system given by \cref{eq:fish_harvest} and \cref{eq:fish_jump} with parameters $T$ and $\alpha$ at time point $t$. \\ \\
+    \textbf{Subtask:} \\
+    Compute the gradient of the objective function $\nabla F$ on a parameter grid using the solutions obtained from subtask \ref{item:task4c}.\\
+    Plot the results. Where does the gradient point for the parameters which maximize $F$ on the grid? \\ \\
+    \textbf{Steps:}
+    \begin{enumerate}[label=\arabic*.]
+       \item Implement the function \lstinline|g = computeGradient(datahandle, solution)| in the file \texttt{runTask4.m}, which should take a datahandle and solution and return the gradient of the objective function for the given solution as described \cref{eq:fish_gradient}.
+       \item You can use the provided code \lstinline|gradientFunc = @(solution) computeGradient(datahandle, solution)| to define an anonymous function, which takes a solution and returns the gradient.
+       \item You can use the provided code \lstinline|gradientGrid = arrayfun(gradientFunc, solutionGrid, 'UniformOutput', false)| to apply your gradient function to each solution in the grid.
+       \item You can use the provided function \lstinline|plotGradient(solutionGrid, objectiveGrid, gradientGrid)| to plot your gradients as arrows in a 3D surface plot of the objective function.
+    \end{enumerate}
+    \textbf{Hints:}
+    \begin{itemize}
+       \item Check the appendix for a reminder on how to compute sensitivities using IFDIFF.
+       \item We only need the sensitivity at the integration time interval end point, which can be obtained using \lstinline|solution.x(end)|.
+       \item Since the sensitivity is only computed for one time point, you can obtain the parameter sensitivity matrix directly from the sensitivity output struct using \lstinline|sens.Gp|.
+       \item Since we only need the parameter sensitivities and not the initial value sensitivities, you can pass the optional flag \lstinline|generateSensitivityFunction(..., 'calcGy', false)| to prevent unnecessary computations.
+    \end{itemize}
+
+    \item After computing the gradients, we can now optimize the parameters $T$ and $\alpha$ in order to maximize the total amount of fish produced as described by the objective function $F$. However, we will additionaly impose a lower bound constraint on the harvest ratio, namely $\alpha \geq 0.2$, because the number of state jumps approaches infinity as $\alpha$ goes towards zero, which would make the problem ill-posed (Zeno behavior).
+     
+    The optimal parameters $T^*$ and $\alpha^*$ are then defined via
+    \begin{equation}\label{eq:fish_optim}
+       F(T^*, \alpha^*) = \max_{T \in [0, C], \alpha \in [0.2, 1]} F(T, \alpha)
+    \end{equation}
+    \textbf{Subtask:} \\
+    Compute the optimal parameters $T^*$ and $\alpha^*$ which maximize the objective function $F$. \\
+    Plot the result.
 \end{enumerate}
