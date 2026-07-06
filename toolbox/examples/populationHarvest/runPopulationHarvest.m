@@ -34,9 +34,9 @@ objectiveGrid = arrayfun(objectiveFunc, solutionGrid);
 plotObjective(solutionGrid, objectiveGrid);
 
 %% Compute gradient
-function g = computeGradient(datahandle, solutionGrid)
-sensitivity = generateSensitivityFunction(datahandle, solutionGrid, 'calcGy', false, 'method', 'VDE');
-Gp = sensitivity(solutionGrid.x(end)).Gp;
+function g = computeGradient(datahandle, solution)
+sensitivity = generateSensitivityFunction(datahandle, solution, 'calcGy', false);
+Gp = sensitivity(solution.x(end)).Gp;
 dP = Gp(1, :);
 dH = Gp(2, :);
 g = dP + dH;
@@ -63,7 +63,7 @@ solutionOpt = solutionFunc(pOpt);
 
 %% Plot optimal solution
 fprintf('Optimal Parameters: T=%g, alpha=%g\n', pOpt);
-fprintf('Optimal Total Harvest: %g\n', -objOpt);
+fprintf('Optimal Total Harvest: %g\n', objOpt);
 
 plotPopulation(solutionOpt);
 
@@ -83,6 +83,7 @@ optimizationProblem.options = optimoptions(optimizationProblem.solver, ...
 
 checkGradients(optimizationProblem.objective, optimizationProblem.x0, 'Display', 'on');
 [pOpt, objOpt] = optimizer(optimizationProblem);
+objOpt = -objOpt;
 end
 
 function gridSolution = solveOnGrid(solutionFunc)
