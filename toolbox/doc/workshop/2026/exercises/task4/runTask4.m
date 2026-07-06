@@ -1,3 +1,4 @@
+%% Subtask a) and b)
 %% Setup problem
 %tspan = ...;
 %y0 = ...;
@@ -17,6 +18,8 @@ optsIntegrator = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
 %% Plot solution
 plotPopulation(solution);
 
+
+%% Subtask c)
 %% Solve for multiple parameters
 %solutionFunc = @(p) ...;
 
@@ -25,6 +28,8 @@ solutionGrid = solveOnGrid(solutionFunc);
 %% Plot solution for multiple parameters
 plotPopulationGrid(solutionGrid);
 
+
+%% Subtask d)
 %% Compute objective
 %objectiveFunc = @(solution) ...;
 
@@ -33,6 +38,8 @@ objectiveGrid = arrayfun(objectiveFunc, solutionGrid);
 %% Plot objective
 plotObjective(solutionGrid, objectiveGrid);
 
+
+%% Subtask e)
 %% Compute gradient
 function g = computeGradient(datahandle, solutionGrid)
 %g = ...;
@@ -44,6 +51,8 @@ gradientGrid = arrayfun(gradientFunc, solutionGrid, 'UniformOutput', false);
 %% Plot gradient
 plotGradient(solutionGrid, objectiveGrid, gradientGrid)
 
+
+%% Subtask f)
 %% Optimize
 function [f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)
 %f = ...;
@@ -63,6 +72,7 @@ fprintf('Optimal Total Harvest: %g\n', objOpt);
 plotPopulation(solutionOpt);
 
 
+%% End of subtasks
 %% Helper functions
 function [pOpt, objOpt] = optimizeParameters(optimizationFunc)
 optimizer = @fmincon;

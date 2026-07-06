@@ -1,3 +1,4 @@
+%% Subtask a) and b)
 %% Setup problem
 tspan = [0, 5];
 y0 = [0.1; 0];
@@ -17,6 +18,8 @@ solution = solveODE(datahandle, tspan, y0, p);
 %% Plot solution
 plotPopulation(solution);
 
+
+%% Subtask c)
 %% Solve for multiple parameters
 solutionFunc = @(p) solveODE(datahandle, tspan, y0, p);
 
@@ -25,6 +28,8 @@ solutionGrid = solveOnGrid(solutionFunc);
 %% Plot solution for multiple parameters
 plotPopulationGrid(solutionGrid);
 
+
+%% Subtask d)
 %% Compute objective
 objectiveFunc = @(solution) sum(solution.y(:, end));
 
@@ -33,6 +38,8 @@ objectiveGrid = arrayfun(objectiveFunc, solutionGrid);
 %% Plot objective
 plotObjective(solutionGrid, objectiveGrid);
 
+
+%% Subtask e)
 %% Compute gradient
 function g = computeGradient(datahandle, solution)
 sensitivity = generateSensitivityFunction(datahandle, solution, 'calcGy', false);
@@ -48,6 +55,8 @@ gradientGrid = arrayfun(gradientFunc, solutionGrid, 'UniformOutput', false);
 %% Plot gradient
 plotGradient(solutionGrid, objectiveGrid, gradientGrid)
 
+
+%% Subtask f)
 %% Optimize
 function [f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)
 solution = solutionFunc(p);
@@ -68,6 +77,7 @@ fprintf('Optimal Total Harvest: %g\n', objOpt);
 plotPopulation(solutionOpt);
 
 
+%% End of subtasks
 %% Helper functions
 function [pOpt, objOpt] = optimizeParameters(optimizationFunc)
 optimizer = @fmincon;
