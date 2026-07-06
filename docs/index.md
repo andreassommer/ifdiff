@@ -192,7 +192,7 @@ The following table lists several name-value pairs that can be used to configure
    | calcGp                  | true/false - flag indicating to calculate parameter sensitivities                   | true                                  |
    | Gmatrices_intermediate  | true/false - flag indicating to store update matrics                                | false                                 |
    | save_intermediates      | true/false - flag indicating to store intermediate calculations                     | true                                  |
-   | FDstep                  | Struct containing finite difference step sizes obtained from generateFDstep         | FD with relative step size 1e-6       |
+   | FDstep                  | Struct containing finite difference step sizes obtained from generateFDstep         | FD with relative step size sqrt(eps)  |
    | integrator              | Function handle for ODE solver in MATLAB (e.g. ode45)                               | Integrator used by ifdiff             |
    | integrator_options      | Options struct generated for ODE solver                                             | Integrator options used by ifdiff     |
    | method                  | String with VDE/END_piecewise/END_full                                              | VDE                                   |

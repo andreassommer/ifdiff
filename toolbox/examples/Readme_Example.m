@@ -47,7 +47,7 @@ sensitivities = sensitivity_function(t);
 %   calcGp                  true/false                                                                       true
 %   Gmatrices_intermediate  true/false                                                                       false
 %   save_intermediates      true/false                                                                       true
-%   FDstep                  Struct containing finite difference step sizes obtained from generateFDstep      FD with relative step size 1e-6
+%   FDstep                  Struct containing finite difference step sizes obtained from generateFDstep      FD with relative step size sqrt(eps)
 %   integrator              Function handle for ODE solver in Matlab (e.g. ode45)                            Integrator used in ifdiff
 %   integrator_options      Options struct generated for ODE solver                                          Integrator options used in ifdiff
 %   method                  String with VDE/END_piecewise/END_full                                           VDE
