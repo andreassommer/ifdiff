@@ -51,21 +51,21 @@
         \item Verify that your states and parameters are defined correctly: $y = (P, H)^T$ and $p = (T, \alpha)$.
     \end{itemize}
 
-     \item \label{item:task4c} We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
-     \textbf{Subtask:} \\
-     Discretize the parameter space $p = (T, \alpha) \in [0, C] \times [0, 1]$ as a 2D grid. \\
-     Use IFDIFF to compute a solution for each parameter in the grid and plot the results. \\
-     Explain the behavior at the grid boundaries, i.e.~for $T = 0,\: T = C$ and $\alpha = 0, \:\alpha = 1$. \\ \\
-     \textbf{Steps:}
-     \begin{enumerate}[label=\arabic*.]
-        \item Implement the anonymous function \lstinline|solutionFunc = @(p) ...| in the file \texttt{runTask4.m}, which should take a parameter vector and use IFDIFF to compute a solution for the given parameter.
-        \item You can use the provided function \lstinline|solutionGrid = solveOnGrid(solutionFunc)| to generate a solution for each parameter in the discretization grid.
-        \item You can use the provided function \lstinline|plotPopulationGrid(solutionGrid)| to plot your solutions on a grid.
-     \end{enumerate}
-     \textbf{Hints:}
-     \begin{itemize}
-        \item You can define an anonymous function in MATLAB using the \lstinline|@| operator followed by parantheses \lstinline|()| containing the arguments of the function and finally an expression which defines the return value. Note that anonymous functions can also store copies of variables defined outside of the function and use them to compute their return value.
-        \begin{lstlisting}
+    \item \label{item:task4c} We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
+    \textbf{Subtask:} \\
+    Discretize the parameter space $p = (T, \alpha) \in [0, C] \times [0, 1]$ as a 2D grid. \\
+    Use IFDIFF to compute a solution for each parameter in the grid and plot the results. \\
+    Explain the behavior at the grid boundaries, i.e.~for $T = 0,\: T = C$ and $\alpha = 0, \:\alpha = 1$. \\ \\
+    \textbf{Steps:}
+    \begin{enumerate}[label=\arabic*.]
+       \item Implement the anonymous function \lstinline|solutionFunc = @(p) ...| in the file \texttt{runTask4.m}, which should take a parameter vector and use IFDIFF to compute a solution for the given parameter.
+       \item You can use the provided function \lstinline|solutionGrid = solveOnGrid(solutionFunc)| to generate a solution for each parameter in the discretization grid.
+       \item You can use the provided function \lstinline|plotPopulationGrid(solutionGrid)| to plot your solutions on a grid.
+    \end{enumerate}
+    \textbf{Hints:}
+    \begin{itemize}
+       \item You can define an anonymous function in MATLAB using the \lstinline|@| operator followed by parantheses \lstinline|()| containing the arguments of the function and finally an expression which defines the return value. Note that anonymous functions can also store copies of variables defined outside of the function and use them to compute their return value.
+       \begin{lstlisting}
 c = 5;
 func = @(a, b) a + b + c;
 func(2, 3) == 10 % true
@@ -122,6 +122,19 @@ func(2, 3) == 10 % true
        F(T^*, \alpha^*) = \max_{T \in [0, C], \alpha \in [0.2, 1]} F(T, \alpha)
     \end{equation}
     \textbf{Subtask:} \\
-    Compute the optimal parameters $T^*$ and $\alpha^*$ which maximize the objective function $F$. \\
-    Plot the result.
+    Use MATLAB's optimizer \lstinline|fmincon| to compute the optimal parameters $T^*$ and $\alpha^*$ which maximize the objective function $F$ as described in \cref{eq:fish_optim}. \\
+    Use IFDIFF to compute the solution for the optimal parameters and plot the result. What are the maximum and minimum values of the population after the first harvest? Which point lies exactly between the maximum and minimum values? Can you explain intuitively why the midpoint has to lie where it does for the optimal parameters? Think back to the solution without state jumps. When is the population growth maximized? \\ \\
+    \textbf{Steps:}
+    \begin{enumerate}[label=\arabic*.]
+        \item Implement the function \lstinline|[f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)| in the file \texttt{runTask4.m}. The function should take a parameter vector and the solution, objective and gradient functions that you have implemented in the previous subtasks and return the \textit{negative} objective \lstinline|f| and gradient \lstinline|g| for the given parameters. It is crucial that the objective and gradient are negated because MATLAB optimizers can only handle minimization problems, so we need to flip the signs of our objective and gradient to transform our maximization problem into an equivalent minimization problem.
+        \item You can use the provided code \lstinline|optimizationFunc = @(p) objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)| to define an anonymous function which takes a parameter vector and returns the negated objective and gradient.
+        \item You can use the provided function \lstinline|pOpt = optimizeParameters(optimizationFunc)| to setup the optimization problem and compute the optimal parameters using \lstinline|fmincon|.
+        \item Compute the solution for the optimal parameters using the function \lstinline|solutionFunc| from subtask \ref{item:task4c}.
+        \item You can use the provided function \lstinline|plotPopulation(solutionOpt)| to plot the solution for the optimal parameters.
+    \end{enumerate}
+    \textbf{Hints:}
+    \begin{itemize}
+        \item Remember that \lstinline|solutionFunc| takes a parameter and returns a solution, whereas \lstinline|objectiveFunc| and \lstinline|gradientFunc| take a solution and return the objective and gradient.
+        \item Don't forget to negate your objective and gradient in the function \lstinline|objWithGrad|.
+    \end{itemize}
 \end{enumerate}
