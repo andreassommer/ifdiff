@@ -26,6 +26,7 @@
 *.pdf binary
 *.png binary
 *.xlsx binary
+*.eps binary
 
 ## Don't touch line endings in .prj files, since these are auto-generated (toolbox packaging and MATLAB projects)
 *.prj -text
