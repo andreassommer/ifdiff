@@ -1,6 +1,6 @@
 %% Setup problem
-tspan = ...;
-y0 = ...;
+%tspan = ...;
+%y0 = ...;
 
 T = 0.5;
 alpha = 0.5;
@@ -9,16 +9,16 @@ p = [T, alpha];
 rhs = @rhsTask4;
 integrator = @ode45;
 optsIntegrator = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
-datahandle = ...;
+%datahandle = ...;
 
 %% Solve
-solution = ...;
+%solution = ...;
 
 %% Plot solution
 plotPopulation(solution);
 
 %% Solve for multiple parameters
-solutionFunc = @(p) ...;
+%solutionFunc = @(p) ...;
 
 solutionGrid = solveOnGrid(solutionFunc);
 
@@ -26,7 +26,7 @@ solutionGrid = solveOnGrid(solutionFunc);
 plotPopulationGrid(solutionGrid);
 
 %% Compute objective
-objectiveFunc = @(solution) ...;
+%objectiveFunc = @(solution) ...;
 
 objectiveGrid = arrayfun(objectiveFunc, solutionGrid);
 
@@ -35,7 +35,7 @@ plotObjective(solutionGrid, objectiveGrid);
 
 %% Compute gradient
 function g = computeGradient(datahandle, solutionGrid)
-...
+%g = ...;
 end
 
 gradientFunc = @(solution) computeGradient(datahandle, solution);
@@ -46,15 +46,15 @@ plotGradient(solutionGrid, objectiveGrid, gradientGrid)
 
 %% Optimize
 function [f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)
-f = ...;
+%f = ...;
 if nargout > 1
-    g = ...;
+    %g = ...;
 end
 end
 optimizationFunc = @(p) objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc);
 
 [pOpt, objOpt] = optimizeParameters(optimizationFunc);
-solutionOpt = ...;
+%solutionOpt = ...;
 
 %% Plot optimal solution
 fprintf('Optimal Parameters: T=%g, alpha=%g\n', pOpt);
