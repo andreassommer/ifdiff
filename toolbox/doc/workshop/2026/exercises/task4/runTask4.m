@@ -46,20 +46,19 @@ plotGradient(solutionGrid, objectiveGrid, gradientGrid)
 
 %% Optimize
 function [f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)
-solution = solutionFunc(p);
-f = -objectiveFunc(solution);
+f = ...;
 if nargout > 1
-    g = -gradientFunc(solution);
+    g = ...;
 end
 end
 optimizationFunc = @(p) objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc);
 
 [pOpt, objOpt] = optimizeParameters(optimizationFunc);
-solutionOpt = solutionFunc(pOpt);
+solutionOpt = ...;
 
 %% Plot optimal solution
 fprintf('Optimal Parameters: T=%g, alpha=%g\n', pOpt);
-fprintf('Optimal Total Harvest: %g\n', -objOpt);
+fprintf('Optimal Total Harvest: %g\n', objOpt);
 
 plotPopulation(solutionOpt);
 
@@ -79,6 +78,7 @@ optimizationProblem.options = optimoptions(optimizationProblem.solver, ...
 
 checkGradients(optimizationProblem.objective, optimizationProblem.x0, 'Display', 'on');
 [pOpt, objOpt] = optimizer(optimizationProblem);
+objOpt = -objOpt;
 end
 
 function gridSolution = solveOnGrid(solutionFunc)

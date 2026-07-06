@@ -128,7 +128,7 @@ func(2, 3) == 10 % true
     \begin{enumerate}[label=\arabic*.]
         \item Implement the function \lstinline|[f, g] = objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)| in the file \texttt{runTask4.m}. The function should take a parameter vector and the solution, objective and gradient functions that you have implemented in the previous subtasks and return the \textit{negative} objective \lstinline|f| and gradient \lstinline|g| for the given parameters. It is crucial that the objective and gradient are negated because MATLAB optimizers can only handle minimization problems, so we need to flip the signs of our objective and gradient to transform our maximization problem into an equivalent minimization problem.
         \item You can use the provided code \lstinline|optimizationFunc = @(p) objWithGrad(p, solutionFunc, objectiveFunc, gradientFunc)| to define an anonymous function which takes a parameter vector and returns the negated objective and gradient.
-        \item You can use the provided function \lstinline|pOpt = optimizeParameters(optimizationFunc)| to setup the optimization problem and compute the optimal parameters using \lstinline|fmincon|.
+        \item You can use the provided function \lstinline|[pOpt, objOpt] = optimizeParameters(optimizationFunc)| to setup the optimization problem and compute the optimal parameters and objective value using \lstinline|fmincon|.
         \item Compute the solution for the optimal parameters using the function \lstinline|solutionFunc| from subtask \ref{item:task4c}.
         \item You can use the provided function \lstinline|plotPopulation(solutionOpt)| to plot the solution for the optimal parameters.
     \end{enumerate}
