@@ -14,7 +14,13 @@ ylim(ax, 'tight');
 
 grid(ax, 'on');
 
-title(ax, sprintf('Population over time with threshold harvesting (T=%g, \\alpha=%g)', solution.parameters));
+
+if isempty(solution.signature{1}.switchCond)
+    titlestr = 'Population over time';
+else
+    titlestr = sprintf('Population over time with threshold harvesting (T=%g, \\alpha=%g)', solution.parameters);
+end
+title(ax, titlestr);
 xlabel(ax, 'Time');
 ylabel(ax, 'Population');
 end
