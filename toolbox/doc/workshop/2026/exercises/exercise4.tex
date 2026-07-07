@@ -150,7 +150,7 @@ func(2, 3) == 10 % true
         \caption{Gradient plot for subtask \ref{item:task4e}}
     \end{figure}
 
-    \item\label{item:task4f} After computing the gradients, we can now optimize the parameters $T$ and $\alpha$ in order to maximize the total amount of fish produced as described by the objective function $F$. However, we will additionaly impose a lower bound constraint on the harvest ratio, namely $\alpha \geq 0.2$, because the number of state jumps approaches infinity as $\alpha$ goes towards zero, which would make the problem ill-posed (Zeno behavior).
+    \item\label{item:task4f} After computing the gradients, we can now optimize the parameters $T$ and $\alpha$ in order to maximize the total amount of fish produced as described by the objective function $F$. However, we will additionaly impose a lower bound constraint on the harvest ratio, namely $\alpha \geq 0.2$, because the number of state jumps becomes arbitrarily large as $\alpha$ goes towards zero, which is intractable to handle numerically.
      
     The optimal parameters $T^*$ and $\alpha^*$ are then defined via
     \begin{equation}\label{eq:fish_optim}
