@@ -6,7 +6,7 @@
     \begin{equation}\label{eq:fish}
     \frac{d}{dt}P(t) = rP(t)\left(1 - \frac{P(t)}{C}\right)
     \end{equation}
-    The constants $r$ and $C$ specify the growth rate and maximum capacity of the pond. \\\\
+    The constants $r$ and $C$ specify the growth rate of the population and maximum capacity of the pond. \\\\
     \textbf{Subtask:} \\
     Use IFDIFF to solve the ODE on the time interval $I = [0, 5]$ with initial conditions $P(0) = 0.1$. \\
     Set the constants as $r = 2$ and $C = 1$ directly in the RHS (do not pass them as parameters). \\
@@ -15,7 +15,7 @@
     \begin{enumerate}[label=\arabic*.]
         \item Implement the RHS in the file \texttt{rhsTask4.m} as described in \cref{eq:fish}. Remember to set the constants $r$ and $C$ directly in the RHS.
         \item Set the integration time span and initial conditions in the file \texttt{runTask4.m}. Ignore the parameters for now.
-        \item Use IFDIFF's \lstinline|prepareDatahandleForIntegration| function to prepare the RHS for integration. Don't forget to include the integrator and its options.
+        \item Use IFDIFF's \lstinline|prepareDatahandleForIntegration| function to prepare the RHS for integration. Don't forget to include the integrator and its options as optional arguments.
         \item Use IFDIFF's \lstinline|solveODE| function to solve the initial value problem.
         \item Use the provided function \lstinline|plotPopulation(solution)| to plot your solution.
     \end{enumerate}
@@ -39,12 +39,12 @@
     \end{equation}
     with state jumps
     \begin{equation}\label{eq:fish_jump}
-        \begin{bmatrix}P(t^+) \\ H(t^+)\end{bmatrix} = \begin{bmatrix}P(t^-) \\ H(t^-)\end{bmatrix} +  \begin{bmatrix}-\alpha P(t^-) \\ \phantom{-}\alpha P(t^-)\end{bmatrix}, \quad P(t^-) = T
+        \begin{bmatrix}P(t^+) \\ H(t^+)\end{bmatrix} = \begin{bmatrix}P(t^-) \\ H(t^-)\end{bmatrix} +  \underbrace{\begin{bmatrix}-\alpha P(t^-) \\ \phantom{-}\alpha P(t^-)\end{bmatrix}}_{\Delta}\quad\textbf{whenever} \quad\text{$P(t)$ crosses $T$ from below}
     \end{equation}
-
+    where $P(t^-)$ and $H(t^-)$ denote the state of the solution when the jump condition is triggered and $P(t^+)$ and $H(t^+)$ denote the state of the solution after applying the jump update. \\ \\
     \textbf{Subtask:} \\
-    Use IFDIFF to solve the new system for the same constants and initial conditions as in subtask \ref{item:task4a} and $H(0) = 0$. \\
-    Make sure to pass $p = (T, \alpha)$ as parameters to your RHS (do not set them directly in the RHS). \\
+    Use IFDIFF to solve the new system for the same constants and initial conditions as in subtask \ref{item:task4a}, including an additional initial condition $H(0) = 0$ for the newly added second solution component. \\
+    For the harvesting parameters use $T = 0.5$ and $\alpha = 0.5$. Make sure to pass $p = (T, \alpha)$ as actual parameters to your RHS (do not set them directly in the RHS). \\
     Plot the solution. What is the maximum size of the population now? Play around with different parameters. \\ \\
     \textbf{Steps:}
     \begin{enumerate}[label=\arabic*.]
@@ -112,7 +112,9 @@ func(2, 3) == 10 % true
     \end{enumerate}
     \textbf{Hints:}
     \begin{itemize}
-       \item A solution struct (as returned by MATLAB integrators and IFDIFF) stores the timepoints at which the solution was computed in ascending order as a vector in the field \lstinline|solution.x|. The field \lstinline|solution.y(i, j)| stores the i-th component of the solution state vector at the timepoint \lstinline|solution.x(j)|. You can access the state vector of the solution at the final timepoint in the integration time interval using \lstinline|solution.y(:, end)|.
+       \item A solution struct (as returned by MATLAB integrators and IFDIFF) stores the timepoints at which the solution was computed in ascending order as a vector in the field \lstinline|solution.x|.
+       The field \lstinline|solution.y(i, j)| then stores the i-th component of the solution state vector at the timepoint \lstinline|solution.x(j)|.
+       You can access the state vector of the solution at the final timepoint in the integration time interval using \lstinline|solution.y(:, end)|.
     \end{itemize}
     \textbf{Reference plot:}
     \begin{figure}[H]
@@ -128,12 +130,14 @@ func(2, 3) == 10 % true
     where $(G_p)_{i, :}(t; T, \alpha)$ denotes the i-th row of the parameter sensitivity matrix of the system given by \cref{eq:fish_harvest} and \cref{eq:fish_jump} with parameters $T$ and $\alpha$ at time point $t$. \\ \\
     \textbf{Subtask:} \\
     Compute the gradient of the objective function $\nabla F$ on a parameter grid using the solutions obtained from subtask \ref{item:task4c}.\\
-    Plot the results. Where does the gradient point for the parameters which maximize $F$ on the grid? \\ \\
+    Plot the results. Where does the gradient point for the parameters which maximize $F$ on the grid?
+    How should we tweak those parameters to obtain an even larger objective function value according to the gradient?
+    Remember that the gradient always points in the direction of steepest ascent.\\ \\
     \textbf{Steps:}
     \begin{enumerate}[label=\arabic*.]
-       \item Implement the function \lstinline|g = computeGradient(datahandle, solution)| in the file \texttt{runTask4.m}, which should take a datahandle and solution and return the gradient of the objective function for the given solution as described \cref{eq:fish_gradient}.
+       \item Implement the function \lstinline|g = computeGradient(datahandle, solution)| in the file \texttt{runTask4.m}, which should take a datahandle and solution and return the gradient of the objective function for the given solution as described in \cref{eq:fish_gradient}.
        \item Use the provided code \lstinline|gradientFunc = @(solution) computeGradient(datahandle, solution)| to define an anonymous function, which takes a solution and returns the gradient.
-       \item Use the provided code \lstinline|gradientGrid = arrayfun(gradientFunc, solutionGrid, 'UniformOutput', false)| to apply your gradient function to each solution in the grid.
+       \item Use the provided code \\\lstinline|gradientGrid = arrayfun(gradientFunc, solutionGrid, 'UniformOutput', false)| to apply your gradient function to each solution in the grid.
        \item Use the provided function \lstinline|plotGradient(solutionGrid, objectiveGrid, gradientGrid)| to plot your gradients as arrows in a 3D surface plot of the objective function.
     \end{enumerate}
     \textbf{Hints:}
