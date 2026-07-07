@@ -1,0 +1,155 @@
+% !TeX root = exercises_main.tex
+\section*{Solution 1: }
+
+\begin{enumerate}[label=\alph*)]
+	
+	% Questions: Solve this system using ode45 and look at the solution. Does it look correct? What should it actually look like? Can you think of the reason why ode45 produces the results it produces? Can you think of the reason why @ode45 produces the results it produces?
+	\item ode45 produces incorrect results, because its accuracy depends on the smoothness of the ODE's right-hand side. For equations with non-smooth or even discontinuous terms, the solver fails to capture the true solution behaviour as can be seen in the plot below. Your code should look as follows:
+	
+	\textbf{Right-hand side} 
+	\newline
+	File name: rhsTask1.m
+	\begin{lstlisting}
+function dx = rhsTask1(t, x, p)
+	dx = zeros(2, 1);
+	q1 = 50/27*t.^2 - 100/3*t + 400/3;
+	
+	if x(1) <= 750
+		dx(1) = q1;
+	else
+		q2 = (1000-x(2)) * (p(1)*(t-19) + p(2));
+		dx(1) = q1 - q2;
+	if x(1) <= 800
+		dx(2) = -300;
+	end
+	end
+	
+end
+	\end{lstlisting}
+	\textbf{Main (using ode45)}
+	\begin{lstlisting}
+%% Task 1 Solution a)
+integrator = @ode45;
+	
+tEnd = 30;
+tSpan = [0 tEnd];
+p = [3/4 1/4]; 
+initvals = [0; 1000];                  
+	
+% solution with ode45
+options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);
+sol_ode45 = ode45(@(t,x) rhsTask1(t,x,p), tSpan, initvals, options);
+	
+T = 0:0.1:tEnd;
+X_ode45 = deval(sol_ode45, T);
+plot(T, X_ode45(1,:), 'b', T, X_ode45(2,:), 'r');
+		
+	\end{lstlisting}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{Plots/task1solution_ode45.png}
+		\caption{(wrong) solution with ode45}
+	\end{figure}
+	
+	\newpage
+	% Let's see how the solution responds to changes in the initial values: Plot the sensitivities of the solution using the provided \verb|plotSensitivities_ode45()|. Do they look correct?
+	\item The sensitivities are computed by adding this line in your main file. The sensitivities are wrong since they rely on the false solution from a) 
+	\begin{lstlisting}
+%% Task 1 Sensitivities b)
+plotSensitivities_odexx(sol, @(t,x,p) rhsTask1(t,x,p), ...
+			p, integrator, options);
+	\end{lstlisting}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1.0\linewidth]{Plots/task1sensitivities_ode45.png}
+		\caption{Sensitivities generated from the ode45 solution}
+		
+	\end{figure}
+	
+	\newpage
+	% Now, solve this system using IFDIFF. What changed in comparison to Task 1 a)? To use IFDIFF, define the right-hand side with the following function header: \verb|function dx = task1RHS(x, t, p)|. Also, implement the helper functions \verb|q1(t)| and \verb|q2(t)| as separate function files.
+	\item For the solution with IFDIFF, the RHS stays the same as in a). We need to create the solution structure by calling \lstinline!solveODE()! which we pass the datahandle, time interval, initial values and parameters. The evaluation works the same as before. The main file should look like this:
+	\begin{lstlisting}
+%% Task 1 Solution c)
+integrator = @ode45;
+	
+tEnd = 30;
+tSpan = [0 tEnd];
+p = [3/4 1/4]; 
+initvals = [0; 1000];   
+options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);                
+	
+	
+% solution with ifdiff
+datahandle = prepareDatahandleForIntegration('rhsTask1', ...
+	'integrator', integrator, ...
+	'options', options);
+sol_ifdiff = solveODE(datahandle, tSpan, initvals, p);
+	
+T = 0:0.1:tEnd;
+X_ifdiff = deval(sol_ifdiff, T);
+plot(T, X_ifdiff(1,:), 'b', T, X_ifdiff(2,:), 'r');
+	\end{lstlisting}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1.0\linewidth]{Plots/task1solution_ifdiff.png}
+		\caption{Solution for b) with IFDIFF}
+	\end{figure}
+	
+	% Plot the sensitivities of the solution with IFDIFF using \verb|plotSensitivities_ifdiff()|. How do the sensitivities differ from the sensitivities you previously computed in Task 1?
+	\item For the sensitivities with IFDIFF, add this line in your main file:
+	\begin{lstlisting}
+%% Task 1 Solution d)
+plotSensitivities_ifdiff(datahandle, sol_ifdiff, p);
+	\end{lstlisting}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1.0\linewidth]{Plots/task1sensitivities_ifdiff.png}
+		\caption{Sensitivities generated from the solution with IFDIFF}
+	\end{figure}
+	
+	\newpage
+	% Let's take a look at a different method: Use the \verb|MaxStep| parameter to \verb|odeset| to produce a forward solution: \verb|options = odeset(..., 'MaxStep', 0.1);|. Does it look correct?
+	\item The \lstinline!MaxStep! solution looks, at first glance, better than one using ode45. However, after reaching the switching point, it cannot keep the accuracy of order 5, because it does not use the Jump-Update-formula as IFDIFF does. The implementation looks like this:
+	
+	\begin{lstlisting}
+%% Task 1 Solution e)
+integrator = @ode45;
+	
+tEnd = 30;
+tSpan = [0 tEnd];
+p = [3/4 1/4]; 
+initvals = [0; 1000];                  
+	
+% solution with MaxStep
+% setting the maximum allowed step size to 0.1
+options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8, 'MaxStep', 0.1); 
+sol_maxstep = ode45(@(t,x) rhsTask1(t,x,p), tSpan, initvals, options);
+	
+T = 0:0.1:tEnd;
+X_maxstep = deval(sol_maxstep, T);
+plot(T, X_maxstep(1,:), 'b', T, X_maxstep(2,:), 'r');
+	\end{lstlisting}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.75\linewidth]{Plots/task1_maxstep_solution.png}
+		\caption{MaxStep Solution}
+	\end{figure}
+	
+	% Now, compute and plot the sensitivities of this solution. What do you notice, and possibly why?
+	\item By adding this line to the main script for the MaxStep solution, we can observe the sensitivities. They are wrong, because the MaxStep solution does not provide the exact switching point detection as IFDIFF does.
+	\begin{lstlisting}
+%% Task 1 Sensitivities f)
+plotSensitivities_odexx(sol_maxstep, @(t,x,p) rhsTask1(t,x,p), ... 
+			p, integrator, options);
+	\end{lstlisting} line to the code of e), we can take a look at the sensitivities, which are not correct.
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.75\linewidth]{Plots/task1_maxstep_sensitivities.png}
+		\caption{(wrong) sensitivities generated from the MaxStep solution}
+	\end{figure}
+	
+\end{enumerate}

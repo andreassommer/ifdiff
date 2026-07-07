@@ -1,0 +1,33 @@
+% !TeX root = exercises_main.tex
+\subsection*{Solution 3: Differential Algebraic Equations (DAE)}
+
+Let's take a look at the following example for $t \in [0,3]$, $x = (x_1, x_2)^T$:
+\begin{align*}
+	(D) \quad
+	\begin{cases}
+		\dot{x}_ 1 = f(t,x,p) = 
+		\begin{cases} 
+			x_2, & \text{if } x_2 < p \\
+			0, & \text{if } x_2 \geq p
+		\end{cases} \\
+		g(t,x,p) = x_1 + x_2 + x_1^3 + x_2^3 = 0 \\
+		x_0 = (1.0, -1.0)^T, p = -0.5
+	\end{cases}
+\end{align*}
+
+\begin{enumerate}[label=\alph*)]
+	
+	\item When we zoom in around the switching time $t_s \simeq 1.281$, we see that \lstinline|ode15s| does not notice the switch but instead fits a polynomial where the dynamics change.
+\end{enumerate}
+
+Plots for reference:
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\linewidth]{Plots/task3_plot.eps}
+	\caption{Plot for c)}
+\end{figure}
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\linewidth]{Plots/task3_close.eps}
+	\caption{Zoomed in plot for c)}
+\end{figure}

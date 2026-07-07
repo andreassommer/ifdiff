@@ -10,7 +10,7 @@ initvals = [0; 1000];
 options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8);
 sol_ode45 = ode45(@(t,x) rhsTask1(t,x,p), tSpan, initvals, options);
 
-T = 0:0.1:tEnd;
+T = 0:0.01:tEnd;
 X_ode45 = deval(sol_ode45, T);
 plot(T, X_ode45(1,:), 'b', T, X_ode45(2,:), 'r');
 

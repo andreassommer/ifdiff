@@ -1,0 +1,56 @@
+\documentclass{article}
+
+% includes
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsfonts} 
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{cleveref}
+
+% for matlab code
+
+\lstset{
+	language=Matlab,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	frame=single,
+	breaklines=true
+}
+
+% Set-shorts
+\newcommand{\N}{\ensuremath{\mathbb{N}}}   % natural numbers
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}}   % integers
+\newcommand{\Q}{\ensuremath{\mathbb{Q}}}   % rationals
+\newcommand{\R}{\ensuremath{\mathbb{R}}}   % real numbers
+\newcommand{\C}{\ensuremath{\mathbb{C}}}   % complex numbers
+\newcommand{\vrel}{\ensuremath{v_{\text{rel}}}} % for one example
+
+
+\title{Exercises: Introductory Course on Implicitly Switched ODEs and Filippov Sliding}
+\author{Andreas Sommer, Lev Gromov, Marvin Hertweck, Pilar Keller}
+\date{July 09, 2026}
+
+
+\begin{document}
+
+\maketitle
+\include{solution1.tex} % Fundamentals
+\newpage
+\include{solution2.tex} % Filippov Sliding Mode
+\newpage
+% \include{solution3.tex} % DAEs
+\newpage
+\include{solution4.tex} % State Jumps
+
+\end{document}

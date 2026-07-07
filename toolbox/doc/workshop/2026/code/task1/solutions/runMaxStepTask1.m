@@ -10,7 +10,7 @@ initvals = [0; 1000];
 options = odeset('RelTol', 1e-6, 'AbsTol', 1e-8, 'MaxStep', 0.1);   % sets the maximum allowed step size to 0.1
 sol_maxstep = ode45(@(t,x) rhsTask1(t,x,p), tSpan, initvals, options);
 
-T = 0:0.1:tEnd;
+T = 0:0.01:tEnd;
 X_maxstep = deval(sol_maxstep, T);
 plot(T, X_maxstep(1,:), 'b', T, X_maxstep(2,:), 'r');
 

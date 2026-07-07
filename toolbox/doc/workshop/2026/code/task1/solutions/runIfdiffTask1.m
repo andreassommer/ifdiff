@@ -13,7 +13,7 @@ datahandle = prepareDatahandleForIntegration('rhsTask1', ...
     'options', options);
 sol_ifdiff = solveODE(datahandle, tSpan, initvals, p);
 
-T = 0:0.1:tEnd;
+T = 0:0.01:tEnd;
 X_ifdiff = deval(sol_ifdiff, T);
 plot(T, X_ifdiff(1,:), 'b', T, X_ifdiff(2,:), 'r');
 
