@@ -1,3 +1,4 @@
+% !TeX root = exercises_main.tex
 \section*{Task 4: Fish Farming}
 
 \begin{enumerate}[label=\alph*)]
@@ -22,6 +23,12 @@
     \begin{itemize}
         \item Check the appendix for a reminder on how to formulate and solve an ODE using IFDIFF.
     \end{itemize}
+    \textbf{Reference plot:}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{Plots/task4a}
+        \caption{Population plot for subtask 4a)}
+    \end{figure}
 
     \item The population of fish will now be harvested automatically according to the following rule:\\
     Whenever the population $P(t)$ would exceed a threshold $T \in [0, C]$, a proportion of the current population will be extracted from the pond and added to the harvest $H(t)$ according to the harvest ratio $\alpha \in [0, 1]$.
@@ -54,6 +61,12 @@
         \item Don't forget to include the second component of the state vector in your initial conditions.
         \item Make sure that your jump condition and direction match, i.e.~the direction should be 1 if the jump is triggered when the condition goes from negative to positive and -1 for the other way around.
     \end{itemize}
+    \textbf{Reference plot:}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{Plots/task4b}
+        \caption{Population plot for subtask 4b)}
+    \end{figure}
 
     \item \label{item:task4c} We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
     \textbf{Subtask:} \\
@@ -76,6 +89,12 @@ func(2, 3) == 10 % true
         \end{lstlisting}
         The anonymous function \lstinline|func| defined above takes two numbers \lstinline|a| and \lstinline|b| and returns \lstinline|a + b + 5|.
     \end{itemize}
+    \textbf{Reference plot:}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{Plots/task4c}
+        \caption{Population grid plot for subtask 4c)}
+    \end{figure}
 
     \item The total amount of fish produced over the time interval $I = [0, 5]$ is given by the objective function
     \begin{equation}\label{eq:fish_objective}
@@ -95,6 +114,12 @@ func(2, 3) == 10 % true
     \begin{itemize}
        \item A solution struct (as returned by MATLAB integrators and IFDIFF) stores the timepoints at which the solution was computed in ascending order as a vector in the field \lstinline|solution.x|. The field \lstinline|solution.y(i, j)| stores the i-th component of the solution state vector at the timepoint \lstinline|solution.x(j)|. You can access the state vector of the solution at the final timepoint in the integration time interval using \lstinline|solution.y(:, end)|.
     \end{itemize}
+    \textbf{Reference plot:}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{Plots/task4d}
+        \caption{Objective function plot for subtask 4d)}
+    \end{figure}
 
     \item The gradient of the objective function $F$ is given by
     \begin{equation}\label{eq:fish_gradient}
@@ -118,6 +143,12 @@ func(2, 3) == 10 % true
        \item Since the sensitivity is only computed for one time point, you can obtain the parameter sensitivity matrix directly from the sensitivity output struct using \lstinline|sens.Gp|.
        \item Since we only need the parameter sensitivities and not the initial value sensitivities, you can pass the optional flag \lstinline|generateSensitivityFunction(..., 'calcGy', false)| to prevent unnecessary computations.
     \end{itemize}
+    \textbf{Reference plot:}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{Plots/task4e}
+        \caption{Gradient plot for subtask 4e)}
+    \end{figure}
 
     \item After computing the gradients, we can now optimize the parameters $T$ and $\alpha$ in order to maximize the total amount of fish produced as described by the objective function $F$. However, we will additionaly impose a lower bound constraint on the harvest ratio, namely $\alpha \geq 0.2$, because the number of state jumps approaches infinity as $\alpha$ goes towards zero, which would make the problem ill-posed (Zeno behavior).
      
@@ -141,4 +172,10 @@ func(2, 3) == 10 % true
         \item Remember that \lstinline|solutionFunc| takes a parameter and returns a solution, whereas \lstinline|objectiveFunc| and \lstinline|gradientFunc| take a solution and return the objective and gradient.
         \item Don't forget to negate your objective and gradient in the function \lstinline|objWithGrad|.
     \end{itemize}
+    \textbf{Reference plot:}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{Plots/task4f}
+        \caption{Optimized population plot for subtask 4f)}
+    \end{figure}
 \end{enumerate}
