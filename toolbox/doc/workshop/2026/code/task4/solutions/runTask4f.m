@@ -7,7 +7,7 @@ T = 0.5;
 alpha = 0.5;
 p = [T, alpha];
 
-rhs = @rhsTask4Solution;
+rhs = @rhsTask4b;
 integrator = @ode45;
 optsIntegrator = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
 datahandle = prepareDatahandleForIntegration(rhs, 'integrator', integrator, 'options', optsIntegrator);

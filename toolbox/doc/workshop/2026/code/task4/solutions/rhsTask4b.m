@@ -1,4 +1,4 @@
-function dy = rhsTask4Solution(~, y, p)
+function dy = rhsTask4b(~, y, p)
 r = 2;
 C = 1;
 
