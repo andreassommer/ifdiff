@@ -28,7 +28,8 @@ p = [T, alpha];
 rhs = @rhsTask4;
 integrator = @ode45;
 optsIntegrator = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
-datahandle = prepareDatahandleForIntegration(rhs, 'integrator', integrator, 'options', optsIntegrator);
+datahandle = prepareDatahandleForIntegration(rhs, ...
+    'integrator', integrator, 'options', optsIntegrator);
 
 %% Solve
 solution = solveODE(datahandle, tspan, y0, p);
@@ -42,7 +43,7 @@ plotPopulation(solution);
         \caption{Population plot for subtask \ref{item:task4a}}
     \end{figure}
 
-    \item\label{item:task4b} If the parameters are set such that an actual harvest occurs, then the maximum population is equal to the harvest threshold $T$. Otherwise, the maximum size of the population approaches $C = 1$ asymptotically as before.\\\\
+    \item\label{item:task4b} If the parameters are chosen such that an actual harvest occurs, then the maximum population is equal to the harvest threshold $T$. Otherwise, the maximum size of the population approaches $C = 1$ asymptotically as before.\\\\
     \textbf{File:} \texttt{rhsTask4.m}
     \begin{lstlisting}
 function dy = rhsTask4(~, y, p)
@@ -51,6 +52,7 @@ C = 1;
 
 T     = p(1);
 alpha = p(2);
+
 P = y(1);
 
 dP = r.*P .* (1 - P./C);
@@ -79,7 +81,8 @@ p = [T, alpha];
 rhs = @rhsTask4;
 integrator = @ode45;
 optsIntegrator = odeset('AbsTol', 1e-10, 'RelTol', 1e-8);
-datahandle = prepareDatahandleForIntegration(rhs, 'integrator', integrator, 'options', optsIntegrator);
+datahandle = prepareDatahandleForIntegration(rhs, ...
+    'integrator', integrator, 'options', optsIntegrator);
 
 %% Solve
 solution = solveODE(datahandle, tspan, y0, p);
@@ -119,7 +122,7 @@ plotPopulationGrid(solutionGrid);
     
     If $\alpha = 1$ and a harvest occurs (i.e.~if $P(0) < T < C$), then the entire population will be depleted at the first harvest, so the objective function is determined only by the amount harvested then, which will be equal to $T$, since $P(t) = T$ at the time of the harvest.
 
-    The parameters which maximimze the objective function on the grid are $T = 0.5$ and $\alpha = 0.25$. \\ \\
+    The parameters which maximimze the objective function on the grid are $T = 0.5$ and $\alpha = 0.25$. \\ \\ \newpage
     \textbf{File:} \texttt{runTask4.m}
     \begin{lstlisting}
 %% Subtask d)
@@ -137,7 +140,7 @@ plotObjective(solutionGrid, objectiveGrid);
         \caption{Objective function plot for subtask \ref{item:task4d}}
     \end{figure}
 
-    \item\label{item:task4e} At the parameters which maximize the objective function on the grid, namely $T = 0.5$ and $\alpha = 0.25$, the gradient approximately points in the direction $d = (0.07, -0.02)$, which implies that we may achieve an even bigger value for the objective function by increasing the harvest threshold from $T = 0.5$ and reducing the harvest ratio from $\alpha = 0.25$. \\ \\
+    \item\label{item:task4e} At the parameters which maximize the objective function on the grid, namely $T = 0.5$ and $\alpha = 0.25$, the gradient approximately points in the direction $d = (0.07, -0.02)$, which implies that we may achieve an even bigger value for the objective function by increasing the harvest threshold from $T = 0.5$ and reducing the harvest ratio from $\alpha = 0.25$. \\ \\ \newpage
     \textbf{File:} \texttt{runTask4.m}
     \begin{lstlisting}
 %% Subtask e)
@@ -164,9 +167,18 @@ plotGradient(solutionGrid, objectiveGrid, gradientGrid)
 
     \item\label{item:task4f} After the first harvest, the population is strictly bound to the interval $J = [T, T - \alpha T]$. The midpoint of this interval is $m = T - \frac{(T - (T - \alpha T))}{2} = T(1 - \frac{\alpha}{2})$. For the optimal parameters $T^* \approx 0.56$ and $\alpha^* \approx 0.2$ the midpoint is located at approximately $m^* \approx 0.5 = \frac{C}{2}$.
     
-    This behavior is not coincidental: Each fish produced over the time interval will be added to the value of the objective function, either as part of a harvest, or at the end of the time interval when the pond is emptied. In other words, fish that have been produced can never disappear. Therefore, to maximize the total amount of fish produced, it is sufficient to maximize the population growth over the entire time interval. The population growth is maximal when the population is at half of the total capacity of the pond, i.e. $P(t) = \frac{C}{2}$. The population growth decreases symmetrically as the population distances itself from the optimal point. Thus, our goal is to keep the population as close to the optimal point $\frac{C}{2}$ as possible.
+    This behavior is not coincidental: Each fish produced over the time interval will be added to the value of the objective function, either as part of a harvest, or at the end of the time interval when the pond is emptied.
+    In other words, fish that have been produced can never disappear. Therefore, to maximize the total amount of fish produced, it is sufficient to maximize the population growth over the entire time interval.
     
-    We know that our choice of parameters $T$ and $\alpha$ will constrain the population to the interval $J = [T, T - \alpha T]$. Since the population growth decreases quadratically with the distance of the population from the optimal point, we should choose $T$ and $\alpha$, s.t.~the interval $J$ has minimal length and is centered at $\frac{C}{2}$. Thus, choosing $\alpha^* = 0.2$ will minimize the length of the interval (under the constraint $\alpha \geq 0.2$). The optimal harvest threshold $T^*$ can then be obtained by enforcing $m^* = T^*(1 - \frac{\alpha^*}{2}) = \frac{C}{2}$ which yields $T^* = \frac{C}{2-\alpha^*} \approx 0.56$. This matches the numerical results obtained by the optimizer.\\ \\
+    The population growth is maximal when the population is at half of the total capacity of the pond, i.e.~$P(t) = \frac{C}{2}$. The population growth decreases quadratically with the distance of the population from the optimal point.
+    Thus, our goal is to keep the population as close to the optimal point $\frac{C}{2}$ as possible.
+    
+    We know that our choice of parameters $T$ and $\alpha$ will constrain the population to the interval \\$J = [T, T - \alpha T]$ after the first harvest.
+    Since the population growth decreases quadratically with the distance of the population from the optimal point, we should choose $T$ and $\alpha$ such that the interval $J$ has minimal length and is centered at $\frac{C}{2}$.
+    
+    Thus, choosing $\alpha^* = 0.2$ minimal (under the constraint $\alpha \geq 0.2$) will minimize the length of the interval.
+    The optimal harvest threshold $T^*$ can then be obtained by centering the interval at the optimal point $\frac{C}{2}$, i.e.~$m^* = T^*(1 - \frac{\alpha^*}{2}) = \frac{C}{2}$ which yields $T^* = \frac{C}{2-\alpha^*} \approx 0.56$.
+    This matches the numerical results obtained by the optimizer.\\ \\
     \textbf{File:} \texttt{runTask4.m}
     \begin{lstlisting}
 %% Subtask f)
