@@ -14,6 +14,14 @@ for idx=1:numel(solution)
     ylim(ax, [yl(1), T(find(yl(2) < T, 1))]);
 
     title(ax, sprintf('T=%g, \\alpha=%g', p{idx}));
+
+    xlab = ax.XLabel.String;
+    ylab = ax.YLabel.String;
+    xlabel(ax, []);
+    ylabel(ax, []);
 end
+
+xlabel(tiles, xlab);
+ylabel(tiles, ylab);
 title(tiles, 'Population over time for various threshold harvesting parameters')
 end
