@@ -15,13 +15,11 @@ for idx=1:numel(solution)
 
     title(ax, sprintf('T=%g, \\alpha=%g', p{idx}));
 
-    xlab = ax.XLabel.String;
-    ylab = ax.YLabel.String;
     xlabel(ax, []);
     ylabel(ax, []);
 end
 
-xlabel(tiles, xlab);
-ylabel(tiles, ylab);
+xlabel(tiles, 'Harvest threshold');
+ylabel(tiles, 'Harvest ratio');
 title(tiles, 'Population over time for various threshold harvesting parameters')
 end
