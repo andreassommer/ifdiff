@@ -27,10 +27,10 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{Plots/task4a}
-        \caption{Population plot for subtask 4a)}
+        \caption{Population plot for subtask \ref{item:task4a}}
     \end{figure}
 
-    \item The population of fish will now be harvested automatically according to the following rule:\\
+    \item\label{item:task4b} The population of fish will now be harvested automatically according to the following rule:\\
     Whenever the population $P(t)$ would exceed a threshold $T \in [0, C]$, a proportion of the current population will be extracted from the pond and added to the harvest $H(t)$ according to the harvest ratio $\alpha \in [0, 1]$.
 
     This new system can be described by the following ODE
@@ -65,7 +65,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{Plots/task4b}
-        \caption{Population plot for subtask 4b)}
+        \caption{Population plot for subtask \ref{item:task4b}}
     \end{figure}
 
     \item \label{item:task4c} We now want to examine how the solution behaves depending on the parameters $T$ and $\alpha$. \\ \\
@@ -93,10 +93,10 @@ func(2, 3) == 10 % true
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{Plots/task4c}
-        \caption{Population grid plot for subtask 4c)}
+        \caption{Population grid plot for subtask \ref{item:task4c}}
     \end{figure}
 
-    \item The total amount of fish produced over the time interval $I = [0, 5]$ is given by the objective function
+    \item\label{item:task4d} The total amount of fish produced over the time interval $I = [0, 5]$ is given by the objective function
     \begin{equation}\label{eq:fish_objective}
        F(T, \alpha) = P(5; T, \alpha) + H(5; T, \alpha)
     \end{equation}
@@ -118,10 +118,10 @@ func(2, 3) == 10 % true
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{Plots/task4d}
-        \caption{Objective function plot for subtask 4d)}
+        \caption{Objective function plot for subtask \ref{item:task4d}}
     \end{figure}
 
-    \item The gradient of the objective function $F$ is given by
+    \item\label{item:task4e} The gradient of the objective function $F$ is given by
     \begin{equation}\label{eq:fish_gradient}
        \nabla F(T, \alpha) = \nabla P(5; T, \alpha) + \nabla H(5; T, \alpha) = (G_p)_{1,:}(5; T, \alpha) + (G_p)_{2,:}(5; T, \alpha)
     \end{equation}
@@ -147,10 +147,10 @@ func(2, 3) == 10 % true
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{Plots/task4e}
-        \caption{Gradient plot for subtask 4e)}
+        \caption{Gradient plot for subtask \ref{item:task4e}}
     \end{figure}
 
-    \item After computing the gradients, we can now optimize the parameters $T$ and $\alpha$ in order to maximize the total amount of fish produced as described by the objective function $F$. However, we will additionaly impose a lower bound constraint on the harvest ratio, namely $\alpha \geq 0.2$, because the number of state jumps approaches infinity as $\alpha$ goes towards zero, which would make the problem ill-posed (Zeno behavior).
+    \item\label{item:task4f} After computing the gradients, we can now optimize the parameters $T$ and $\alpha$ in order to maximize the total amount of fish produced as described by the objective function $F$. However, we will additionaly impose a lower bound constraint on the harvest ratio, namely $\alpha \geq 0.2$, because the number of state jumps approaches infinity as $\alpha$ goes towards zero, which would make the problem ill-posed (Zeno behavior).
      
     The optimal parameters $T^*$ and $\alpha^*$ are then defined via
     \begin{equation}\label{eq:fish_optim}
@@ -176,6 +176,6 @@ func(2, 3) == 10 % true
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{Plots/task4f}
-        \caption{Optimized population plot for subtask 4f)}
+        \caption{Optimized population plot for subtask \ref{item:task4f}}
     \end{figure}
 \end{enumerate}
