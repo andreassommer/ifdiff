@@ -23,10 +23,9 @@
     \begin{itemize}
         \item Check the appendix for a reminder on how to formulate and solve an ODE using IFDIFF.
     \end{itemize}
-    \textbf{Reference plot:}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Plots/task4a}
+        \includegraphics[width=0.9\textwidth]{Plots/task4a}
         \caption{Population plot for subtask \ref{item:task4a}}
     \end{figure}
 
@@ -61,10 +60,9 @@
         \item Don't forget to include the second component of the state vector in your initial conditions.
         \item Make sure that your jump condition and direction match, i.e.~the direction should be 1 if the jump is triggered when the condition goes from negative to positive and -1 for the other way around.
     \end{itemize}
-    \textbf{Reference plot:}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Plots/task4b}
+        \includegraphics[width=0.9\textwidth]{Plots/task4b}
         \caption{Population plot for subtask \ref{item:task4b}}
     \end{figure}
 
@@ -89,10 +87,9 @@ func(2, 3) == 10 % true
         \end{lstlisting}
         The anonymous function \lstinline|func| defined above takes two numbers \lstinline|a| and \lstinline|b| and returns \lstinline|a + b + 5|.
     \end{itemize}
-    \textbf{Reference plot:}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Plots/task4c}
+        \includegraphics[width=0.9\textwidth]{Plots/task4c}
         \caption{Population grid plot for subtask \ref{item:task4c}}
     \end{figure}
 
@@ -116,10 +113,9 @@ func(2, 3) == 10 % true
        The field \lstinline|solution.y(i, j)| then stores the i-th component of the solution state vector at the timepoint \lstinline|solution.x(j)|.
        You can access the state vector of the solution at the final timepoint in the integration time interval using \lstinline|solution.y(:, end)|.
     \end{itemize}
-    \textbf{Reference plot:}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Plots/task4d}
+        \includegraphics[width=0.9\textwidth]{Plots/task4d}
         \caption{Objective function plot for subtask \ref{item:task4d}}
     \end{figure}
 
@@ -147,10 +143,9 @@ func(2, 3) == 10 % true
        \item Since the sensitivity is only computed for one time point, you can obtain the parameter sensitivity matrix directly from the sensitivity output struct using \lstinline|sens.Gp|.
        \item Since we only need the parameter sensitivities and not the initial value sensitivities, you can pass the optional flag \lstinline|generateSensitivityFunction(..., 'calcGy', false)| to prevent unnecessary computations.
     \end{itemize}
-    \textbf{Reference plot:}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Plots/task4e}
+        \includegraphics[width=0.9\textwidth]{Plots/task4e}
         \caption{Gradient plot for subtask \ref{item:task4e}}
     \end{figure}
 
@@ -176,10 +171,9 @@ func(2, 3) == 10 % true
         \item Remember that \lstinline|solutionFunc| takes a parameter and returns a solution, whereas \lstinline|objectiveFunc| and \lstinline|gradientFunc| take a solution and return the objective and gradient.
         \item Don't forget to negate your objective and gradient in the function \lstinline|objWithGrad|.
     \end{itemize}
-    \textbf{Reference plot:}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Plots/task4f}
+        \includegraphics[width=0.9\textwidth]{Plots/task4f}
         \caption{Optimized population plot for subtask \ref{item:task4f}}
     \end{figure}
 \end{enumerate}
