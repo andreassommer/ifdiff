@@ -5,16 +5,16 @@ Consider the following switched ODE
 
 \begin{equation}\label{eq:task1_rhs}
 \begin{aligned}
-\frac{d}{dt}x_1(t) &= 
+\frac{d}{dt}y_1(t) &= 
 \begin{cases}
-	q_1(t), & \text{if } x_1(t) \leq 750 \\
-	q_1(t) - q_2(t),  & \text{if } x_1(t) > 750 \\
+	q_1(t), & \text{if } y_1(t) \leq 750 \\
+	q_1(t) - q_2(t),  & \text{if } y_1(t) > 750 \\
 \end{cases} \\
-\frac{d}{dt}x_2(t) &= 
+\frac{d}{dt}y_2(t) &= 
 \begin{cases}
-	0, & \text{if } x_1(t) \leq 750 \\
-	-300, & \text{if } 750 < x_1(t) < 800 \\
-	0, & \text{if } x_1(t) \geq 800 \\
+	0, & \text{if } y_1(t) \leq 750 \\
+	-300, & \text{if } 750 < y_1(t) < 800 \\
+	0, & \text{if } y_1(t) \geq 800 \\
 \end{cases}
 \end{aligned}
 \end{equation}
@@ -22,18 +22,18 @@ where
 \begin{equation}\label{eq:task1_rhs_helpers}
 \begin{aligned}
 q_1(t) &= \frac{50}{27}t^2 - \frac{100}{3}t + \frac{400}{3} \\
-q_2(t) &= (1000 - x_2)(p_1(t-19) + p_2)
+q_2(t) &= (1000 - y_2(t))(p_1(t-19) + p_2)
 \end{aligned}
 \end{equation}
 
 \begin{enumerate}[label=\alph*)]
 	
 	\item \label{item:task1a} \textbf{Subtask:}\\
-	Use \lstinline|ode45| to solve this system on the time interval $I = [0, 30]$ with initial conditions $x_1(0) = 0$ and $x_2(0) = 1000$. Use $p = (\frac{3}{4}, \frac{1}{4})$ as the parameter vector. \\
+	Use \lstinline|ode45| to solve this system on the time interval $I = [0, 30]$ with initial conditions $y_1(0) = 0$ and $y_2(0) = 1000$. Use $p = (\frac{3}{4}, \frac{1}{4})$ as the parameter vector. \\
 	Plot the solution. Does the solution look correct? Explain why \lstinline|ode45| produces this result. \\ \\
 	\textbf{Steps:}
 	\begin{enumerate}[label=\arabic*.]
-		\item Implement the RHS in the file \texttt{rhsTask1.m} as described by \cref{eq:task1_rhs} and \cref{eq:task1_rhs_helpers}. Compute the values of $q_1(t)$ and $q_2(t)$ directly in the RHS as local variables \lstinline|q1| and \lstinline|q2| (do not implement them as separate functions).
+		\item Implement the RHS in the file \texttt{rhsTask1.m} as described by \cref{eq:task1_rhs} and \cref{eq:task1_rhs_helpers}. Compute the values of $q_1(t)$ and $q_2(t)$ directly in the RHS as local variables \lstinline|q1| and \lstinline|q2| (do not implement them as separate functions). Use an \lstinline|if condition1 ... elseif condition2 ... else ...| structure to formulate the three possible branches of the RHS.
 		\item Set the integration time span, initial conditions and parameters in the file \texttt{runTask1.m}.
 		\item Use \lstinline|ode45| to compute a solution. Remember to pass the RHS as an anonymous function \\\lstinline|@(t, y) rhsTaks1(t, y, p)|, which takes a timepoint and state vector and returns the derivative vector. Don't forget to provide the integration time span and initial conditions.
 		\item Create a vector of timepoints where you will plot the solution using\\ \lstinline|t = linspace(tspan(1), tspan(end), 1000)|.
