@@ -28,7 +28,7 @@ q_2(t) &= (1000 - x_2)(p_1(t-19) + p_2)
 
 \begin{enumerate}[label=\alph*)]
 	
-	\item \textbf{Subtask:}\\
+	\item \label{item:task1a} \textbf{Subtask:}\\
 	Use \lstinline|ode45| to solve this system on the time interval $I = [0, 30]$ with initial conditions $x_1(0) = 0$ and $x_2(0) = 1000$. Use $p = (\frac{3}{4}, \frac{1}{4})$ as the parameter vector. \\
 	Plot the solution. Does the solution look correct? Explain why \lstinline|ode45| produces this result. \\ \\
 	\textbf{Steps:}
@@ -39,15 +39,23 @@ q_2(t) &= (1000 - x_2)(p_1(t-19) + p_2)
 		\item Create a vector of timepoints where you will plot the solution using\\ \lstinline|t = linspace(tspan(1), tspan(end), 1000)|.
 		\item Evalute the solution at the timepoints using \lstinline|y = deval(solution, t)|.
 		\item Plot the solution using \lstinline|plot(t, y')|, which will plot both solution components into one plot. Notice that the solution vector must be transposed here with \lstinline|y'| because the \lstinline|plot| function plots data column-wise.
-	\end{enumerate} 
-	
-	\item Let's see how the solution responds to changes in the initial values: Plot the sensitivities of the solution using \verb|plotSensitivities_odexx(sol, @rhsTask1, p, @ode45, options)|. Do they look correct?
+	\end{enumerate}
+
+	\item \textbf{Subtask:}\\
+	Solve the system from subtask \ref{item:task1a} again, but this time with a maximum integrator step size of $0.1$. \\
+	Plot the solution. Does the solution look correct? Explain why \lstinline|ode45| produces this result. \\ \\
+	\textbf{Steps:}
+	\begin{enumerate}[label=\arabic*.]
+		\item Add the maximum step size to the integrator options using \\
+		\lstinline|options = odeset(..., 'MaxStep', 0.1)|.
+		\item Run your code from subtask \ref{item:task1a} with the new options.
+	\end{enumerate}
 	
 	\item Now, solve this system using IFDIFF. What changed in comparison to a)? Use the same function header and implementation of the helper functions as mentioned in a)
 	
-	\item Plot the sensitivities of the solution with IFDIFF using \verb|plotSensitivities_ifdiff()|. How do the sensitivities differ from the sensitivities you previously computed in Task 1?
+	\item Let's see how the solution responds to changes in the initial values: Plot the sensitivities of the solution using \verb|plotSensitivities_odexx(sol, @rhsTask1, p, @ode45, options)|. Do they look correct?
 	
-	\item Let's take a look at a different method: Use the \verb|MaxStep| parameter to \verb|odeset| to produce a forward solution with small step sizes: \verb|options = odeset(..., 'MaxStep', 0.1);|. Does it look correct?
+	\item Plot the sensitivities of the solution with IFDIFF using \verb|plotSensitivities_ifdiff()|. How do the sensitivities differ from the sensitivities you previously computed in Task 1?
 	
 	\item Now, compute and plot the sensitivities of this solution. What do you notice?
 	
