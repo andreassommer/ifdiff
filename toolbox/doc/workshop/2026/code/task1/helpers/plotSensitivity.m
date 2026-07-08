@@ -15,5 +15,11 @@ for idxRow=1:dimY
         title(ax, sprintf('G_y(%d, %d)', idxRow, idxCol));
     end
 end
-title(tiles, 'Initial value sensitivity');
+
+if isfield(sensitivity, 'Uy')
+    titlestr = 'Initial value sensitivity with IFDIFF';
+else
+    titlestr = 'Initial value sensitivity with ode45';
+end
+title(tiles, titlestr);
 end
