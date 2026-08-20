@@ -44,7 +44,7 @@ set(gca, 'Box', 'off');
 %set(gca,'XTick',0:5:20);
 
 %% Plot analytical solution vs ode45
-canonicalExampleRHS_ode45 = @(t,y) canonicalExampleRHS(t,y,p);
+canonicalExampleRHS_ode45 = @(t,y) rhsCanonicalExample(t,y,p);
 sol_ode45 = ode45(canonicalExampleRHS_ode45, tspan, y0);
 
 figure
