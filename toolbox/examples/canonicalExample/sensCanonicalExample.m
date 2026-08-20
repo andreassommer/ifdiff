@@ -2,7 +2,7 @@
 
 integrator = @ode45;
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
-datahandle    = prepareDatahandleForIntegration('canonicalExampleRHS', 'integrator', integrator, 'options', odeoptionsrhs_test);
+datahandle    = prepareDatahandleForIntegration('rhsCanonicalExample', 'integrator', integrator, 'options', odeoptionsrhs_test);
 
 tspan         = [0 20];
 initialvalues = [1;0];
