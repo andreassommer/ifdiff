@@ -200,36 +200,26 @@ classdef IFDIFFSensitivity
         end
 
         function [sens, fPlus] = applySensitivitySwitchUpdate(this, sens, idxModel, fMinus)
-            tMinus = this.switchesLeft(idxModel);
-            tPlus = this.switches(idxModel);
-            yMinus = this.switchesLeftY(:, idxModel);
+            t = this.switches(idxModel);
+            y = this.switchesLeftY(:, idxModel);
             yPlus = this.switchesY(:, idxModel);
 
-            % TODO: Fix ugly workaround after datahandle refactor.
-            % If the submodel is not exported as a separate function and instead relies on the datahandle,
-            % then we have to evaluate fMinus here, so that the signature is set correctly for fPlus.
-            if ~makeConfig().removeCtrlifForSensComputation
-                fMinusEval = fMinus(this.datahandle, tMinus, yMinus, this.parameters);
-                fMinus = @(~, ~, ~, ~) fMinusEval;
-            end
+            dyLeft = fMinus(this.datahandle, t, y, this.parameters);
             fPlus = getRhsFromModelNum(this.datahandle, idxModel + 1);
+            dyRight = fPlus(this.datahandle, t, yPlus, this.parameters);
 
             % Setup derivatives.
             sigma = this.switchingFunctions{idxModel};
             jump = this.jumpFunctions{idxModel};
 
-            dsigma = IFDIFFDerivativeFiniteDifferences([], sigma, 1, this.fdStep);
+            dSigma = IFDIFFDerivativeFiniteDifferences([], sigma, 1, this.fdStep);
             if ~isempty(jump)
-                djump = IFDIFFDerivativeFiniteDifferences([], jump, this.dimy, this.fdStep);
+                dJump = IFDIFFDerivativeFiniteDifferences([], jump, this.dimy, this.fdStep);
             else
-                djump = [];
+                dJump = [];
             end
 
-            sens = computeSensitivitySwitchUpdate( ...
-                sens, this.dirP, ...
-                tMinus, tPlus, yMinus, yPlus, this.parameters, ...
-                @(t, y, p) fMinus(this.datahandle, t, y, p), @(t, y, p) fPlus(this.datahandle, t, y, p), ...
-                dsigma, djump);
+            sens = computeSensitivitySwitchUpdate(sens, this.dirP, t, y, this.parameters, dyLeft, dyRight, dSigma, dJump);
         end
 
         function [sens, sensFun] = eval(this, timepoints)
