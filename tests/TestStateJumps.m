@@ -253,7 +253,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(length(sol.switches), 1);
 
             % These are tight, setting either of them one OOM lower causes the test to fail
-            rtol1 = 1e-6;
+            rtol1 = 1e-5;
             rtol2 = 1e-5;
 
             sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', ...

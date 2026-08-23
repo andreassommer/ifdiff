@@ -1,17 +1,16 @@
-function dt = vdeRhs(t, sens, p, solNominalTrajectory, nDirY, df, dirP)
+function dt = vdeRhs(t, sens, p, solNominalTrajectory, df, dirP)
 y = deval(solNominalTrajectory, t);
 dimy = length(y);
 
 sensMatrix = reshape(sens, dimy, []);
 % Separate columns into initial value and parameter sensitivities.
-nDir = size(sensMatrix, 2);
-nDirP = nDir - nDirY;
+nDirY = size(sensMatrix, 2) - size(dirP, 2);
 
 % State propagation applies to both sensitivities w.r.t. initial values and parameters.
 sensMatrix = df.dy(t, y, p, sensMatrix);
 
 % Add source term for parameter sensitivities.
-if nDirP > 0
+if ~isempty(dirP)
     sensMatrix(:, nDirY+1:end) = sensMatrix(:, nDirY+1:end) + df.dp(t, y, p, dirP);
 end
 
