@@ -98,16 +98,10 @@ classdef IFDIFFSensitivity < handle
             this.tspan = data.SWP_detection.tspan;
             this.switches = sort(solution.switches);
 
-            % Extract state jumps from solution
-            [isSwitchInSol, switchesIdx] = ismember(this.switches, solution.x);
-            if ~all(isSwitchInSol)
-                throw(this.switchNotFoundInSolutionException(this.switches(~isSwitchInSol)));
-            end
-            this.ySwitch = solution.y(:, switchesIdx);
+            this.ySwitch = deval(solution, this.switches);
             this.ySwitchLeft = this.ySwitch;
-
-            % Use left limit of switch if there was a jump.
-            this.ySwitchLeft(:, solution.jumps) = solution.y(:, switchesIdx(solution.jumps) - 1);
+            % Use left limit of switch to get state before the jump.
+            this.ySwitchLeft(:, solution.jumps) = deval(solution, leftLimit(this.switches(solution.jumps)));
 
             this.integrator = data.integratorSettings.numericIntegrator;
             this.integratorOptions = data.integratorSettings.options;
@@ -305,13 +299,6 @@ classdef IFDIFFSensitivity < handle
             id = 'IFDIFF:Sensitivity:UnrecognizedSolver';
             msg = 'The solver with number %d derived from string ''%s'' does not exist.';
             e = MException(id, msg, methodNum, methodStr);
-        end
-
-        function e = switchNotFoundInSolutionException(switches)
-            id = 'IFDIFF:Sensitivity:SwitchNotInSolution';
-            msg = 'Switches at t=[%s] not found in solution time points.';
-            switchesStr = arrayStrJoin(switches, ', ', '%.16g');
-            e = MException(id, msg, switchesStr);
         end
 
         function e = timepointOutOfBoundsException(tStart, tEnd, tSpan)
