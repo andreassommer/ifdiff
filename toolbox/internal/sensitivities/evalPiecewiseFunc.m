@@ -1,30 +1,53 @@
-function y = evalPiecewiseFunc(t, piecewiseFunc, dimy, switches)
-% Make sure eval points and switching times are sorted in ascending order.
-[t, ~, tUndoSortIdx] = unique(t);
-switches = unique(switches);
-y = zeros(dimy, length(t));
+function y = evalPiecewiseFunc(x, piecewiseFunc, dimOut, intervalBoundaries)
+%evalPiecewiseFunc - Evaluate a function defined piecewise over half-closed intervals [a,b)
+%
+%    Syntax
+%      y = evalPiecewiseFunc(x, piecewiseFunc, dimOut, intervalBoundaries)
+%
+%    Input Arguments
+%      x - Evaluation points
+%        m-element numeric vector
+%      piecewiseFunc - Interval subfunctions
+%        k-element cell array of function handles which take an m-element numeric vector of evaluation points
+%        and return an n-by-m numeric matrix where the i-th column corresponds to the function value
+%        for the i-th evaluation point.
+%      dimOut - Length of the vector-valued function output
+%        integer scalar
+%      intervalBoundaries - Points defining the subfunction interval boundaries
+%        (k-1)-element numeric vector where the i-th entry corresponds to the (excluded) interval end point
+%        of the i-th subfunction and the (included) interval start point of the (i+1)-th subfunction.
+%
+%    Output Arguments
+%      y - Function values for the given points
+%        n-by-m numeric matrix, where n is the function output dimension and m is the number of time points
 
-done = false;
-idxModelStart = 1;
-for idxSw=1:length(switches)
-    % Since eval points and switching times are sorted, we look for the first eval point that lies after the next switch.
-    idxModelEnd = (idxModelStart - 1) + find(t(idxModelStart:end) >= switches(idxSw), 1);
-    % If no such point exists, then we stay in the same model until the end.
-    if isempty(idxModelEnd)
-        y(:, idxModelStart:end) = piecewiseFunc{idxSw}(t(idxModelStart:end));
-        done = true;
-        break
+y = zeros(dimOut, length(x));
+if isempty(x)
+    return
+end
+
+% Make sure evaluation points and interval boundaries are strictly increasing.
+[x, ~, sortIdx] = unique(x);
+intervalBoundaries = unique(intervalBoundaries);
+
+idxStart = 1;
+while idxStart <= length(x)
+    % Determine interval which contains next evaluation point.
+    idxFunc = find(x(idxStart) < intervalBoundaries, 1);
+    if isempty(idxFunc)
+        func = piecewiseFunc{end};
+        idxEnd = length(x);
+    else
+        func = piecewiseFunc{idxFunc};
+        endPoint = intervalBoundaries(idxFunc);
+        % Determine last evaluation point which lies inside the interval.
+        idxEnd = idxStart + (find(x(idxStart:end) < endPoint, 1) - 1);
     end
-    % Otherwise, evaluate points before switch in the current model and update model for next iteration.
-    y(:, idxModelStart:idxModelEnd-1) = piecewiseFunc{idxSw}(t(idxModelStart:idxModelEnd-1));
-    idxModelStart = idxModelEnd;
+
+    y(:, idxStart:idxEnd) = func(x(idxStart:idxEnd));
+    idxStart = idxEnd+1;
 end
 
-% If we actually reach the last model or stay in first model, then we have to evaluate the remaining points in that model.
-if ~done
-    y(:, idxModelStart:end) = piecewiseFunc{end}(t(idxModelStart:end));
-end
-
-% Reverse the sorting
-y(:, tUndoSortIdx) = y(:, 1:end);
+% Reverse the sorting.
+y(:, 1:end) = y(:, sortIdx);
 end
