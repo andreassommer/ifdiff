@@ -25,11 +25,7 @@ a  = 0.286975;
 x0 = [a; a; r1-r2];
 
 % RHS function dx = f(t, x, p), must be implemented in separate file for IFDIFF.
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey.m
 rhs = @rhsPredatorPrey;
-========
-rhs = @rhsPredatorPrey3D;
->>>>>>>> d6700f1 (rename in White Cabbage and Predator Prey Filippov):toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
 
 % Plotting
 plot_n = 10000;
