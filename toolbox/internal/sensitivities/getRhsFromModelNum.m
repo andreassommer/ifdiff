@@ -43,5 +43,7 @@ if config.removeCtrlifForSensComputation
     return
 end
 
-% Default case, just return the preprocessed RHS
+% Default case, just return the preprocessed RHS and set the model number for correct ctrlif branching.
+data.computeSensitivity.modelStage = modelNum;
+datahandle.setData(data);
 rhs = data.integratorSettings.preprocessed_rhs;

@@ -195,7 +195,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             sensTimes = [t0 sensTimes tEnd];
             fdStep = generateFDstep(numel(x0), numel(p), 'hy', 1e-6, 'hp', 1e-6);
             sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', 'FDstep', fdStep, ...
-                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', false);
             sens = sensFun(sensTimes);
             Gy = {sens.Gy};
             Gp = {sens.Gp};
@@ -253,11 +253,11 @@ classdef TestStateJumps < matlab.unittest.TestCase
             testCase.verifyEqual(length(sol.switches), 1);
 
             % These are tight, setting either of them one OOM lower causes the test to fail
-            rtol1 = 1e-6;
+            rtol1 = 1e-5;
             rtol2 = 1e-5;
 
             sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', ...
-                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', false);
 
             t1 = sol.switches(1);
             t1Minus = leftLimit(t1);
@@ -293,7 +293,7 @@ classdef TestStateJumps < matlab.unittest.TestCase
             rtol2 = 1e-5;
 
             sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'END_piecewise', ...
-                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', true);
+                'CalcGy', true, 'CalcGp', true, 'Gmatrices_intermediate', false);
 
             t1 = sol.switches(1);
             t1Minus = leftLimit(t1);

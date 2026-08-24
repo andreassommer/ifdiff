@@ -23,7 +23,7 @@ function dy_y0 = compute_sensitivity_ENDfull_y(datahandle, sol, t_sort_unique, F
    h_y = FDstep.dir;
    
    % If no directions for directional derivatives were given then the usual sensitivities are calculated
-   if isscalar(directions_y) && directions_y == 0
+   if isempty(directions_y)
       directions_y = eye(dim_y);
       h_y = fdStep_getH_y(FDstep, initialvalues);
    end

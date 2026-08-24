@@ -16,7 +16,7 @@ data = datahandle.getData();
 
 numSwitches = length(data.SWP_detection.switchingpoints);
 switches = zeros(1, numSwitches);
-jumps    = zeros(1, numSwitches);
+jumps    = false(1, numSwitches);
 
 for i = 1:numSwitches
     switches(1, i) = data.SWP_detection.switchingpoints{i};
