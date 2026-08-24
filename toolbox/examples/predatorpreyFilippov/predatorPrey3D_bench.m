@@ -239,7 +239,7 @@ legend(ax, 'location', 'northeast');
 
 % Zoomed plot
 hold(axZoom, 'on');
-plot(axZoom, t, x, 'DisplayName', name, 'LineWidth', lw, 'Color', color, 'LineStyle', ls);
+plot(axZoom, t, x, 'DisplayName', name, 'LineWidth', lw-1, 'Color', color);
 hold(axZoom, 'off');
 grid(axZoom, 'on');
 xlabel(axZoom, 'Time');
