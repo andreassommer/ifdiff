@@ -3,7 +3,33 @@ classdef TestSensitivities < matlab.unittest.TestCase
     %
     %Test sensitivity computation.
 
+    properties (TestParameter)
+        method = {'VDE', 'END_piecewise', 'END_full'};
+    end
+
     methods(Test)
+        function testCanonexDirectional(testCase, method)
+            [integrator, options, t0, tEnd, p, x0] = getOdeDataForCanonex(testCase);
+            datahandle = prepareDatahandleForIntegration( ...
+                'canonicalExampleRHS', ...
+                'solver', func2str(integrator), ...
+                'options', options);
+            sol = solveODE(datahandle, [t0 tEnd], x0, p);
+
+            dirY = [100, 0; -1, 5; 0, 0]';
+            dirP = [100, -1, 0];
+            sensFun = generateSensitivityFunction(datahandle, sol, ...
+                'method', method, 'directions_y', dirY, 'directions_p', dirP);
+            sens = sensFun(tEnd);
+            Gy = sens.Gy;
+            Gp = sens.Gp;
+            [~, ~, ~, ~, ~, ~, ~, ~, Gy3, Gp3] = getSensitivitiesForCanonex(testCase, sol);
+
+            atol = 3e-2;
+            testCase.verifyEqual(Gy, Gy3(tEnd) * dirY, 'AbsTol', atol);
+            testCase.verifyEqual(Gp, Gp3(tEnd) * dirP, 'AbsTol', atol);
+        end
+
         function testCanonexVde(testCase)
             % Test the sensitivities generated with the VDE method on the canonical example.
             [integrator, options, t0, tEnd, p, x0] = getOdeDataForCanonex(testCase);
