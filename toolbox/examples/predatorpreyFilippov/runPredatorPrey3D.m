@@ -47,11 +47,7 @@ eulerDisturbH = 1e-6;
 %% FIRST TIME RUN TO INITIALIZE THE JUST IN TIME COMPILER
 % Run the ifdiff integration once to compile the code and have a better runtime for a later speed check
 fprintf("Initializing solver %s ... \n", func2str(intIfdiff));
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
 datahandle = prepareDatahandleForIntegration('rhsPredatorPrey', 'solver', intIfdiff, 'options', intOptions);
-========
-datahandle = prepareDatahandleForIntegration('pprhs', 'solver', intIfdiff, 'options', intOptions);
->>>>>>>> c6b97c1 (Removed unecessary files for pull request):toolbox/examples/predatorpreyFilippov/predatorPrey3D_bench.m
 solveODE(datahandle, tspan, x0, p);
 disp("Compilation done...");
 
@@ -239,19 +235,11 @@ hold(ax, 'off');
 grid(ax, 'on');
 xlabel(ax, 'Time');
 ylabel(ax, 'Sensitivity');
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
 legend(ax, 'location', 'best');
 
 % Zoomed plot
 hold(axZoom, 'on');
 plot(axZoom, t, x, 'DisplayName', name, 'LineWidth', lw-1, 'Color', color);
-========
-legend(ax, 'location', 'northeast');
-
-% Zoomed plot
-hold(axZoom, 'on');
-plot(axZoom, t, x, 'DisplayName', name, 'LineWidth', lw, 'Color', color, 'LineStyle', ls);
->>>>>>>> c6b97c1 (Removed unecessary files for pull request):toolbox/examples/predatorpreyFilippov/predatorPrey3D_bench.m
 hold(axZoom, 'off');
 grid(axZoom, 'on');
 xlabel(axZoom, 'Time');
