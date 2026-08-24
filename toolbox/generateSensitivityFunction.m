@@ -61,22 +61,6 @@ switches_left = data.computeSensitivity.switches_extended_left;
 
 tspan = data.SWP_detection.tspan;
 
-methodCoded.END_piecewise = 1;
-methodCoded.VDE           = 2;
-methodCoded.END_full      = 3;
-
-if strcmpi(method, 'END_piecewise'),method = methodCoded.END_piecewise; end
-if strcmpi(method, 'VDE'),          method = methodCoded.VDE; end
-if strcmpi(method, 'END_full'),     method = methodCoded.END_full; end
-
-% switches includes tspan(1) and tspan(end)
-switches      = data.computeSensitivity.switches_extended;
-switches_left = data.computeSensitivity.switches_extended_left;
-
-tspan = data.SWP_detection.tspan;
-dim_y = data.computeSensitivity.dim_y;
-dim_p = data.computeSensitivity.dim_p;
-
 options.FDstep = FDstep;
 options.integrator = integrator;
 options.integrator_options = integrator_options;
