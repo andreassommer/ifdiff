@@ -41,14 +41,9 @@ toc;
 percent = (param_opt*100./[getParamsCabbage();2.48252;0;0])-100*param_opt;
 
 %% Joint confidence intervals
-<<<<<<< HEAD
-%CI = nlparci(param_opt,residual,'jacobian',jacobian);
-=======
-% if Statistics&ML toolbox is installed, use nlparci instead of the helper
+% if Statistics&ML toolbox is installed, use nlparci instead of helper
 % CI = nlparci(param_opt,residual,'jacobian',jacobian);
-CI = confidenceIntervalHelper(param_opt, residual, jacobian, 0.05);
->>>>>>> 60a6498 (more work for example rename)
-
+CI = computeCI(param_opt, residual, jacobian);
 
 %% Solution with estimated parameters
 initialvalues_opt = param_opt(10:12);
