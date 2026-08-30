@@ -1,5 +1,5 @@
 function simulateBouncingBall(t0, tEnd, x0, p, solver, options)
-    datahandle = prepareDatahandleForIntegration('bounceballRHS', 'solver', func2str(solver), 'options', options);
+    datahandle = prepareDatahandleForIntegration('rhsBounceball', 'solver', solver, 'options', options);
     sol = solveODE(datahandle, [t0 tEnd], x0, p);
 
     sensFun = generateSensitivityFunction(datahandle, sol, 'method', 'VDE', 'CalcGy', true, 'CalcGp', true);
