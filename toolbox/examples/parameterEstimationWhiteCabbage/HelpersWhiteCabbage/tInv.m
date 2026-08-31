@@ -1,4 +1,4 @@
-function inv = Tinv (x, n)
+function inv = tInv (x, n)
 
   if (nargin ~= 2)
     error("tinv: Incorrect usage: inv = tinv(x, n)");
