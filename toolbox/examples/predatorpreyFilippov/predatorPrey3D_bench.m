@@ -235,7 +235,7 @@ hold(ax, 'off');
 grid(ax, 'on');
 xlabel(ax, 'Time');
 ylabel(ax, 'Sensitivity');
-legend(ax, 'location', 'northeast');
+legend(ax, 'location', 'best');
 
 % Zoomed plot
 hold(axZoom, 'on');
