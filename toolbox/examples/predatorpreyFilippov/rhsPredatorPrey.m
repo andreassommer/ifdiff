@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/rhsPredatorPrey.m
 function dx = rhsPredatorPrey(~, x, p)
-========
-function dx = rhsPredatorPrey3D(~, x, p)
->>>>>>>> d6700f1 (rename in White Cabbage and Predator Prey Filippov):toolbox/examples/predatorpreyFilippov/rhsPredatorPrey3D.m
 % 2-Prey-1-Predatory Model
 %
 % Source:
