@@ -1,8 +1,22 @@
+<<<<<<< HEAD
+=======
+<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/rhsPredatorPrey3D.m
+>>>>>>> d197a43 (Renamed files to fit new naming scheme by Pilar)
 <<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/rhsPredatorPrey.m
 function dx = rhsPredatorPrey(~, x, p)
 ========
 function dx = rhsPredatorPrey3D(~, x, p)
 >>>>>>>> d6700f1 (rename in White Cabbage and Predator Prey Filippov):toolbox/examples/predatorpreyFilippov/rhsPredatorPrey3D.m
+<<<<<<< HEAD
+=======
+========
+<<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/rhsPredatorPrey3D.m
+function dx = rhsPredatorPrey3D(~, x, p)
+========
+function dx = rhsPredatorPrey(~, x, p)
+>>>>>>>> 5dee82a (Renamed files to fit new naming scheme by Pilar):toolbox/examples/predatorpreyFilippov/rhsPredatorPrey.m
+>>>>>>>> d197a43 (Renamed files to fit new naming scheme by Pilar):toolbox/examples/predatorpreyFilippov/rhsPredatorPrey.m
+>>>>>>> d197a43 (Renamed files to fit new naming scheme by Pilar)
 % 2-Prey-1-Predatory Model
 %
 % Source:
