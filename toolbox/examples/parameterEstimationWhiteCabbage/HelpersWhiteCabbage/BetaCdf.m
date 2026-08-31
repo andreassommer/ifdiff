@@ -1,18 +1,18 @@
 function cdf = BetaCdf (x, a, b)
 % BETACDF  CDF of the Beta distribution
-%  CDF = betacdf(X, A, B) computes, for each element of X, the CDF
+%  CDF = BetaCdf(X, A, B) computes, for each element of X, the CDF
 %  at X of the beta distribution with parameters A and B (i.e.
 %  mean of the distribution is A/(A+B) and variance is
 %  A*B/(A+B)^2/(A+B+1) ).
 
 if (nargin ~= 3)
-    error ('betacdf: you should provide three arguments');
+    error ('Betacdf: you should provide three arguments');
 end
 
 if (~isscalar (a) || ~isscalar(b))
     [retval, x, a, b] = common_size (x, a, b);
     if (retval > 0)
-        error ('betacdf: x, a and b must be of common size or scalar');
+        error ('Betacdf: x, a and b must be of common size or scalar');
     end
 end
 

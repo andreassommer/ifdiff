@@ -1,18 +1,18 @@
 function inv = BetaInv (x, a, b)
 % BETAINV  Quantile function of the Beta distribution
-%  INV = betainv(X, A, B) computes, for each element of X, the
+%  INV = Betainv(X, A, B) computes, for each element of X, the
 %  quantile (the inverse of the CDF) at X of the Beta distribution
 %  with parameters A and B (i.e. mean of the distribution is
 %  A/(A+B) and variance is A*B/(A+B)^2/(A+B+1) ).
 
 if (nargin ~= 3)
-    error ('betainv: you must give three arguments');
+    error ('Betainv: you must give three arguments');
 end
 
 if (~isscalar (a) || ~isscalar(b))
     [retval, x, a, b] = common_size (x, a, b);
     if (retval > 0)
-        error ('betainv: x, a and b must be of common size or scalars');
+        error ('Betainv: x, a and b must be of common size or scalars');
     end
 end
 
