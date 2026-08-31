@@ -240,7 +240,10 @@ hold(ax, 'off');
 grid(ax, 'on');
 xlabel(ax, 'Time');
 ylabel(ax, 'Sensitivity');
+<<<<<<< HEAD
 <<<<<<<< HEAD:toolbox/examples/predatorpreyFilippov/runPredatorPrey3D.m
+=======
+>>>>>>> 78b2add (Small change in plot)
 legend(ax, 'location', 'best');
 
 % Zoomed plot
