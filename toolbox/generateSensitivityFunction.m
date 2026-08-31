@@ -45,7 +45,7 @@ directions_y                = olGetOption(varargin, 'directions_y',           []
 Gp_flag                     = olGetOption(varargin, 'calcGp',                 true);
 directions_p                = olGetOption(varargin, 'directions_p',           []);
 save_intermediates          = olGetOption(varargin, 'save_intermediates',     true);
-legacy                      = olGetOption(varargin, 'legacy',                 false);
+legacy                      = olGetOption(varargin, 'legacy',                 true);
 
 methodCoded.END_piecewise = 1;
 methodCoded.VDE           = 2;

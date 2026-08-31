@@ -98,10 +98,16 @@ classdef IFDIFFSensitivity < handle
             this.tspan = data.SWP_detection.tspan;
             this.switches = sort(solution.switches);
 
-            this.ySwitch = deval(solution, this.switches);
+            if isempty(this.switches)
+               this.ySwitch = deval(solution, this.tspan(end));
+            else 
+               this.ySwitch = deval(solution, this.switches);
+            end
             this.ySwitchLeft = this.ySwitch;
             % Use left limit of switch to get state before the jump.
-            this.ySwitchLeft(:, solution.jumps) = deval(solution, leftLimit(this.switches(solution.jumps)));
+            if any(solution.jumps)
+                this.ySwitchLeft(:, solution.jumps) = deval(solution, leftLimit(this.switches(solution.jumps)));
+            end
 
             this.integrator = data.integratorSettings.numericIntegrator;
             this.integratorOptions = data.integratorSettings.options;
