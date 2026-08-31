@@ -1,6 +1,8 @@
 function CI = computeCI(param, res, J)
-%COMPUTECI Summary of this function goes here
-%   Detailed explanation goes here
+%COMPUTECI computes the 95% confidence intervals in White Cabbage PE
+%   param - parameter vector (of optimized parameters)
+% 	res   - residual function
+%   J     - Jacobian
 
 % get degrees of freedom
 np = numel(param);
@@ -9,7 +11,7 @@ dof = nr - np;
 
 s2 = (transpose(res) * res) / dof;
 
-% QR factorization is badly conditioned
+% QR factorization since J is badly conditioned
 [~,R] = qr(J,0);
 Rinv = R \ eye(size(R));
 CovP = s2 * (Rinv * transpose(Rinv));
