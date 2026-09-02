@@ -43,7 +43,7 @@ percent = (param_opt*100./[getParams_Cabbage();2.48252;0;0])-100
 param_opt
 
 %% Joint confidence intervals
-CI = nlparci(param_opt,residual,'jacobian',jacobian);
+%CI = nlparci(param_opt,residual,'jacobian',jacobian);
 
 
 %% Solution with estimated parameters

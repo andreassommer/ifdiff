@@ -15,7 +15,7 @@ function FDstep = generateFDstep(dim_y, dim_p, varargin)
    %                   'h_dir'       - step size for calculating finite differences in the method END_full for directional derivatives (has to be given as a scalar)
    %
    % OUTPUT: FDstep - struct with necessary information for the step size to calculate finite differences
-   h = sqrt(eps);
+   h = 1e-6; % sqrt(eps);
    hy           = olGetOption(varargin, 'hy', h);
    hp           = olGetOption(varargin, 'hp', h);
    ht           = olGetOption(varargin, 'ht', h);
