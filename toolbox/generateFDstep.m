@@ -8,8 +8,8 @@ function FDstep = generateFDstep(dim_y, dim_p, varargin)
    %        dim_p    - length of the parameter vector
    %        varargin - optional specification of certain parameters:
    %                   'hy'          - step size for the calculation of finite differences w.r.t. y (can be given as a scalar or a vector of dimension dim_y)
-   %                   'hy_rel_flag' - flag that is true if the calcuation of the step size should be relative to the point at which the finite difference is calculated
-   %                   'y_typ'   - vector that shows the typical magnitude of the entries of y
+   %                   'hy_rel_flag' - flag that is true if the calculation of the step size should be relative to the point at which the finite difference is calculated
+   %                   'y_typ'       - vector that shows the typical magnitude of the entries of y
    %                   'hy_min'      - lower bound for the step size
    %                   (the same holds for p and t)
    %                   'h_dir'       - step size for calculating finite differences in the method END_full for directional derivatives (has to be given as a scalar)
@@ -19,7 +19,7 @@ function FDstep = generateFDstep(dim_y, dim_p, varargin)
    hy           = olGetOption(varargin, 'hy', h);
    hp           = olGetOption(varargin, 'hp', h);
    ht           = olGetOption(varargin, 'ht', h);
-   h_dir        = olGetOption(varargin, 'h_dir', 1e-6);
+   h_dir        = olGetOption(varargin, 'h_dir', h);
    hy_rel_flag  = olGetOption(varargin, 'hy_rel_flag', true);
    hp_rel_flag  = olGetOption(varargin, 'hp_rel_flag', true);
    ht_rel_flag  = olGetOption(varargin, 'ht_rel_flag', true);
