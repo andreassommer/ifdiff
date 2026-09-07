@@ -1,4 +1,4 @@
-function plot_canon_sens_p(t_plot, sensitivities_END_plot, sensitivities_END_plot2)
+function plotCanonSensParameter(t_plot, sensitivities_END_plot, sensitivities_END_plot2)
     % just for very specific example (only used in one live script)
     % arguments are as follows:
     %t_plot = 0:0.01:20;

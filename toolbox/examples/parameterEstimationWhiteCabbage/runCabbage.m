@@ -41,7 +41,7 @@ toc;
 percent = (param_opt*100./[getParamsCabbage();2.48252;0;0])-100*param_opt;
 
 %% Joint confidence intervals
-% if Statistics&ML toolbox is installed, use nlparci instead of helper
+% if Statistics&ML toolbox is installed, use nlparci instead of helper:
 % CI = nlparci(param_opt,residual,'jacobian',jacobian);
 CI = computeCI(param_opt, residual, jacobian);
 
