@@ -1,4 +1,4 @@
-function plot_canonical_comparison(fignum, tf, T, Y_ifdiff, Y_euler, Y_matlabsolver, sol_matlab, sol_ifdiff, ymax)
+function plotCanonicalComparison(fignum, tf, T, Y_ifdiff, Y_euler, Y_matlabsolver, sol_matlab, sol_ifdiff, ymax)
     figure(fignum); 
     clf('reset'); 
     hold on;

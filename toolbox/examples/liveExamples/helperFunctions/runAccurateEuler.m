@@ -1,4 +1,4 @@
-function [T, Y_euler, Y_matlabsolver, Y_ifdiff] = run_accurate_euler(N_euler, t0, tf, initstates, p, canonicalExampleRHS, sol_matlab, sol_ifdiff)
+function [T, Y_euler, Y_matlabsolver, Y_ifdiff] = runAccurateEuler(N_euler, t0, tf, initstates, p, canonicalExampleRHS, sol_matlab, sol_ifdiff)
     X = zeros(2, N_euler+1); 
     X(:,1) = initstates;     
     T = zeros(1, N_euler+1); 

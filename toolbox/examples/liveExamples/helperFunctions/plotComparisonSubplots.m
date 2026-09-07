@@ -1,4 +1,4 @@
-function plot_comparison_subplots(fignum, tf, t0, T, Y_ifdiff, Y_euler, Y_matlabsolver, sol_ifdiff, integrator)
+function plotComparisonSubplots(fignum, tf, t0, T, Y_ifdiff, Y_euler, Y_matlabsolver, sol_ifdiff, integrator)
     Ydiff_Euler  = Y_euler        - Y_ifdiff;
     Ydiff_Matlab = Y_matlabsolver - Y_ifdiff;
     fignum = fignum + 1; 
