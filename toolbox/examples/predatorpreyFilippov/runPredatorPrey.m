@@ -47,7 +47,7 @@ eulerDisturbH = 1e-6;
 %% FIRST TIME RUN TO INITIALIZE THE JUST IN TIME COMPILER
 % Run the ifdiff integration once to compile the code and have a better runtime for a later speed check
 fprintf("Initializing solver %s ... \n", func2str(intIfdiff));
-datahandle = prepareDatahandleForIntegration('pprhs', 'solver', intIfdiff, 'options', intOptions);
+datahandle = prepareDatahandleForIntegration('rhsPredatorPrey', 'solver', intIfdiff, 'options', intOptions);
 solveODE(datahandle, tspan, x0, p);
 disp("Compilation done...");
 
