@@ -18,16 +18,18 @@ classdef TestSensitivities < matlab.unittest.TestCase
 
             dirY = [100, 0; -1, 5; 0, 0]';
             dirP = [100, -1, 0];
+
+            fdStep = generateFDstep(numel(x0), numel(p), 'hy', 1e-8, 'hp', 1e-8);
             sensFun = generateSensitivityFunction(datahandle, sol, ...
-                'method', method, 'directions_y', dirY, 'directions_p', dirP);
+                'method', method, 'directions_y', dirY, 'directions_p', dirP, 'FDstep', fdStep);
             sens = sensFun(tEnd);
             Gy = sens.Gy;
             Gp = sens.Gp;
             [~, ~, ~, ~, ~, ~, ~, ~, Gy3, Gp3] = getSensitivitiesForCanonex(testCase, sol);
 
-            atol = 3e-2;
-            testCase.verifyEqual(Gy, Gy3(tEnd) * dirY, 'AbsTol', atol);
-            testCase.verifyEqual(Gp, Gp3(tEnd) * dirP, 'AbsTol', atol);
+            rtol = 1e-4;
+            testCase.verifyEqual(Gy, Gy3(tEnd) * dirY, 'RelTol', rtol);
+            testCase.verifyEqual(Gp, Gp3(tEnd) * dirP, 'RelTol', rtol);
         end
 
         function testCanonexVde(testCase)
