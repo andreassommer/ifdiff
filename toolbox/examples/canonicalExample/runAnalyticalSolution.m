@@ -3,7 +3,7 @@ tf = 20;
 tPlotStep = 0.01;
 
 %% Analytical solution
-[solTrue, switches, switchingFunctions, t0, y0, p] = rhsAnalyticSolution;
+[solTrue, switches, switchingFunctions, t0, y0, p] = canonicalExampleAnalyticSolution;
 tspan = [t0, tf];
 tPlot = t0:tPlotStep:tf;
 

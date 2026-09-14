@@ -11,7 +11,7 @@ tspan      = [t0 tf];
 M          = [1 0; 0 0];
 
 opts_ifdiff = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-8,'RelTol', 1e-6);
-opts_plain  = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-6, 'RelTol', 1e-3);
+opts_plain  = odeset('Mass', M, 'MassSingular', 'yes', 'AbsTol', 1e-8, 'RelTol', 1e-6);
 
 sol_plain  = integrator(@(t, x) rhsDaeExample(t, x, p), tspan, x0, opts_plain);
 
