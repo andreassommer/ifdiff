@@ -8,7 +8,6 @@ tspan         = [0 118];
 initialvalues = [2.48252;0;0];
 parameters_ODE = getParamsCabbage();
 sol = solveODE(datahandle, tspan, initialvalues, parameters_ODE);
-%s = rng;
 
 %% Precalculations for finite differences for sensitivities
 dim_y = size(sol.y, 1);
@@ -19,7 +18,8 @@ FDstep = generateFDstep(dim_y, dim_p);
 t = 0:118;
 disturb = true;
 sigma = 5;
-%rng(s);
+seed = 72;
+rng(seed);
 rand = randn(dim_y*length(t),1);
 if disturb
    measurements = reshape(deval(sol, t), [], 1) + sigma.*rand;
@@ -38,7 +38,8 @@ parameters_init = [1.2*parameters_ODE; measurements(1:dim_y)];
 tic;
 [param_opt,resnorm,residual,exitflag,output,lambda,jacobian] = lsqnonlin(residual_function, parameters_init, [], [], options);
 toc;
-percent = (param_opt*100./[getParamsCabbage();2.48252;0;0])-100*param_opt;
+percent = (param_opt*100./[getParamsCabbage();2.48252;0;0])-100*param_opt
+param_opt
 
 %% Joint confidence intervals
 % if Statistics&ML toolbox is installed, use nlparci instead of helper:
