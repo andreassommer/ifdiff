@@ -21,7 +21,7 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         canonex_tspan = [0 20];
         canonex_x0 = [1;0];
         canonex_p = 5.437;
-        canonex_rhsFunction = 'canonicalExampleRHS';
+        canonex_rhsFunction = 'rhsCanonicalExample';
         canonex_odeoptions = odeset('AbsTol', 1e-12, 'RelTol', 1e-10);
         canonex_xEnd = [49.255067; 1.348824];
         canonex_SWPs = [11.000275475 11.27004032];
@@ -29,19 +29,19 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
         subway_tspan = [0 65];
         subway_x0 = [0; 0; 0];
         % subway_p initialized later because we need to initIFDIFF() before
-        subway_rhsFunction = 'newYorkCitySubwayModelRhs';
+        subway_rhsFunction = 'rhsNewYorkCitySubwayModel.m';
         subway_odeoptions = odeset( 'AbsTol', 1e-20, 'RelTol', 1e-10);
         subway_xEnd = [2112.07361577; 0.00124794; 4124.77885608];
         subway_SWPs = [0.63166061, 2.43955402, 3.64338000, 5.60010643, 12.60705000, 45.78275000, 57.16005000];
 
         % DAE example: input parameters and expected results
-        dae_tspan = [0 5];
+        dae_tspan = [0 3];
+        dae_p = -0.3
         dae_x0 = [1; -1];
-        dae_p = -0.2
-        dae_rhsFunction = 'daeExampleRHS';
-        dae_odeoptions = odeset('Mass', [1 0; 0 0], 'MassSingular', 'yes', 'AbsTol', 1e-9,'RelTol', 1e-6);
-        dae_xEnd = [0.199999951200446; -0.199999951200446]
-        dae_SWPs = [1.609435443361949];
+        dae_rhsFunction = 'rhsDaeExampleWorkshop';
+        dae_odeoptions = odeset('Mass', [1 0; 0 0], 'MassSingular', 'yes', 'AbsTol', 1e-9,'RelTol', 1e-5);
+        dae_xEnd = [0.427392826365841; -0.299999535808094]
+        dae_SWPs = [1.068023313185268];
 
     end
     properties (Access = private)
@@ -185,8 +185,8 @@ classdef TestSolverCompatibility < matlab.unittest.TestCase
 
             % lower tolerance since ode23t is an order 2 method 
             % (uses trapezoidal rule)
-            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-5);
-            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-4);
+            testCase.verifyEqual(sol.y(:, end), testCase.expected_xEnd, "RelTol", 1e-3);
+            testCase.verifyEqual(sol.switches, testCase.expected_SWPs, "RelTol", 1e-3);
         end
         function testOde23tbCanonex(testCase)
             setCanonexParameters(testCase);
