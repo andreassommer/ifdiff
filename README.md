@@ -4,8 +4,6 @@
 
 
 
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
-
 The software package IFDIFF comprises:
 
 - **Automatic detection and processing** of state-dependent switching events in ODE IVP
