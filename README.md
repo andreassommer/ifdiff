@@ -1,30 +1,35 @@
-# IFDIFF - A MATLAB Toolkit for ODEs with State˗Dependent Switches
+# IFDIFF - The MATLAB Toolkit for ODE and DAE with State˗Dependent Switches
 
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
+<img src="images/ifdiff-logo-square.webp" alt="IFDIFF Logo" style="width: 500px; height: auto;">
+
+
 
 The software package IFDIFF comprises:
 
-- **Automatic detection and processing** of state-dependent switching events in ODE IVPs
+- **Automatic detection and processing** of state-dependent switching events in ODE IVP
 - **Automatic generation** of only the necessary **switching functions** (exported as MATLAB code)
-- Accurate switching point detection up to machine precision
+- **Accurate switching point detection** up to machine precision
 - Detection and handling of **Filippov sliding mode**
-- ODEs with state-jumps and model switches
-- **Sensitivity generation** for switched ODEs, ODEs with state-jumps and Filippov ODEs
+- ODE and DAE with **state-jumps** and **model switches**
+- **Sensitivity generation** for switched ODE/DAE, ODE/DAE with state-jumps and Filippov ODE
 
 Sensitivities can be generated w.r.t. the initial values and w.r.t. a given parameter set.
 
-For a mathematical introduction and illustrative examples, see the  
-[IFDIFF project page](https://andreassommer.github.io/ifdiff/).
+For a mathematical introduction and illustrative examples,
+see the **[IFDIFF project page](https://andreassommer.github.io/ifdiff/)**.
 
-A compact, self-explanatory MATLAB example is provided in this file. ([`Readme_Example.m`](./toolbox/examples/Readme_Example.m))
+A compact, self-explanatory MATLAB example is provided in this file:
+[`Readme_Example.m`](./toolbox/examples/Readme_Example.m)
+
+
 
 ## Installation
 
-There are two ways to install IFDIFF locally. Alternatively, you may use IFDIFF without any local installation in the cloud-based "MATLAB Online" environment. In that case, press the "Open in MATLAB Online" button below to import the IFDIFF repository in MATLAB Online.
+While we recommend to install IFDIFF locally to your computer (instructions below), you can also
+try online in the cloud-based "MATLAB Online" environment: 
+[Open in MATLAB Online](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
 
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
-
-### Install Toolbox (Recommended)
+### Install Toolbox To Your Computer (Recommended)
 
 1. Download the IFDIFF toolbox file (`IFDIFF_Toolbox_vXXX.mltbx`) from the [releases page](https://github.com/andreassommer/ifdiff/releases/latest).
 2. Open MATLAB and navigate to the directory containing the toolbox file.
@@ -57,6 +62,8 @@ You can also open the guide manually:
 2. Clone the repository `git clone https://github.com/andreassommer/ifdiff.git`.
 3. Open MATLAB and navigate to the cloned `ifdiff` directory.
 4. For a practical introduction to IFDIFF, open the Getting Started Guide (`GettingStarted.mlx`) in MATLAB. You can find the guide in the subfolder `toolbox/doc` contained in the cloned `ifdiff` directory.
+
+
 
 ## Usage
 
