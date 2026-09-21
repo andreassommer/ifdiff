@@ -1,34 +1,38 @@
-function CI = computeCI(param, res, J)
-%COMPUTECI computes the confidence level 95% confidence intervals in White Cabbage PE
-%   param - parameter vector (of optimized parameters)
-% 	res   - residual function
-%   J     - Jacobian
+function CI = computeCI(p, res, J, varargin)
+% CI = computeCI(p, res, J, varargin)
+% computes the confidence confidence intervals in the parameter
+% estimation problem in runCabbage.m
+%   INPUT: p        - parameter vector (of optimized parameters)
+% 	       res      - residual (from lsqnonlin solve)
+%          J        - Jacobian
+%          varargin - optional specification of significance level; 
+%                    'alpha' - parameter in (0,1)
 
-np = numel(param);
+default_alpha = 0.05; % for 95% CI
+alpha = olGetOption(varargin, 'alpha', default_alpha);
+
+np = numel(p);
 nr = numel(res);
 dof = nr - np;
+res_variance = sum(res.^2)/dof;
 
 % Approximation when a column is zero vector
-temp = find(max(abs(J)) == 0);
-if ~isempty(temp)
-    J(:,temp) = sqrt(eps(class(J)));
+index = find(max(abs(J)) == 0);
+if ~isempty(index)
+    J(:,index) = 1e-8;
 end
 
-% QR factorization for J and computation of
-% parameter covariance matrix
-[~,R] = qr(J,0);
-Rinv = R \ eye(size(R));
-diag_info = sum(Rinv.*Rinv, 2);
-rmse = norm(res)/sqrt(dof);
+% computation of parameter covariance matrix by QR factorization
+[~, R] = qr(J, 0);
+Cov_p = res_variance * inv(R) * transpose(inv(R));
 
-% critical t-value
-% we use alpha = 0.05
-% and hence tcrit = 1-alpha/2 = 0.975
-tcrit = tInv(0.975, dof);
+% critical t-value at 1-alpha/2
+t_crit = tInv(alpha, dof);
 
 % standard error
-SE = sqrt(diag_info)*rmse;
+std_errors = sqrt(diag(Cov_p));
+margin = t_crit * std_errors;
 
-CI = [param - tcrit*SE, param + tcrit*SE];
+CI = [p - margin, p + margin];
 
 end

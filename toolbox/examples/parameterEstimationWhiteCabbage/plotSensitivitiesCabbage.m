@@ -1,8 +1,13 @@
 %% Solution ifdiff
 
 integrator = @ode45;
+<<<<<<< HEAD
 odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-6);
 datahandle    = prepareDatahandleForIntegration('rhsCabbage', 'integrator', func2str(integrator), 'options', odeoptionsrhs_test);
+=======
+odeoptionsrhs_test = odeset( 'AbsTol', 1e-14,'RelTol', 1e-12);
+datahandle    = prepareDatahandleForIntegration('rhsCabbage', 'integrator', integrator, 'options', odeoptionsrhs_test);
+>>>>>>> 3ce4bb0 (Refactor computeCI and tInv for confidence intervals in runCabbage)
 
 tspan         = [0 118];
 initialvalues = [2.48252;0;0];

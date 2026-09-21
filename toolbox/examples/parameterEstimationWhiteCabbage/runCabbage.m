@@ -45,7 +45,7 @@ param_opt
 %% Joint confidence intervals
 % if Statistics&ML toolbox is installed, use nlparci instead of helper:
 % CI = nlparci(param_opt,residual,'jacobian',jacobian);
-CI = computeCI(param_opt, residual, jacobian);
+CI = computeCI(param_opt, residual, jacobian, 'alpha', 0.05);
 
 %% Solution with estimated parameters
 initialvalues_opt = param_opt(10:12);
