@@ -7,15 +7,15 @@ function t_crit = tInv(alpha, dof)
 % OUTPUT: 
 %        t_crit - critical t-value
 
-% confidence level (e.g. 0.975 if alpha = 0.05)
+% two sided confidence level (e.g. 0.975 if alpha = 0.05)
 conf_level = 1 - 0.5*alpha;
 
-% Input validation
+% input validation
 if dof <= 0
     error('Degrees of freedom must be positive');
 end
 if conf_level < 0 || conf_level > 1
-    error('Cutoff must be in (0, 1)');
+    error('Confidence level must be in (0,1)');
 end
 
 % at mid-point
@@ -25,7 +25,7 @@ if abs(conf_level - 0.5) < tol
     return;
 end
 
-% Computation for negative t
+% computation for negative t (due to point symmetry of CDF)
 if conf_level < 0.5
     sign_t = -1;
     conf_level_pos = 1 - conf_level;
@@ -34,22 +34,14 @@ else
     conf_level_pos = conf_level;
 end
 
-
-%%
+% determine t_crit
 % CDF(t) = 1 - 0.5*betainc(dof/(dof+t^2), dof/2, 0.5)
 % Solve: CDF(t) = conf_level_pos
 
-objFunc = @(t) 1 - 0.5*betainc(dof./(dof + t.^2), dof/2, 0.5) - conf_level_pos;
+objFunc = @(t) 1 - 0.5*betainc(dof/(dof + t^2), dof/2, 0.5) - conf_level_pos;
 
-t_upper = 1;
-while objFunc(t_upper) < 0
-    t_upper = t_upper * 2;
-    if t_upper > 1e5
-        error('Failed to bracket root for tInv; conf_level might be too close to 1');
-    end
-end
-
-t_pos = fzero(objFunc, [0, t_upper]);
+options = optimoptions('fsolve', 'TolFun', 1e-10, 'Display', 'off');
+t_pos = fsolve(objFunc, 1, options);
 t_crit = sign_t * t_pos;
 
 end
