@@ -33,7 +33,7 @@ method = 'VDE';
 residual_function = generateResidualFunction(t, datahandle, sol, measurements, tspan, parameters_ODE, @rhsCabbage, FDstep, integrator_residual, method);
 
 %% Parameter estimation
-options = optimoptions('lsqnonlin','SpecifyObjectiveGradient',true, 'Algorithm','levenberg-marquardt', 'Display', 'iter', 'DerivativeCheck', 'off', 'typicalX', [parameters_ODE;1;1;1]);%, 'TolX', 1e-14, 'TolFun', 1e-14);
+options = optimoptions('lsqnonlin','SpecifyObjectiveGradient',true, 'Algorithm','levenberg-marquardt', 'Display', 'iter', 'typicalX', [parameters_ODE;1;1;1]);%, 'TolX', 1e-14, 'TolFun', 1e-14);
 parameters_init = [1.2*parameters_ODE; measurements(1:dim_y)];
 tic;
 [param_opt,resnorm,residual,exitflag,output,lambda,jacobian] = lsqnonlin(residual_function, parameters_init, [], [], options);
@@ -45,7 +45,7 @@ param_opt
 %% Joint confidence intervals
 % if Statistics&ML toolbox is installed, use nlparci instead of helper:
 % CI = nlparci(param_opt,residual,'jacobian',jacobian);
-CI = computeCI(param_opt, residual, jacobian, 'alpha', 0.05);
+CI = computeCI(param_opt, residual, jacobian, 0.05);
 
 %% Solution with estimated parameters
 initialvalues_opt = param_opt(10:12);

@@ -96,13 +96,14 @@ classdef IFDIFFSensitivity < handle
             this.dimp = length(this.parameters);
 
             this.tspan = data.SWP_detection.tspan;
-            this.switches = sort(solution.switches);
+            this.switches = solution.switches;
 
-            if isempty(this.switches)
-               this.ySwitch = deval(solution, this.tspan(end));
-            else 
-               this.ySwitch = deval(solution, this.switches);
+            % Cannot use deval for empty timepoints on MATLAB version older than R2026a
+            this.ySwitch = [];
+            if ~isempty(this.switches)
+                this.ySwitch = deval(solution, this.switches);
             end
+
             this.ySwitchLeft = this.ySwitch;
             % Use left limit of switch to get state before the jump.
             if any(solution.jumps)
