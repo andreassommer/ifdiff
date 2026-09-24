@@ -2,8 +2,6 @@
 
 <img src="images/ifdiff-logo-square.webp" alt="IFDIFF Logo" style="width: 500px; height: auto;">
 
-
-
 The software package IFDIFF comprises:
 
 - **Automatic detection and processing** of state-dependent switching events in ODE IVP
@@ -21,12 +19,10 @@ see the **[IFDIFF project page](https://andreassommer.github.io/ifdiff/)**.
 A compact, self-explanatory MATLAB example is provided in this file:
 [`Readme_Example.m`](./toolbox/examples/Readme_Example.m)
 
-
-
 ## Installation
 
 While we recommend to install IFDIFF locally to your computer (instructions below), you can also
-try online in the cloud-based "MATLAB Online" environment: 
+try online in the cloud-based "MATLAB Online" environment:
 [Open in MATLAB Online](https://matlab.mathworks.com/open/github/v1?repo=andreassommer/ifdiff&file=toolbox/doc/GettingStarted.mlx)
 
 ### Install Toolbox To Your Computer (Recommended)
@@ -63,13 +59,11 @@ You can also open the guide manually:
 3. Open MATLAB and navigate to the cloned `ifdiff` directory.
 4. For a practical introduction to IFDIFF, open the Getting Started Guide (`GettingStarted.mlx`) in MATLAB. You can find the guide in the subfolder `toolbox/doc` contained in the cloned `ifdiff` directory.
 
-
-
 ## Usage
 
 For a step-by-step usage example and background explanation, see the [IFDIFF  project page](https://andreassommer.github.io/ifdiff/).
 
-Afterwards, you can check out the Getting Started Guide in MATLAB for a hands-on walkthrough on how to use IFDIFF. If you have trouble finding the Getting Started Guide, please refer to the last step of the [installation section](#installation) for [toolbox installations](#install-toolbox-recommended) or [full repository installations](#install-full-repository-alternative) (whichever applies in your case).
+Afterwards, you can check out the Getting Started Guide in MATLAB for a hands-on walkthrough on how to use IFDIFF. If you have trouble finding the Getting Started Guide, please refer to the last step of the [installation section](#installation) for [toolbox installations](#install-toolbox-to-your-computer-recommended) or [full repository installations](#install-full-repository-alternative) (whichever applies in your case).
 
 ### Prerequisites
 
