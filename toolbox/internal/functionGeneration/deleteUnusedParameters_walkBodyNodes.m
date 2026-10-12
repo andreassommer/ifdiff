@@ -17,14 +17,14 @@ while lastNextNode ~= trueParent
     switch lastNextNodeKind
         case mtreeobj.K.EXPR
             if mtreeobj.T(leftChild, cIndex.kindOfNode) == mtreeobj.K.EQUALS
-                % Check if there are calls to white-listed functions
+                % Check if there are calls to ignored functions
                 assignmentRhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexRightchild)));
                 assignmentRhsId = mtree_mtfind(assignmentRhs, 'Kind', assignmentRhs.K.ID);
                 assignmentRhsIdStr = mtreeobj.C(mtreeobj.T(assignmentRhsId, cIndex.stringTableIndex));
-                hasWhitelistedCall = any(ismember(assignmentRhsIdStr, config.codeSimplificationFunctionWhitelist));
+                hasIgnoredCall = any(ismember(assignmentRhsIdStr, config.functionIgnoreList));
 
                 hasAssignment = false;
-                if ~hasWhitelistedCall
+                if ~hasIgnoredCall
                     % Check if LHS assigns variables that contribute to output
                     assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
                     assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
@@ -33,7 +33,7 @@ while lastNextNode ~= trueParent
                 end
 
                 % Add RHS variables to contributing ID list if expression should be kept, delete otherwise.
-                if hasWhitelistedCall || hasAssignment
+                if hasIgnoredCall || hasAssignment
                     idStringArray = union(idStringArray, assignmentRhsIdStr);
                 else
                     mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
@@ -42,8 +42,8 @@ while lastNextNode ~= trueParent
                 % Function call which does not assign outputs
                 funcNameNode = mtreeobj.T(leftChild, cIndex.indexLeftchild);
                 funcName = mtreeobj.C{mtreeobj.T(funcNameNode, cIndex.stringTableIndex)};
-                % Keep functions if white-listed, delete otherwise
-                if ismember(funcName, config.codeSimplificationFunctionWhitelist)
+                % Keep function call if explicitly ignored, remove otherwise
+                if ismember(funcName, config.functionIgnoreList)
                     callSubtree = mtreeobj.select(leftChild).subtree;
                     callSubtreeIdIndex = mtree_mtfind(callSubtree, 'Kind', mtreeobj.K.ID);
                     callSubtreeIdString = mtreeobj.C(mtreeobj.T(callSubtreeIdIndex, cIndex.stringTableIndex));
