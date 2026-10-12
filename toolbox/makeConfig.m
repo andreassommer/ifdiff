@@ -53,6 +53,10 @@ config.switchingPointErrorThreshold = 1e-2;
 % Chunk size used for preallocation when updating the signature in a ctrlif to avoid frequent resizing of arrays.
 config.ctrlif_signaturePreallocationChunkSize = 30;
 
+% Functions whose calls are always kept in generated simplified switching/jump function code,
+% even if they don't directly contribute to the output value.
+config.codeSimplificationFunctionWhitelist = {'disp', 'fprintf', 'keyboard'};
+
 
 % ============================= NAMING and INTERNALS =============================
 % WARNING: Do NOT touch if you don't know what you're doing!

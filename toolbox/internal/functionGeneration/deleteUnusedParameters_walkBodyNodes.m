@@ -17,38 +17,39 @@ while lastNextNode ~= trueParent
     switch lastNextNodeKind
         case mtreeobj.K.EXPR
             if mtreeobj.T(leftChild, cIndex.kindOfNode) == mtreeobj.K.EQUALS
-                assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
-                assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
+                % Check if there are calls to white-listed functions
+                assignmentRhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexRightchild)));
+                assignmentRhsId = mtree_mtfind(assignmentRhs, 'Kind', assignmentRhs.K.ID);
+                assignmentRhsIdStr = mtreeobj.C(mtreeobj.T(assignmentRhsId, cIndex.stringTableIndex));
+                hasWhitelistedCall = any(ismember(assignmentRhsIdStr, config.codeSimplificationFunctionWhitelist));
 
-                % checking if any of the assigned variables are in our idStringArray of the IDs that contribute
-                % to setting the return value
-                if any(ismember(mtreeobj.C(mtreeobj.T(assignedVars, cIndex.stringTableIndex)), idStringArray))
-                    % ... if it is, then we add all variables that appear in its RHS to idStringArray
-                    assignmentRhs = subtree(select( ...
-                        mtreeobj, ...
-                        mtreeobj.T(mtreeobj.T(lastNextNode, cIndex.indexLeftchild), cIndex.indexRightchild)) ...
-                        );
-                    subIdIndexList = mtree_mtfind(assignmentRhs, 'Kind', assignmentRhs.K.ID);
-                    newIDArray = mtreeobj.C(mtreeobj.T(subIdIndexList, cIndex.stringTableIndex));
-                    newIDArray(~ismember(newIDArray, idStringArray));
-                    idStringArray = vertcat(idStringArray, newIDArray);
+                hasAssignment = false;
+                if ~hasWhitelistedCall
+                    % Check if LHS assigns variables that contribute to output
+                    assignmentLhs = subtree(select(mtreeobj, mtreeobj.T(leftChild, cIndex.indexLeftchild)));
+                    assignedVars = mtree_mtfind(assignmentLhs, 'Kind', assignmentLhs.K.ID);
+                    assignedVarsStr = mtreeobj.C(mtreeobj.T(assignedVars, cIndex.stringTableIndex));
+                    hasAssignment = any(ismember(assignedVarsStr, idStringArray));
+                end
+
+                % Add RHS variables to contributing ID list if expression should be kept, delete otherwise.
+                if hasWhitelistedCall || hasAssignment
+                    idStringArray = union(idStringArray, assignmentRhsIdStr);
                 else
-                    % ... and if not, we delete this assignment statement:
                     mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
                 end
             elseif mtreeobj.T(leftChild, cIndex.kindOfNode) == mtreeobj.K.CALL
-                % remove jump statements
+                % Function call which does not assign outputs
                 funcNameNode = mtreeobj.T(leftChild, cIndex.indexLeftchild);
                 funcName = mtreeobj.C{mtreeobj.T(funcNameNode, cIndex.stringTableIndex)};
-                if strcmp(funcName, config.jump.internalFunction)
-                    mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
-                else
-                    % Some other function call which probably has side effects (e.g. disp), since there are no outputs.
-                    % Keep function call and add any ids to the list.
+                % Keep functions if white-listed, delete otherwise
+                if ismember(funcName, config.codeSimplificationFunctionWhitelist)
                     callSubtree = mtreeobj.select(leftChild).subtree;
                     callSubtreeIdIndex = mtree_mtfind(callSubtree, 'Kind', mtreeobj.K.ID);
                     callSubtreeIdString = mtreeobj.C(mtreeobj.T(callSubtreeIdIndex, cIndex.stringTableIndex));
                     idStringArray = union(idStringArray, callSubtreeIdString);
+                else
+                    mtreeobj = mtree_deleteBodyNode(mtreeobj, lastNextNode);
                 end
             else
                 % unknown expression type, best not mess with it
