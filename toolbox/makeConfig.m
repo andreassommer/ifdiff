@@ -44,6 +44,9 @@ config.autoRemoveOutdatedFunctionFiles = true;
 % This should significantly speed-up sensitivity computations in most cases.
 config.removeCtrlifForSensComputation = true;
 
+% Functions which should never be preprocessed/modified by IFDIFF.
+config.functionIgnoreList = {'disp', 'fprintf', 'keyboard'};
+
 % Largest power of ten which is added to the switching time when searching for a new signature.
 config.switchingPointMaxPower = 13;
 

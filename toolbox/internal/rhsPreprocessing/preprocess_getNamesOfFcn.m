@@ -1,34 +1,32 @@
-function [fnames, rhs_path] =  preprocess_getNamesOfFcn(rhs_name)
-% Function to get all names of function that are used in the function in rhs_name.
-% INPUT: rhs_name, name of a function
-% OUTPUT: fnames, cellstring of helper functions' names (does not include rhs_name itself);
-% rhs_path: path of rhs_name
+function [helperFunctions, rhsPath] =  preprocess_getNamesOfFcn(rhsName)
+%preprocess_getNamesOfFcn - Get names of helper functions and RHS path
+%
+%    Syntax
+%      [helperFunctions, rhsPath] =  preprocess_getNamesOfFcn(rhsName)
+%
+%    Input Arguments
+%      rhsName - Name of the RHS function
+%        char array
+%
+%    Output Arguments
+%      helperFunctions - Contains helper function names in first row
+%        4-by-n cell array of char array
+%      rhsPath - Filepath to the directory containing the RHS function file
+%        char array
 
+config = makeConfig();
 
-% get list of all paths that are required when rhs_name.m is executed
-fList = matlab.codetools.requiredFilesAndProducts([rhs_name, '.m']);
+% Get list of all files required to run the RHS.
+fList = matlab.codetools.requiredFilesAndProducts([rhsName, '.m']);
+[paths, names] = fileparts(fList);
 
-
-% check if there are any helper functions
-l = length(fList);
-fnames = cell(4,l-1);
-if l == 1
-    % there is only the RHS. We need its path, but fnames is only for helper functions, so it stays empty
-    fnames = cell(4, 0);
-end
-
-i = 1; 
-for k = 1:l
-    [a, z, ~] = fileparts(fList{k});
-
-    % if the function is the original rhs_name, save its path, which we will need later. If it is
-    % a different function, save it in fnames.
-    condition = ~strcmp( z, rhs_name);
-    if condition
-        fnames{1,i} = z;
-        i = i + 1; 
-    else
-        rhs_path = a;
-    end
-end
+% Get RHS path.
+idxRhs = strcmp(rhsName, names);
+rhsPath = paths{idxRhs};
+% Remove RHS and any explicitly ignored functions from helper function list.
+idxIgnored = ismember(names, config.functionIgnoreList);
+helperNames = names(~idxRhs & ~idxIgnored);
+% Output array should have 4 rows, first row are the names.
+helperFunctions = cell(4, length(helperNames));
+helperFunctions(1, :) = helperNames;
 end
