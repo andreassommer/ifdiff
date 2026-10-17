@@ -92,5 +92,18 @@ classdef TestSolveODE < matlab.unittest.TestCase
             % Check switching times
             testCase.verifyEqual(sol.switches, switchTrue, 'AbsTol', atol, 'RelTol', rtol);
         end
+        
+        function testStartInSwitchingPoint(testCase)
+            options = odeset('AbsTol', 1e-8, 'RelTol', 1e-6);
+            p = 0;
+            tEnd = 5;
+            tspan = [0 tEnd];
+            x0 = [0; 1; 0];
+            
+            datahandle = prepareDatahandleForIntegration(@rhsStartInSwitchingPoint, 'integrator', @ode45, 'options', options);
+            testCase.verifyError(@() solveODE(datahandle, tspan, x0, p), ...
+                                'solveODE_firstTime:StartInSwitchingPoint')
+        end
+
     end
 end
