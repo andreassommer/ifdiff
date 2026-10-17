@@ -45,11 +45,20 @@ while nIntegrationSteps <= 2
 
     % caution: .optionsForcedBranching contains analyseSignature(...,datahandle).
     % switching point detection magic is done in analyseSignature(...,datahandle).
+    
+     if data.integratorSettings.optionsForcedBranching.InitialStep == 0
+     error(['The initial condition lies on a switching surface ', ...
+            '(sigma(t0,x0,p) = 0). Please modify the initial condition ', ...
+            'or the right-hand side file to avoid a zero of the ', ...
+            'switching function at t0.'])
+     end
+
     z = data.integratorSettings.numericIntegrator(...
         @(t, y) data.integratorSettings.preprocessed_rhs(datahandle, t, y, data.SWP_detection.parameters), ...
         data.SWP_detection.tspan,...
         data.SWP_detection.initialvalues, ...
         data.integratorSettings.optionsForcedBranching);
+
 
     data = datahandle.getData();
     data.SWP_detection.solution_until_t3 = z;
@@ -58,7 +67,10 @@ while nIntegrationSteps <= 2
 
     % reduce max step size if number of timepoints not high enough
     if nIntegrationSteps <= 2
-
+        % falls Initial Step == 0 error ausgeben, sonst halbierung
+        % weitermachen
+        % Test weitermachen
+        % bessere kommentare schreiben
         data.integratorSettings.optionsForcedBranching.InitialStep = data.integratorSettings.optionsForcedBranching.InitialStep/2;
         %warning('First integration step contains switch. odeextend would fail, reduce step size only for first integration step')
     end
