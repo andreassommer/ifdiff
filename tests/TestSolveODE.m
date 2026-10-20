@@ -104,6 +104,5 @@ classdef TestSolveODE < matlab.unittest.TestCase
             testCase.verifyError(@() solveODE(datahandle, tspan, x0, p), ...
                                 'solveODE_firstTime:StartInSwitchingPoint')
         end
-
     end
 end
