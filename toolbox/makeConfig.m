@@ -151,5 +151,9 @@ config.last_point_strategy.enabled = true;  % or false
 config.last_point_strategy.is_compatible_solver = @(solver) ismember(solver, {'ode23', 'ode45', 'ode78', 'ode89', 'ode113'});
 config.last_point_strategy.is_active = @(solver) config.last_point_strategy.enabled && config.last_point_strategy.is_compatible_solver(solver);
 
+% smallest first integrator step that is allowed to be taken before throwing an error (due to
+% start in a switching point)
+config.smallest_first_step = 1e-10;
+
 config_out = config;
 end
