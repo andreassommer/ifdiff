@@ -59,7 +59,6 @@ while nIntegrationSteps <= 2
         data.SWP_detection.initialvalues, ...
         data.integratorSettings.optionsForcedBranching);
 
-
     data = datahandle.getData();
     data.SWP_detection.solution_until_t3 = z;
 
