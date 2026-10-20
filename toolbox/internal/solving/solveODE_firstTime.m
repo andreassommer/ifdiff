@@ -42,9 +42,9 @@ while nIntegrationSteps <= 2
     % getData since the ode options may have been changed.
     data = datahandle.getData();
 
-    % throw an error if integration starts at a switch (if no first
-    % integration step can be taken before switching detection)
-    if data.integratorSettings.optionsForcedBranching.InitialStep <= (config.smallest_first_step)*abs(data.SWP_detection.tspan(end)-data.SWP_detection(1))
+    % throw an error if integration starts at a switch (i.e., if no first
+    % integration step can be taken before switch is detected)
+    if data.integratorSettings.optionsForcedBranching.InitialStep <= config.smallest_first_step*abs(data.SWP_detection.tspan(2)-data.SWP_detection.tspan(1));
         error('solveODE_firstTime:StartInSwitchingPoint', ... 
              ['The initial condition lies on a switching surface ', ...
               '(sigma(t0,x0,p) = 0). Please modify the initial condition ', ...
@@ -86,4 +86,4 @@ firstModelSignature = BranchingSignature( ...
 data.SWP_detection.signature{1} = firstModelSignature;
 
 datahandle.setData(data);
-end % first integraion round done, if no switch occured, .t3 = tspan(2)
+end % first integration round done, if no switch occured, .t3 = tspan(2)
