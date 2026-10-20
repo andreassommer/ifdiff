@@ -42,7 +42,7 @@ while nIntegrationSteps <= 2
     % getData since the ode options may have been changed.
     data = datahandle.getData();
 
-    % throw an error if integration starts exactly at a switch (if no first
+    % throw an error if integration starts at a switch (if no first
     % integration step can be taken before switching detection)
     if data.integratorSettings.optionsForcedBranching.InitialStep <= (config.smallest_first_step)/length(data.SWP_detection.tspan)
         error('solveODE_firstTime:StartInSwitchingPoint', ... 
@@ -67,10 +67,6 @@ while nIntegrationSteps <= 2
 
     % reduce max step size if number of timepoints not high enough
     if nIntegrationSteps <= 2
-        % falls Initial Step == 0 error ausgeben, sonst halbierung
-        % weitermachen
-        % Test weitermachen
-        % bessere kommentare schreiben
         data.integratorSettings.optionsForcedBranching.InitialStep = data.integratorSettings.optionsForcedBranching.InitialStep/2;
         %warning('First integration step contains switch. odeextend would fail, reduce step size only for first integration step')
     end
