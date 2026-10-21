@@ -47,5 +47,20 @@ classdef TestPreprocessing < matlab.unittest.TestCase
             testCase.verifyNotEmpty(output);
             testCase.verifyEqual(deval(sol, tspan(end)), 1, 'AbsTol', 1e-14)
         end
+
+        function testNestedFunctions(testCase)
+            % RHS containing a nested function without switches, which reads a variable of the enclosing function.
+            % The nested function should be kept in switching functions without any warnings.
+
+            tspan = [0, 2];
+            y0 = 0;
+            p = 1;
+
+            datahandle = prepareDatahandleForIntegration(@testPreprocessingNestedFcn);
+            sol = testCase.verifyWarningFree(@() solveODE(datahandle, tspan, y0, p));
+
+            testCase.verifyEqual(sol.switches, p(1), 'AbsTol', 1e-8);
+            testCase.verifyEqual(deval(sol, tspan(end)), p(1) + 2*(tspan(end) - p(1)), 'AbsTol', 1e-8);
+        end
     end
 end
