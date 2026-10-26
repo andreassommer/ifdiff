@@ -8,24 +8,18 @@ function mtreeobj = deleteUnusedParameters(mtreeobj)
 % manipulated before). If you do have a manipulated mtree, you can re-sort it by calling
 % `mtreeobj = mtreeplus(mtreeobj.tree2str)`
 
-cIndex = mtree_cIndex();
+% Nested functions share the workspace of the enclosing function, so they may read and write variables which are not
+% passed as arguments or returned. Reliably telling which arguments are used and which are not is possible but tedious
+% with a lot of brittle mtree logic. Therefore keep everything if there is a nested function. 
+% Local and external functions are not affected.
+if ~isempty(mtree_getNestedFunctions(mtreeobj))
+    return
+end
+
 rIndex = struct('HEAD', struct(), 'BODY', struct());
 rIndex.HEAD = mtree_rIndex_head(mtreeobj, rIndex.HEAD);
 
 output_variables = mtree_getOutputNames(mtreeobj, rIndex);
-
-% Nested functions share the workspace of the enclosing function, so they may read variables which are not passed
-% as arguments. Since we walk backwards, assignments to such variables would be deleted before we reach the
-% definition of the nested function. Thus, conservatively mark all IDs occurring in nested functions as relevant.
-% Note: Local functions are not part of the subtree of the main function and therefore not affected.
-mainFunctionTree = Tree(select(mtreeobj, rIndex.HEAD.FUNCTION));
-nestedFunctions = mtree_mtfind(mainFunctionTree, 'Kind', mtreeobj.K.FUNCTION);
-nestedFunctions = nestedFunctions(nestedFunctions ~= rIndex.HEAD.FUNCTION);
-for i = 1:length(nestedFunctions)
-    nestedFunctionTree = Tree(select(mtreeobj, nestedFunctions(i)));
-    nestedIds = mtree_mtfind(nestedFunctionTree, 'Kind', mtreeobj.K.ID);
-    output_variables = union(output_variables, mtreeobj.C(mtreeobj.T(nestedIds, cIndex.stringTableIndex)));
-end
 
 % Get the last body node (i.e. last top-level statement excluding nested function definitions)
 rIndex.BODY = mtree_rIndex_lastNextNodeOfBody(mtreeobj, rIndex.BODY, rIndex.HEAD.BODY);

@@ -101,9 +101,6 @@ while lastNextNode ~= trueParent
             newIDArray = mtreeobj.C{mtreeobj.T(subIdIndexList, cIndex.stringTableIndex)};
             newIDArray = newIDArray(~ismember(newIDArray, idStringArray));
             idStringArray = vertcat(idStringArray, newIDArray);
-        case mtreeobj.K.FUNCTION
-            % Nested function definition: always keep it, since it may be called by statements which are kept.
-            % The IDs used within nested functions have already been marked as relevant in deleteUnusedParameters.
         otherwise
             warning('deleteUnusedParameters_walkBodyNodes: found unknown node type %s', mtreeobj.KK{lastNextNodeKind});
     end
