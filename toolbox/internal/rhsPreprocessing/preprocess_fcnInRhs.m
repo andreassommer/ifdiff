@@ -19,6 +19,8 @@ occursUnignored              = zeros(1, l);
 for i = 1:l
     
     mtree_fcn = mtreeplus([preprocessed.fcn{1,i}, '.m'], '-file', '-comments');
+    % Warn about nested functions while the mtree is still unmodified.
+    preprocess_warnNestedFunctions(mtree_fcn, preprocessed.fcn{1,i});
     % First, replace elseif by else-if
     mtree_fcn = mtree_replaceElseif(mtree_fcn);
     fcn{4,i} = [mtree_getIgnoredIfs(mtree_fcn), mtree_getJumpUpdateIgnores(mtree_fcn)];
