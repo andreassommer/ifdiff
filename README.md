@@ -65,6 +65,8 @@ For a step-by-step usage example and background explanation, see the [IFDIFF  pr
 
 Afterwards, you can check out the Getting Started Guide in MATLAB for a hands-on walkthrough on how to use IFDIFF. If you have trouble finding the Getting Started Guide, please refer to the last step of the [installation section](#installation) for [toolbox installations](#install-toolbox-to-your-computer-recommended) or [full repository installations](#install-full-repository-alternative) (whichever applies in your case).
 
+Before writing your own RHS functions, please have a look at the [hints and caveats](./toolbox/doc/HintsAndCaveats.md) on using IFDIFF, e.g. regarding nested functions.
+
 ### Prerequisites
 
 #### One-Time Setup (required for all installation types)
