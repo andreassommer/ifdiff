@@ -7,8 +7,7 @@
 IFDIFF generally supports [nested functions] (https://www.mathworks.com/help/matlab/matlab_prog/nested-functions.html) in RHS files or functions called by an 
 RHS under the sole condition that those **do not contain any switches** (no `if`, `abs`, `sign`, `min`, `max`, `ifdiff_jumpif`, etc.).
 
-If switching logic is necessary, write the nested function as a local function 
-(i.e. functions defined after the `end` of the main function in the same file) or as a separate function file (recommended).
+If switching logic is necessary, write the nested function in a separate function file (recommended).
 
 ```MATLAB
 function dx = rhs(t, x, p)
