@@ -42,15 +42,6 @@ while nIntegrationSteps <= 2
     % getData since the ode options may have been changed.
     data = datahandle.getData();
 
-    % throw an error if integration starts at a switch (i.e., if no first
-    % integration step can be taken before switch is detected)
-    if data.integratorSettings.optionsForcedBranching.InitialStep <= config.smallest_first_step*abs(data.SWP_detection.tspan(2)-data.SWP_detection.tspan(1))
-        error('solveODE_firstTime:StartInSwitchingPoint', ... 
-             ['The initial condition lies on a switching surface ', ...
-              '(sigma(t0,x0,p) = 0). Please modify the initial condition ', ...
-              'or the right-hand side file to avoid this situation.'])
-    end
-
     % caution: .optionsForcedBranching contains analyseSignature(...,datahandle).
     % switching point detection magic is done in analyseSignature(...,datahandle).
     z = data.integratorSettings.numericIntegrator(...
@@ -58,6 +49,16 @@ while nIntegrationSteps <= 2
         data.SWP_detection.tspan,...
         data.SWP_detection.initialvalues, ...
         data.integratorSettings.optionsForcedBranching);
+
+    % throw an error if integration starts at a switch (i.e., if no first
+    % integration step can be taken before switch is detected)
+    if data.integratorSettings.optionsForcedBranching.InitialStep <= config.smallest_first_step*abs(data.SWP_detection.tspan(2)-data.SWP_detection.tspan(1))
+
+        error('solveODE_firstTime:StartInSwitchingPoint', ... 
+             ['The initial condition lies on a switching surface ', ...
+              '(sigma(t0,x0,p) = 0). Please modify the initial condition ', ...
+              'or the right-hand side file to avoid this situation.'])
+    end
 
     data = datahandle.getData();
     data.SWP_detection.solution_until_t3 = z;
