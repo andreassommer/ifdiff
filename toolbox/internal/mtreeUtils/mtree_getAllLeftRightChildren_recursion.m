@@ -21,7 +21,7 @@ for i = 1:length(childs)
 
     if ~any(childs_new(:))
         % stop function when node has no childs at all
-        return
+        continue
     end 
     % set active set for childs
     set = childs_new(childs_new ~= 0); 
