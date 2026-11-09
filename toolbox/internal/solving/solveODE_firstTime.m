@@ -50,16 +50,6 @@ while nIntegrationSteps <= 2
         data.SWP_detection.initialvalues, ...
         data.integratorSettings.optionsForcedBranching);
 
-    % throw an error if integration starts at a switch (i.e., if no first
-    % integration step can be taken before switch is detected)
-    if data.integratorSettings.optionsForcedBranching.InitialStep <= config.smallest_first_step*abs(data.SWP_detection.tspan(2)-data.SWP_detection.tspan(1))
-
-        error('solveODE_firstTime:StartInSwitchingPoint', ... 
-             ['The initial condition lies on a switching surface ', ...
-              '(sigma(t0,x0,p) = 0). Please modify the initial condition ', ...
-              'or the right-hand side file to avoid this situation.'])
-    end
-
     data = datahandle.getData();
     data.SWP_detection.solution_until_t3 = z;
 
@@ -68,7 +58,16 @@ while nIntegrationSteps <= 2
     % reduce max step size if number of timepoints not high enough
     if nIntegrationSteps <= 2
         data.integratorSettings.optionsForcedBranching.InitialStep = data.integratorSettings.optionsForcedBranching.InitialStep/2;
-        %warning('First integration step contains switch. odeextend would fail, reduce step size only for first integration step')
+        % throw an error if integration starts at a switch (i.e., if no first
+        % integration step can be taken before switch is detected)
+        if data.integratorSettings.optionsForcedBranching.InitialStep <= config.smallest_first_step*abs(data.SWP_detection.tspan(2)-data.SWP_detection.tspan(1))
+            datahandle.setData(data);
+            error('solveODE_firstTime:StartInSwitchingPoint', ... 
+                 ['Entry/entries %s of the initial condition x0 = %s lie(s) on a switching surface ', ...
+                  '(i.e. sigma(t0,x0,p) = 0). Please modify the initial condition ', ...
+                  'or the right-hand side file to avoid this situation.'], ...
+                  mat2str(data.SWP_detection.switchingIndices), mat2str(data.SWP_detection.initialvalues));
+        end
     end
 
     % save new MaxStep size to datahandle.
