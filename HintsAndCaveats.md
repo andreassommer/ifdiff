@@ -4,8 +4,7 @@
 
 ### Usage Conditions
 
-**Do not** use [nested functions] 
-(https://www.mathworks.com/help/matlab/matlab_prog/nested-functions.html) 
+**Do not** use [nested functions](https://www.mathworks.com/help/matlab/matlab_prog/nested-functions.html) 
 in IFDIFF, if they or functions called by them contain any switches 
 (no `if`, `abs`, `sign`, `min`, `max`, `ifdiff_jumpif`, etc.).
 
@@ -45,3 +44,14 @@ end
   a separate function file
 - You can use empty nested functions to prevent IFDIFFs function optimization 
   for the purpose of **debugging**.
+
+## Global Variables
+
+IFDIFF does **not** explicitly **support** [global variables](https://www.mathworks.com/help/matlab/ref/global.html).
+Using them in a RHS or in functions called by it is **at your own risk**.
+When preprocessing a RHS (or a helper function) declaring global variables,
+IFDIFF issues the warning `IFDIFF:Preprocessing:GlobalVariable`.
+You can turn it off with
+```MATLAB
+warning('off', 'IFDIFF:Preprocessing:GlobalVariable')
+```
