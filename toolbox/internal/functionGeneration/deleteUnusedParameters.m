@@ -8,6 +8,14 @@ function mtreeobj = deleteUnusedParameters(mtreeobj)
 % manipulated before). If you do have a manipulated mtree, you can re-sort it by calling
 % `mtreeobj = mtreeplus(mtreeobj.tree2str)`
 
+% Nested functions share the workspace of the enclosing function, so they may read and write variables which are not
+% passed as arguments or returned. Reliably telling which arguments are used and which are not is possible but tedious
+% with a lot of brittle mtree logic. Therefore keep everything if there is a nested function. 
+% Local and external functions are not affected.
+if ~isempty(mtree_getNestedFunctions(mtreeobj))
+    return
+end
+
 rIndex = struct('HEAD', struct(), 'BODY', struct());
 rIndex.HEAD = mtree_rIndex_head(mtreeobj, rIndex.HEAD);
 

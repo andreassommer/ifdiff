@@ -101,6 +101,10 @@ while lastNextNode ~= trueParent
             newIDArray = mtreeobj.C{mtreeobj.T(subIdIndexList, cIndex.stringTableIndex)};
             newIDArray = newIDArray(~ismember(newIDArray, idStringArray));
             idStringArray = vertcat(idStringArray, newIDArray);
+        case mtreeobj.K.GLOBAL
+            % Global declarations are always kept, since deleting them would leave the variables undefined.
+            % In case of global variables, a warning will be issued, as
+            % they can lead to undefined behaviour
         otherwise
             warning('deleteUnusedParameters_walkBodyNodes: found unknown node type %s', mtreeobj.KK{lastNextNodeKind});
     end
