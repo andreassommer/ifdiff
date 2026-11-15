@@ -29,7 +29,7 @@ and with initial value ${ x(0) = (1,0)^T }$, parameter ${ p = 5.437 }$, over tim
 This switched ODE system translates straightforward into the following matlab program:
 
 ```matlab
-function dx = canonicalExampleRHS(t,x,p)
+function dx = rhsCanonicalExample(t,x,p)
    dx = zeros(2,1);
    dx(1) = 0.01 * t.^2  +  x(2).^3;
    if x(1) < p(1) 
@@ -59,7 +59,7 @@ without caring for the non-differentiable `if` statements.
 tspan = [0 20];             % time horizon
 x0    = [1;0];              % initial values
 p     = 5.437;              % parameter values
-solX  = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
+solX  = ode45(@(t,x) rhsCanonicalExample(t,x,p), tspan, x0)
 T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
 ```
 ![Canonical Example with naive ode45](./canonex_naive.png)
@@ -67,7 +67,7 @@ T = 0:0.1:20; X = deval(solX2,T); plot(T,X); legend('x_1','x_2');
 Contrary to wide-spread beliefs, tightening the integration tolerances is not a remedy!
 ```matlab
 odeopts = odeset('AbsTol', 1e-20, 'RelTol', 1e-14);
-solX2   = ode45(@(t,x) canonicalExampleRHS(t,x,p), tspan, x0)
+solX2   = ode45(@(t,x) rhsCanonicalExample(t,x,p), tspan, x0)
 ```
 ![Canonical Example with naive ode45](./canonex_naive_highaccuracy.png)
 
@@ -83,7 +83,7 @@ tspan = [0 20]; x0 = [1;0]; p = 5.437;                    % set time horizon, in
 integrator = @ode45;                                      % choose integrator
 odeoptions = odeset('AbsTol', 1e-5, 'RelTol', 1e-3);      % set integrator options, here: low accuracy
 
-datahandle = prepareDatahandleForIntegration('canonicalExampleRHS', ...
+datahandle = prepareDatahandleForIntegration('rhsCanonicalExample', ...
                                              'integrator', integrator, ...
                                              'options', odeoptions);
 sol = solveODE(datahandle, tspan, x0, p); 
