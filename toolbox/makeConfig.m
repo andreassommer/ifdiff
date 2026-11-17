@@ -45,7 +45,7 @@ config.autoRemoveOutdatedFunctionFiles = true;
 config.removeCtrlifForSensComputation = true;
 
 % Functions which should never be preprocessed/modified by IFDIFF.
-config.functionIgnoreList = {'disp', 'fprintf', 'keyboard'};
+config.functionIgnoreList = {'disp', 'fprintf', 'keyboard', 'ifdiff_keepvar', 'ifdiff_breakif'};
 
 % Largest power of ten which is added to the switching time when searching for a new signature.
 config.switchingPointMaxPower = 13;
