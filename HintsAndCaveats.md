@@ -55,3 +55,43 @@ You can turn it off with
 ```MATLAB
 warning('off', 'IFDIFF:Preprocessing:GlobalVariable')
 ```
+
+## Debugging
+
+IFDIFF simplifies the generated switching, jump and model functions by removing all statements
+that do not contribute to their result. IFDIFF provides two functions which help with debugging.
+
+### Keeping Variables: `ifdiff_keepvar`
+
+Variables passed to `ifdiff_keepvar` are **not removed** from the generated functions,
+e.g. to inspect them while debugging. The function itself does nothing.
+
+```MATLAB
+function dx = rhs(t, x, p)
+    dbgVal = 3*x(1) + p(2);     % not needed for the switch, would be removed
+    ifdiff_keepvar(dbgVal);     % keeps dbgVal in the generated functions
+    if x(1) > p(1)
+        dx = 2;
+    else
+        dx = 1;
+    end
+end
+```
+
+- Place the call **after the last assignment** of the variable and **before the switches**
+  (`if`, `abs`, `min`, `max`, etc.) whose switching functions should contain it.
+  The line right after the assignment is usually a safe place.
+- If a variable is reassigned between switches, call `ifdiff_keepvar` after **each** assignment.
+- Pass the variable itself, **not its name**: `ifdiff_keepvar(x)`, not `ifdiff_keepvar('x')`.
+- Several variables can be passed at once: `ifdiff_keepvar(a, b, c)`.
+
+### Conditional Breakpoints: `ifdiff_breakif`
+
+`ifdiff_breakif(cond)` stops in the debugger if `cond` is true, e.g. `ifdiff_breakif(t > 5)`.
+
+- MATLAB stops **inside** `ifdiff_breakif`. Type `dbup` to get to the workspace of your RHS.
+- The call is also kept in the generated switching functions, so MATLAB may stop there as well.
+  The RHS is also called more often than you might expect (e.g. for rejected integration steps
+  and switching point detection).
+- Variables used in `cond` are kept in the generated functions, just like with `ifdiff_keepvar`.
+- `cond` should be a scalar logical.
